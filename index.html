@@ -277,7 +277,7 @@
       </div>
       <div class="top-actions">
         <span id="sessionBadge" class="session-badge">Morning Session</span>
-        <button class="secondary" onclick="openScreen('home')">Home</button>
+        <button class="secondary" data-nav="home">Home</button>
       </div>
     </div>
   </header>
@@ -292,19 +292,19 @@
           <div id="homeVerse" class="verse">“This is the day which the LORD hath made; we will rejoice and be glad in it.”</div>
           <div id="homeTask" class="muted">Read your morning passage, ask AI for context, and begin with prayer.</div>
           <div class="guided-steps">
-            <div class="step-item" onclick="openScreen('read')">
+            <div class="step-item" data-nav="read">
               <div class="step-number">1</div>
               <div class="step-content"><strong>Read</strong><div class="small muted">Open today's scripture passage</div></div>
             </div>
-            <div class="step-item" onclick="openScreen('study')">
+            <div class="step-item" data-nav="study">
               <div class="step-number">2</div>
               <div class="step-content"><strong>Insight</strong><div class="small muted">Get context, cross‑references & meaning</div></div>
             </div>
-            <div class="step-item" onclick="openScreen('prayer')">
+            <div class="step-item" data-nav="prayer">
               <div class="step-number">3</div>
               <div class="step-content"><strong>Pray</strong><div class="small muted">Respond with prayer & bring your struggles</div></div>
             </div>
-            <div class="step-item" onclick="openScreen('notes')">
+            <div class="step-item" data-nav="notes">
               <div class="step-number">4</div>
               <div class="step-content"><strong>Save Insight</strong><div class="small muted">Write a note, highlight, or bookmark</div></div>
             </div>
@@ -312,7 +312,7 @@
           <div class="next-step-hint small muted" id="homeNextStep">Open your morning passage and begin with prayer.</div>
         </div>
         <aside class="card">
-          <div class="section-title"><h3>Journey</h3><button class="ghost" onclick="openScreen('profile')">Profile</button></div>
+          <div class="section-title"><h3>Journey</h3><button class="ghost" data-nav="profile">Profile</button></div>
           <div class="list">
             <div class="item"><strong>Streak</strong><div class="muted small">12 days</div></div>
             <div class="item"><strong>Prayer memory</strong><div class="muted small">3 active requests</div></div>
@@ -336,10 +336,10 @@
         <div id="readDisplay" class="verse" style="white-space:pre-wrap; line-height:1.6;"><span class="muted">Select book and chapter, then load.</span></div>
         <div id="readAIResponse" class="item" style="margin-top:16px; display:none;"></div>
         <div class="quick-actions" style="margin-top:14px;">
-          <button onclick="alert('Highlight')">Highlight</button>
-          <button onclick="alert('Note')">Note</button>
-          <button onclick="alert('Bookmark')">Bookmark</button>
-          <button onclick="openScreen('listen')">Listen</button>
+          <button>Highlight</button>
+          <button>Note</button>
+          <button>Bookmark</button>
+          <button data-nav="listen">Listen</button>
         </div>
       </div>
     </section>
@@ -372,14 +372,14 @@
     <!-- LISTEN -->
     <section id="listen" class="screen">
       <div class="card">
-        <div class="section-title"><h2>Listen</h2><button class="secondary" onclick="toggleVoice()">Voice: On</button></div>
+        <div class="section-title"><h2>Listen</h2><button class="secondary" id="voiceToggleBtn">Voice: On</button></div>
         <div class="item"><strong>Audio passage</strong><div class="muted small">John 1 • KJV</div></div>
         <div class="quick-actions" style="margin-top:14px;">
-          <button class="primary" onclick="alert('Play / Pause')">Play</button>
-          <button onclick="alert('Back 10s')">-10s</button>
-          <button onclick="alert('Forward 10s')">+10s</button>
-          <button onclick="alert('Speed')">Speed</button>
-          <button onclick="alert('Download offline')">Offline</button>
+          <button class="primary">Play</button>
+          <button>-10s</button>
+          <button>+10s</button>
+          <button>Speed</button>
+          <button>Offline</button>
         </div>
       </div>
     </section>
@@ -387,14 +387,14 @@
     <!-- MEDITATION (HYBRID) -->
     <section id="meditate" class="screen">
       <div class="card">
-        <div class="section-title"><h2>Guided Meditation</h2><button class="secondary" onclick="toggleChime()">Chime: On</button></div>
+        <div class="section-title"><h2>Guided Meditation</h2><button class="secondary" id="chimeToggleBtn">Chime: On</button></div>
         <div class="setting-row">
           <label class="small muted">Duration (minutes)</label>
           <input id="medMinutesInput" type="range" min="1" max="20" value="5" step="1">
           <div class="timer-display" id="timerDisplay">05:00</div>
         </div>
         <div class="toggle-wrap">
-          <label class="small">Add Scripture Guidance</label>
+          <label class="small">Enable Scripture Guidance</label>
           <input type="checkbox" id="guidanceToggle">
         </div>
         <div id="guidanceBox" class="item" style="display:none; margin-bottom:16px;">
@@ -435,7 +435,7 @@
     <!-- NOTES -->
     <section id="notes" class="screen">
       <div class="card">
-        <div class="section-title"><h2>Notes</h2><button class="secondary" onclick="alert('Add note')">Add Note</button></div>
+        <div class="section-title"><h2>Notes</h2><button class="secondary">Add Note</button></div>
         <input placeholder="Search notes, highlights, bookmarks, prayers..." />
         <div class="list" style="margin-top:14px;">
           <div class="item"><strong>John 1 insight</strong><div class="muted small">Saved today</div></div>
@@ -472,11 +472,11 @@
 
   <nav class="footer-nav">
     <div class="nav-inner">
-      <button class="active" data-nav="home" onclick="openScreen('home')">Home</button>
-      <button data-nav="read" onclick="openScreen('read')">Read</button>
-      <button data-nav="study" onclick="openScreen('study')">Study</button>
-      <button data-nav="listen" onclick="openScreen('listen')">Listen</button>
-      <button data-nav="profile" onclick="openScreen('profile')">Profile</button>
+      <button class="active" data-nav="home">Home</button>
+      <button data-nav="read">Read</button>
+      <button data-nav="study">Study</button>
+      <button data-nav="listen">Listen</button>
+      <button data-nav="profile">Profile</button>
     </div>
   </nav>
 </div>
@@ -490,4 +490,284 @@
     };
     function formatDate(d){ return d.toLocaleDateString('en-US',{weekday:'long', year:'numeric', month:'long', day:'numeric'}); }
     function getSession(hour){
-  
+      if (hour >= 0 && hour < 12) return { name:'Morning', label:'Morning Focus', title:'Begin with the Word', task:'Read, understand, pray, and capture what God reveals.', verse:'“This is the day which the LORD hath made; we will rejoice and be glad in it.”', next:'Open your morning passage and follow the steps below.' };
+      if (hour >= 12 && hour < 18) return { name:'Afternoon', label:'Afternoon Pause', title:'Pause · Reflect · Realign', task:'Revisit a verse, pray through your midday, and let God renew your focus.', verse:'“Be still, and know that I am God.”', next:'Take a breath, read a short passage, and check your prayer list.' };
+      return { name:'Evening', label:'Evening Rest', title:'Close the day in peace', task:'Review, give thanks, and entrust tomorrow to God.', verse:'“I will both lay me down in peace, and sleep: for thou, LORD, only makest me dwell in safety.”', next:'Reflect on the day, pray, and prepare your heart for rest.' };
+    }
+    function getCurrentSession(){ return getSession(new Date().getHours()); }
+    function setHome(){
+      const now = new Date(); const session = getSession(now.getHours());
+      document.getElementById('dateText').textContent = formatDate(now);
+      document.getElementById('greetingText').textContent = `Good ${session.name} Emma`;
+      document.getElementById('sessionBadge').textContent = `${session.name} Session`;
+      document.getElementById('homeLabel').textContent = session.label;
+      document.getElementById('homeTitle').textContent = session.title;
+      document.getElementById('homeTask').textContent = session.task;
+      document.getElementById('homeVerse').textContent = session.verse;
+      document.getElementById('homeNextStep').textContent = session.next;
+    }
+
+    function openScreen(id){
+      state.screen = id;
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('[data-nav]').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll(`[data-nav="${id}"]`).forEach(b => b.classList.add('active'));
+      const greetingEl = document.getElementById('topGreeting');
+      if (greetingEl) greetingEl.style.display = (id === 'home') ? 'block' : 'none';
+      if (id === 'read') {
+        const displayDiv = document.getElementById('readDisplay');
+        if (displayDiv && displayDiv.innerText.includes('Select book')) fetchBiblePassage();
+      }
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    // ----- BIBLE API -----
+    function populateChapters(){
+      const bookSelect = document.getElementById('bibleBook'), chapterSelect = document.getElementById('bibleChapter');
+      if(!bookSelect||!chapterSelect) return;
+      const max = bibleBooksMap[bookSelect.value]||1;
+      chapterSelect.innerHTML = '';
+      for(let i=1;i<=max;i++){ const o=document.createElement('option'); o.value=i; o.textContent=i; chapterSelect.appendChild(o); }
+    }
+    async function fetchBiblePassage(){
+      const book=document.getElementById('bibleBook'), ch=document.getElementById('bibleChapter'), trans=document.getElementById('translation'), disp=document.getElementById('readDisplay');
+      if(!book||!ch||!trans||!disp) return;
+      disp.innerHTML='<span class="muted">Loading Scripture...</span>';
+      try{
+        const res=await fetch(`https://bible-api.com/${book.value}+${ch.value}?translation=${trans.value}`);
+        if(!res.ok) throw new Error();
+        const data=await res.json();
+        let text='';
+        data.verses.forEach(v=>text+=`${v.verse} ${v.text}\n`);
+        disp.innerHTML=`<strong style="display:block;margin-bottom:8px;color:var(--accent2)">${data.reference}</strong>${text.replace(/\n/g,'<br>')}`;
+      }catch(e){ disp.innerHTML='<span class="muted">⚠️ Unable to load passage.</span>'; }
+    }
+
+    // ----- AI (OpenRouter) -----
+    const AI_CONFIG = { apiKey: '', model: 'openai/gpt-3.5-turbo', maxDailyCalls: 20 };
+    function getTodayKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
+    function getAICallCount(){ const today=getTodayKey(); const s=localStorage.getItem('aiCallData'); if(!s) return 0; try{ const d=JSON.parse(s); return d.date===today? d.count:0; }catch{return 0;} }
+    function incrementAICallCount(){ const today=getTodayKey(); const c=getAICallCount()+1; localStorage.setItem('aiCallData',JSON.stringify({date:today,count:c})); return c; }
+    function isAILimitReached(){ return getAICallCount() >= AI_CONFIG.maxDailyCalls; }
+    async function askAI(prompt, screen='general', session='morning'){
+      if(isAILimitReached()) return { scripture:'Daily limit reached.', context:'You have used all 20 AI calls for today.', meaning:'', action:'', prayer:'' };
+      const sysPrompt='You are a wise, compassionate Bible teacher. Always respond with Scripture first, then context/meaning, then a practical action step, and finally a short prayer. Keep each section concise. Format your response exactly as JSON with keys: scripture, context, meaning, action, prayer.';
+      try{
+        const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${AI_CONFIG.apiKey}`,'HTTP-Referer':location.origin,'X-Title':'Bible Buddy'},
+          body:JSON.stringify({ model:AI_CONFIG.model, messages:[{role:'system',content:sysPrompt},{role:'user',content:`Screen: ${screen}. Session: ${session}. User prompt: ${prompt}`}], response_format:{type:'json_object'}, temperature:0.7, max_tokens:600 })
+        });
+        if(!res.ok) throw new Error();
+        const data=await res.json(); const content=data.choices?.[0]?.message?.content;
+        if(!content) throw new Error();
+        const parsed=JSON.parse(content); incrementAICallCount();
+        return { scripture:parsed.scripture||'', context:parsed.context||'', meaning:parsed.meaning||'', action:parsed.action||'', prayer:parsed.prayer||'' };
+      }catch(e){ return { scripture:'Error.', context:'Could not connect to AI.', meaning:'', action:'', prayer:'' }; }
+    }
+    function displayAIResponse(container, result){
+      if(!container) return;
+      container.style.display='block'; container.style.maxHeight='400px'; container.style.overflowY='auto';
+      container.innerHTML=`<div style="margin-bottom:12px;"><strong style="color:var(--accent2)">📖 Scripture</strong><br>${result.scripture}</div><div style="margin-bottom:12px;"><strong style="color:var(--accent2)">📚 Context</strong><br>${result.context}</div><div style="margin-bottom:12px;"><strong style="color:var(--accent2)">💡 Meaning</strong><br>${result.meaning}</div><div style="margin-bottom:12px;"><strong style="color:var(--accent2)">⚡ Action</strong><br>${result.action}</div><div><strong style="color:var(--accent2)">🙏 Prayer</strong><br>${result.prayer}</div>`;
+    }
+
+    // ----- MEDITATION TIMER (HYBRID) -----
+    let timerInterval = null;
+    let timerSeconds = 300;
+    let timerRunning = false;
+    let guidanceInterval = null;
+    const scripturePrompts = [
+      '“Be still, and know that I am God.” – Psalm 46:10',
+      '“The Lord is my shepherd; I shall not want.” – Psalm 23:1',
+      '“Cast your cares upon Him, for He cares for you.” – 1 Peter 5:7',
+      '“I can do all things through Christ who strengthens me.” – Philippians 4:13'
+    ];
+
+    function formatTime(sec){ const m=Math.floor(sec/60).toString().padStart(2,'0'); const s=(sec%60).toString().padStart(2,'0'); return `${m}:${s}`; }
+    function updateTimerDisplay(){ const el = document.getElementById('timerDisplay'); if(el) el.textContent = formatTime(timerSeconds); }
+    function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } timerRunning=false; }
+    function stopGuidance(){ if(guidanceInterval){ clearInterval(guidanceInterval); guidanceInterval=null; } }
+    function playChime(){
+      try{
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.frequency.value = 880; osc.type = 'sine';
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5);
+        osc.start(); osc.stop(audioCtx.currentTime + 1.5);
+      }catch(e){}
+    }
+
+    function timerTick(){
+      if(timerSeconds <= 0){
+        stopTimer(); stopGuidance();
+        updateTimerDisplay();
+        document.getElementById('meditateCompleteMsg').textContent = '✨ Session complete. Well done.';
+        if(state.chimeOn) playChime();
+        return;
+      }
+      timerSeconds--;
+      updateTimerDisplay();
+    }
+
+    function startTimer(){
+      if(timerRunning) return;
+      if(timerSeconds <= 0){
+        const mins = parseInt(document.getElementById('medMinutesInput')?.value) || 5;
+        timerSeconds = mins * 60;
+        updateTimerDisplay();
+      }
+      timerRunning = true;
+      timerInterval = setInterval(timerTick, 1000);
+      document.getElementById('meditateCompleteMsg').textContent = '';
+      // Guidance rotation
+      const toggle = document.getElementById('guidanceToggle');
+      if(toggle && toggle.checked){
+        const box = document.getElementById('guidanceBox');
+        const textEl = document.getElementById('guidanceText');
+        if(box) box.style.display = 'block';
+        stopGuidance();
+        guidanceInterval = setInterval(() => {
+          if(textEl){
+            const randomIdx = Math.floor(Math.random() * scripturePrompts.length);
+            textEl.textContent = scripturePrompts[randomIdx];
+          }
+        }, 20000);
+      }
+    }
+
+    function pauseTimer(){ stopTimer(); stopGuidance(); }
+    function resetTimer(){
+      stopTimer(); stopGuidance();
+      const mins = parseInt(document.getElementById('medMinutesInput')?.value) || 5;
+      timerSeconds = mins * 60;
+      updateTimerDisplay();
+      document.getElementById('meditateCompleteMsg').textContent = '';
+    }
+
+    // ----- INITIALIZATION -----
+    document.addEventListener('DOMContentLoaded', function(){
+      setHome();
+      
+      // Navigation via data-nav
+      document.querySelectorAll('[data-nav]').forEach(btn => {
+        btn.addEventListener('click', function(e){
+          const screen = this.getAttribute('data-nav');
+          if (screen) openScreen(screen);
+        });
+      });
+
+      const bookSelect = document.getElementById('bibleBook');
+      if(bookSelect){ bookSelect.addEventListener('change', populateChapters); populateChapters(); }
+      document.getElementById('loadPassageBtn')?.addEventListener('click', fetchBiblePassage);
+      
+      // Study tabs
+      document.querySelectorAll('#study .tabs button').forEach(btn=>{
+        btn.addEventListener('click', function(){
+          document.querySelectorAll('#study .tabs button').forEach(b=>b.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+
+      // AI Buttons
+      const readAsk=document.getElementById('readAskAIBtn'), readDisp=document.getElementById('readDisplay'), readAI=document.getElementById('readAIResponse');
+      if(readAsk) readAsk.onclick=async ()=>{
+        const txt=readDisp?.innerText.trim()||'';
+        if(!txt||txt.includes('Select book')||txt.includes('Loading')){
+          readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto';
+          readAI.innerHTML='<span class="muted">⚠️ Please load a Bible passage first.</span>'; return;
+        }
+        if(isAILimitReached()){
+          readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto';
+          readAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return;
+        }
+        const sess=getCurrentSession();
+        readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto';
+        readAI.innerHTML='<span class="muted">Inquiring...</span>';
+        const res=await askAI(`Explain this Bible passage: ${txt.substring(0,500)}`, 'read', sess.name.toLowerCase());
+        displayAIResponse(readAI, res);
+      };
+
+      const studyAsk=document.getElementById('studyAskAIBtn'), studyAI=document.getElementById('studyAIResponse');
+      if(studyAsk) studyAsk.onclick=async ()=>{
+        if(isAILimitReached()){
+          studyAI.style.display='block'; studyAI.style.maxHeight='400px'; studyAI.style.overflowY='auto';
+          studyAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return;
+        }
+        const sess=getCurrentSession();
+        studyAI.style.display='block'; studyAI.style.maxHeight='400px'; studyAI.style.overflowY='auto';
+        studyAI.innerHTML='<span class="muted">Exploring...</span>';
+        const activeTab=document.querySelector('#study .tabs button.active');
+        const tab=activeTab?activeTab.textContent.toLowerCase():'explain';
+        let prompt=`Provide a Bible study on the current passage. Focus on ${tab}.`;
+        if(tab==='context') prompt='Give historical and cultural context of this passage.';
+        else if(tab==='cross') prompt='Provide cross references for this passage.';
+        else if(tab==='apply') prompt='Give practical application of this passage for today.';
+        const res=await askAI(prompt,'study',sess.name.toLowerCase());
+        displayAIResponse(studyAI, res);
+      };
+
+      const prayerBtn=document.getElementById('prayerAskAIBtn'), prayerAI=document.getElementById('prayerAIResponse');
+      const strugglesTA=document.getElementById('prayerStruggles'), pointsTA=document.getElementById('prayerPoints');
+      if(prayerBtn) prayerBtn.onclick=async ()=>{
+        const struggles=strugglesTA?.value.trim()||'', points=pointsTA?.value.trim()||'';
+        if(!struggles&&!points){
+          prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto';
+          prayerAI.innerHTML='<span class="muted">⚠️ Please write your struggles or prayer points first.</span>'; return;
+        }
+        if(isAILimitReached()){
+          prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto';
+          prayerAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return;
+        }
+        const sess=getCurrentSession();
+        prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto';
+        prayerAI.innerHTML='<span class="muted">Seeking God\'s wisdom...</span>';
+        const res=await askAI(`My struggles: ${struggles}. My prayer points: ${points}. Provide biblical encouragement and practical next steps.`,'prayer',sess.name.toLowerCase());
+        displayAIResponse(prayerAI, res);
+      };
+
+      // Meditation controls
+      const minsInput = document.getElementById('medMinutesInput');
+      if(minsInput){
+        minsInput.addEventListener('input', function(){
+          if(!timerRunning){ timerSeconds = (parseInt(this.value)||5)*60; updateTimerDisplay(); }
+        });
+      }
+      document.getElementById('meditateStartBtn')?.addEventListener('click', startTimer);
+      document.getElementById('meditatePauseBtn')?.addEventListener('click', pauseTimer);
+      document.getElementById('meditateResetBtn')?.addEventListener('click', resetTimer);
+      const guidanceToggle = document.getElementById('guidanceToggle');
+      const guidanceBox = document.getElementById('guidanceBox');
+      if(guidanceToggle){
+        guidanceToggle.addEventListener('change', function(){
+          guidanceBox.style.display = this.checked ? 'block' : 'none';
+          if(this.checked){
+            const textEl = document.getElementById('guidanceText');
+            if(textEl) textEl.textContent = scripturePrompts[0];
+          }
+        });
+      }
+      // Initialize timer display
+      if(minsInput) timerSeconds = (parseInt(minsInput.value)||5)*60;
+      updateTimerDisplay();
+
+      // Voice/Chime toggles
+      document.getElementById('voiceToggleBtn')?.addEventListener('click', function(){
+        state.voiceOn = !state.voiceOn;
+        this.textContent = `Voice: ${state.voiceOn ? 'On' : 'Off'}`;
+      });
+      document.getElementById('chimeToggleBtn')?.addEventListener('click', function(){
+        state.chimeOn = !state.chimeOn;
+        this.textContent = `Chime: ${state.chimeOn ? 'On' : 'Off'}`;
+      });
+    });
+
+    // Expose
+    window.openScreen = openScreen;
+    window.fetchBiblePassage = fetchBiblePassage;
+  })();
+</script>
+</body>
+</html>
