@@ -471,7 +471,15 @@
         <div class="card">
           <h3>Settings</h3>
           <div class="list">
-            <div class="item" data-setting="api">OpenRouter API</div>
+            <!-- API Key input with status -->
+            <div class="item" style="flex-direction: column; align-items: flex-start; cursor: default;">
+              <strong>OpenRouter API Key</strong>
+              <input type="password" id="apiKeyInput" placeholder="Enter API key" style="margin-top:8px; width:100%;" />
+              <div style="display:flex; gap:8px; margin-top:8px; align-items:center;">
+                <button id="saveApiKeyBtn" class="secondary" style="padding:8px 12px;">Save</button>
+                <span id="apiStatus" class="small muted">Not connected</span>
+              </div>
+            </div>
             <div class="item" data-setting="voice">Voice choice / speed</div>
             <div class="item" data-setting="meditation">Meditation duration</div>
             <div class="item" data-setting="guide">User guide</div>
@@ -565,27 +573,68 @@
       }catch(e){ disp.innerHTML='<span class="muted">⚠️ Unable to load passage.</span>'; }
     }
 
+    // ---------- API KEY MANAGEMENT ----------
+    const API_STORAGE_KEY = 'openrouter_api';
+    function loadApiKey() {
+      const saved = localStorage.getItem(API_STORAGE_KEY);
+      if (saved) {
+        AI_CONFIG.apiKey = saved;
+        const input = document.getElementById('apiKeyInput');
+        if (input) input.value = saved;
+        updateApiStatus('API saved');
+      } else {
+        updateApiStatus('Not connected');
+      }
+    }
+    function saveApiKey(key) {
+      localStorage.setItem(API_STORAGE_KEY, key);
+      AI_CONFIG.apiKey = key;
+      updateApiStatus('API saved');
+    }
+    function updateApiStatus(status) {
+      const statusEl = document.getElementById('apiStatus');
+      if (statusEl) statusEl.textContent = status;
+    }
+
     // ---------- AI (OpenRouter) ----------
     const AI_CONFIG = { apiKey: '', model: 'openai/gpt-3.5-turbo', maxDailyCalls: 20 };
     function getTodayKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
     function getAICallCount(){ const today=getTodayKey(); const s=localStorage.getItem('aiCallData'); if(!s) return 0; try{ const d=JSON.parse(s); return d.date===today? d.count:0; }catch{return 0;} }
     function incrementAICallCount(){ const today=getTodayKey(); const c=getAICallCount()+1; localStorage.setItem('aiCallData',JSON.stringify({date:today,count:c})); return c; }
     function isAILimitReached(){ return getAICallCount() >= AI_CONFIG.maxDailyCalls; }
+    
     async function askAI(prompt, screen='general', session='morning'){
-      if(isAILimitReached()) return { scripture:'Daily limit reached.', context:'You have used all 20 AI calls for today.', meaning:'', action:'', prayer:'' };
+      // Check API key
+      if (!AI_CONFIG.apiKey) {
+        updateApiStatus('Not connected');
+        return { scripture:'No API key.', context:'Please enter your OpenRouter API key in Settings.', meaning:'', action:'', prayer:'' };
+      }
+      if(isAILimitReached()) {
+        updateApiStatus('Connected'); // still connected but limit reached
+        return { scripture:'Daily limit reached.', context:'You have used all 20 AI calls for today.', meaning:'', action:'', prayer:'' };
+      }
       const sysPrompt='You are a wise, compassionate Bible teacher. Always respond with Scripture first, then context/meaning, then a practical action step, and finally a short prayer. Keep each section concise. Format your response exactly as JSON with keys: scripture, context, meaning, action, prayer.';
       try{
         const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
           method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${AI_CONFIG.apiKey}`,'HTTP-Referer':location.origin,'X-Title':'Bible Buddy'},
           body:JSON.stringify({ model:AI_CONFIG.model, messages:[{role:'system',content:sysPrompt},{role:'user',content:`Screen: ${screen}. Session: ${session}. User prompt: ${prompt}`}], response_format:{type:'json_object'}, temperature:0.7, max_tokens:600 })
         });
-        if(!res.ok) throw new Error();
+        if(!res.ok) {
+          updateApiStatus('Error');
+          throw new Error('API error');
+        }
         const data=await res.json(); const content=data.choices?.[0]?.message?.content;
-        if(!content) throw new Error();
-        const parsed=JSON.parse(content); incrementAICallCount();
+        if(!content) throw new Error('No content');
+        const parsed=JSON.parse(content); 
+        incrementAICallCount();
+        updateApiStatus('Connected');
         return { scripture:parsed.scripture||'', context:parsed.context||'', meaning:parsed.meaning||'', action:parsed.action||'', prayer:parsed.prayer||'' };
-      }catch(e){ return { scripture:'Error.', context:'Could not connect to AI.', meaning:'', action:'', prayer:'' }; }
+      }catch(e){ 
+        updateApiStatus('Error');
+        return { scripture:'Error.', context:'Could not connect to AI.', meaning:'', action:'', prayer:'' }; 
+      }
     }
+    
     function displayAIResponse(container, result){
       if(!container) return;
       container.style.display='block'; container.style.maxHeight='400px'; container.style.overflowY='auto';
@@ -609,18 +658,38 @@
     // ---------- TTS (Listen) ----------
     let ttsUtterance = null, ttsPlaying = false;
     function stopTTS() { speechSynthesis.cancel(); ttsPlaying = false; }
-    function speakText(text) { if(!text) return; stopTTS(); ttsUtterance = new SpeechSynthesisUtterance(text); ttsUtterance.rate = 1; ttsUtterance.pitch = 1; speechSynthesis.speak(ttsUtterance); ttsPlaying = true; }
+    function speakText(text) { 
+      if(!text || text === 'Load a passage to listen') { alert('Load a passage first'); return; }
+      stopTTS(); 
+      ttsUtterance = new SpeechSynthesisUtterance(text); 
+      ttsUtterance.rate = 1; ttsUtterance.pitch = 1; 
+      speechSynthesis.speak(ttsUtterance); 
+      ttsPlaying = true; 
+    }
     function speakVerseByVerse(text) {
-      stopTTS(); const verses = text.split(/\d+\s/).filter(v => v.trim().length > 0); let index = 0;
-      function speakNext() { if(index>=verses.length){ ttsPlaying=false; return; } const utterance = new SpeechSynthesisUtterance(verses[index]); utterance.onend = () => { index++; setTimeout(speakNext, 800); }; speechSynthesis.speak(utterance); }
-      ttsPlaying = true; speakNext();
+      if(!text || text === 'Load a passage to listen') { alert('Load a passage first'); return; }
+      stopTTS(); 
+      const verses = text.split(/\d+\s/).filter(v => v.trim().length > 0); 
+      let index = 0;
+      function speakNext() { 
+        if(index>=verses.length){ ttsPlaying=false; return; } 
+        const utterance = new SpeechSynthesisUtterance(verses[index]); 
+        utterance.onend = () => { index++; setTimeout(speakNext, 800); }; 
+        speechSynthesis.speak(utterance); 
+      }
+      ttsPlaying = true; 
+      speakNext();
     }
     function syncListenText() {
-      const readDisplay = document.getElementById('readDisplay'); const listenText = document.getElementById('listenText');
+      const readDisplay = document.getElementById('readDisplay'); 
+      const listenText = document.getElementById('listenText');
       if (!listenText || !readDisplay) return;
       const passage = readDisplay.innerText.trim();
-      if (passage && !passage.includes('Select book') && !passage.includes('Loading')) { listenText.value = passage; }
-      else { listenText.value = 'Load a passage to listen'; }
+      if (passage && !passage.includes('Select book') && !passage.includes('Loading')) { 
+        listenText.value = passage; 
+      } else { 
+        listenText.value = 'Load a passage to listen'; 
+      }
     }
 
     // ---------- MEDITATION ----------
@@ -661,38 +730,107 @@
 
     // ---------- INIT ----------
     document.addEventListener('DOMContentLoaded', function(){
+      // Load API key
+      loadApiKey();
+      
       setHome();
       document.querySelectorAll('[data-nav]').forEach(btn => { btn.addEventListener('click', function(){ const screen = this.getAttribute('data-nav'); if(screen) openScreen(screen); }); });
       const bookSelect = document.getElementById('bibleBook'); if(bookSelect){ bookSelect.addEventListener('change', populateChapters); populateChapters(); }
       document.getElementById('loadPassageBtn')?.addEventListener('click', fetchBiblePassage);
       
-      document.querySelectorAll('#study .tabs button').forEach(btn=>{ btn.addEventListener('click', function(){ document.querySelectorAll('#study .tabs button').forEach(b=>b.classList.remove('active')); this.classList.add('active'); }); });
+      // Study tabs: make active switching work
+      document.querySelectorAll('#study .tabs button').forEach(btn=>{ 
+        btn.addEventListener('click', function(){ 
+          document.querySelectorAll('#study .tabs button').forEach(b=>b.classList.remove('active')); 
+          this.classList.add('active'); 
+        }); 
+      });
+
+      // API key save button
+      const saveBtn = document.getElementById('saveApiKeyBtn');
+      const apiInput = document.getElementById('apiKeyInput');
+      if(saveBtn && apiInput) {
+        saveBtn.addEventListener('click', () => {
+          const key = apiInput.value.trim();
+          if (key) {
+            saveApiKey(key);
+          } else {
+            localStorage.removeItem(API_STORAGE_KEY);
+            AI_CONFIG.apiKey = '';
+            updateApiStatus('Not connected');
+          }
+        });
+      }
 
       // AI Buttons
       const readAsk=document.getElementById('readAskAIBtn'), readDisp=document.getElementById('readDisplay'), readAI=document.getElementById('readAIResponse');
       if(readAsk) readAsk.onclick=async ()=>{
-        const txt=readDisp?.innerText.trim()||''; if(!txt||txt.includes('Select book')||txt.includes('Loading')){ readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto'; readAI.innerHTML='<span class="muted">⚠️ Please load a Bible passage first.</span>'; return; }
-        if(isAILimitReached()){ readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto'; readAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return; }
-        const sess=getSession(new Date().getHours()); readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto'; readAI.innerHTML='<span class="muted">Inquiring...</span>';
-        const res=await askAI(`Explain this Bible passage: ${txt.substring(0,500)}`, 'read', sess.name.toLowerCase()); displayAIResponse(readAI, res);
+        const txt=readDisp?.innerText.trim()||''; 
+        if(!txt||txt.includes('Select book')||txt.includes('Loading')){ 
+          readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto'; 
+          readAI.innerHTML='<span class="muted">⚠️ Please load a Bible passage first.</span>'; return; 
+        }
+        if(isAILimitReached() && AI_CONFIG.apiKey){ 
+          readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto'; 
+          readAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return; 
+        }
+        const sess=getSession(new Date().getHours()); 
+        readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto'; 
+        readAI.innerHTML='<span class="muted">Inquiring...</span>';
+        const res=await askAI(`Explain this Bible passage: ${txt.substring(0,500)}`, 'read', sess.name.toLowerCase()); 
+        displayAIResponse(readAI, res);
       };
+      
       const studyAsk=document.getElementById('studyAskAIBtn'), studyAI=document.getElementById('studyAIResponse');
       if(studyAsk) studyAsk.onclick=async ()=>{
-        if(isAILimitReached()){ studyAI.style.display='block'; studyAI.style.maxHeight='400px'; studyAI.style.overflowY='auto'; studyAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return; }
-        const sess=getSession(new Date().getHours()); studyAI.style.display='block'; studyAI.style.maxHeight='400px'; studyAI.style.overflowY='auto'; studyAI.innerHTML='<span class="muted">Exploring...</span>';
-        const activeTab=document.querySelector('#study .tabs button.active'); const tab=activeTab?activeTab.textContent.toLowerCase():'explain';
-        let prompt=`Provide a Bible study on the current passage. Focus on ${tab}.`; if(tab==='context') prompt='Give historical and cultural context of this passage.'; else if(tab==='cross') prompt='Provide cross references for this passage.'; else if(tab==='apply') prompt='Give practical application of this passage for today.';
-        const res=await askAI(prompt,'study',sess.name.toLowerCase()); displayAIResponse(studyAI, res);
+        if(isAILimitReached() && AI_CONFIG.apiKey){ 
+          studyAI.style.display='block'; studyAI.style.maxHeight='400px'; studyAI.style.overflowY='auto'; 
+          studyAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return; 
+        }
+        const sess=getSession(new Date().getHours()); 
+        studyAI.style.display='block'; studyAI.style.maxHeight='400px'; studyAI.style.overflowY='auto'; 
+        studyAI.innerHTML='<span class="muted">Exploring...</span>';
+        
+        // Get current passage from readDisplay if possible
+        const readDisplay = document.getElementById('readDisplay');
+        let passageContext = '';
+        if (readDisplay && !readDisplay.innerText.includes('Select book') && !readDisplay.innerText.includes('Loading')) {
+          passageContext = `The current passage is: ${readDisplay.innerText.substring(0,300)}. `;
+        }
+        
+        const activeTab=document.querySelector('#study .tabs button.active'); 
+        const tab=activeTab?activeTab.textContent.trim().toLowerCase():'explain';
+        let prompt = '';
+        switch(tab) {
+          case 'explain': prompt = `Provide a simple, clear explanation of this Bible passage. ${passageContext} Explain its main message and key themes.`; break;
+          case 'context': prompt = `Provide the historical and cultural background for this passage. ${passageContext} What was happening at that time? Who was the audience?`; break;
+          case 'cross-refs': prompt = `List 3-5 cross-references (other Bible verses) that relate to or illuminate this passage. ${passageContext} Include a brief note on how each connects.`; break;
+          case 'application': prompt = `Give 2-3 practical, real-life applications from this passage for a believer today. ${passageContext} What should we do in response?`; break;
+          default: prompt = `Study this passage: ${passageContext}`;
+        }
+        
+        const res=await askAI(prompt,'study',sess.name.toLowerCase()); 
+        displayAIResponse(studyAI, res);
         if (res.meaning) { saveJourneyEntry({ type: 'Insight', text: res.meaning, date: new Date().toLocaleString() }); }
       };
+      
       const prayerBtn=document.getElementById('prayerAskAIBtn'), prayerAI=document.getElementById('prayerAIResponse');
       const strugglesTA=document.getElementById('prayerStruggles'), pointsTA=document.getElementById('prayerPoints');
       if(prayerBtn) prayerBtn.onclick=async ()=>{
         const struggles=strugglesTA?.value.trim()||'', points=pointsTA?.value.trim()||'';
-        if(!struggles&&!points){ prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto'; prayerAI.innerHTML='<span class="muted">⚠️ Please write your struggles or prayer points first.</span>'; return; }
-        if(isAILimitReached()){ prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto'; prayerAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return; }
-        const sess=getSession(new Date().getHours()); prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto'; prayerAI.innerHTML='<span class="muted">Seeking God\'s wisdom...</span>';
-        const res=await askAI(`My struggles: ${struggles}. My prayer points: ${points}. Provide biblical encouragement and practical next steps.`,'prayer',sess.name.toLowerCase()); displayAIResponse(prayerAI, res);
+        if(!struggles&&!points){ 
+          prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto'; 
+          prayerAI.innerHTML='<span class="muted">⚠️ Please write your struggles or prayer points first.</span>'; return; 
+        }
+        if(isAILimitReached() && AI_CONFIG.apiKey){ 
+          prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto'; 
+          prayerAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return; 
+        }
+        const sess=getSession(new Date().getHours()); 
+        prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto'; 
+        prayerAI.innerHTML='<span class="muted">Seeking God\'s wisdom...</span>';
+        const res=await askAI(`My struggles: ${struggles}. My prayer points: ${points}. Provide biblical encouragement and practical next steps.`,'prayer',sess.name.toLowerCase()); 
+        displayAIResponse(prayerAI, res);
         if (points || struggles) { saveJourneyEntry({ type: 'Prayer', text: points || struggles, date: new Date().toLocaleString() }); }
       };
 
@@ -704,8 +842,8 @@
       const guidanceToggle = document.getElementById('meditateGuidanceToggle'), guidanceBox = document.getElementById('meditateGuidanceBox');
       if(guidanceToggle){ guidanceToggle.addEventListener('change', function(){ guidanceBox.style.display = this.checked ? 'block' : 'none'; if(this.checked){ document.getElementById('meditateGuidanceText').textContent = scriptureGuidance[0]; } else { stopMeditateGuidance(); } }); }
 
-      // TTS Play
-      const listenPlayBtn = document.querySelector('#listen .primary');
+      // TTS Play button
+      const listenPlayBtn = document.getElementById('listenPlayBtn');
       if (listenPlayBtn) {
         listenPlayBtn.addEventListener('click', function () {
           const textEl = document.getElementById('listenText');
@@ -720,12 +858,23 @@
 
       document.getElementById('voiceToggleBtn')?.addEventListener('click', function(){ state.voiceOn = !state.voiceOn; this.textContent = `Voice: ${state.voiceOn ? 'On' : 'Off'}`; });
 
-      // Profile items click
-      document.querySelectorAll('#profile .item').forEach(item => {
-        item.addEventListener('click', () => { alert('Feature coming soon'); });
+      // Settings items: remove "Feature coming soon", replace with simple alerts
+      document.querySelectorAll('#profile .item[data-setting]').forEach(item => {
+        const setting = item.getAttribute('data-setting');
+        if (setting === 'api') return; // already handled
+        item.addEventListener('click', () => { 
+          if (setting === 'voice') alert('Voice settings coming soon');
+          else if (setting === 'meditation') alert('Meditation settings coming soon');
+          else if (setting === 'guide') alert('User guide coming soon');
+          else if (setting === 'onboarding') alert('Onboarding preferences coming soon');
+          else if (setting === 'offline') alert('Offline downloads coming soon');
+          else alert(`${setting} setting coming soon`); 
+        });
       });
     });
-    window.openScreen = openScreen; window.fetchBiblePassage = fetchBiblePassage;
+    
+    window.openScreen = openScreen; 
+    window.fetchBiblePassage = fetchBiblePassage;
   })();
 </script>
 </body>
