@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +23,10 @@
       --max:1100px;
     }
     *{box-sizing:border-box}
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
@@ -29,7 +34,7 @@
       color:var(--text);
     }
     .app{
-      min-height:100vh;
+      height:100vh;
       display:flex;
       flex-direction:column;
     }
@@ -83,6 +88,7 @@
       margin:0 auto;
       padding:16px;
       flex:1;
+      overflow-y:auto;
     }
     .grid{
       display:grid;
@@ -148,11 +154,21 @@
       background:rgba(255,255,255,.03);
       border:1px solid var(--border);
       border-radius:14px;
+      cursor:pointer;
+      transition: background 0.15s;
+    }
+    .item:hover{
+      background:rgba(255,255,255,.06);
     }
     .hidden{display:none !important;}
     .stack{display:grid; gap:14px;}
     .two-col{display:grid; gap:16px;}
-    .screen{display:none;}
+    .screen{
+      display:none;
+      height:calc(100vh - 80px);
+      overflow-y:auto;
+      padding-bottom:80px;
+    }
     .screen.active{display:block;}
     .tabs{
       display:flex;
@@ -166,11 +182,17 @@
       padding:12px 14px;
       font:inherit;
     }
-    textarea{min-height:120px; resize:vertical;}
+    textarea{
+      min-height:200px;
+      resize:vertical;
+      background:rgba(255,255,255,.03);
+    }
     .footer-nav{
-      position:sticky;
+      position:fixed;
       bottom:0;
-      z-index:10;
+      left:0;
+      right:0;
+      z-index:100;
       background:rgba(7,16,33,.88);
       border-top:1px solid var(--border);
       backdrop-filter: blur(14px);
@@ -259,6 +281,18 @@
       width: auto;
       transform: scale(1.2);
     }
+
+    /* Meditation pulse */
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0px rgba(103,232,249,0.2); }
+      50% { box-shadow: 0 0 25px rgba(103,232,249,0.5); }
+      100% { box-shadow: 0 0 0px rgba(103,232,249,0.2); }
+    }
+    .meditate-active {
+      animation: pulseGlow 2.5s infinite;
+      border-radius: 20px;
+    }
+
     @media (min-width: 900px){
       .home-grid{grid-template-columns:1.5fr .9fr}
       .two-col{grid-template-columns:1.2fr .8fr}
@@ -354,7 +388,7 @@
       </div>
     </section>
 
-    <!-- LISTEN -->
+    <!-- LISTEN (textarea for text) -->
     <section id="listen" class="screen">
       <div class="card">
         <div class="section-title"><h2>Listen</h2><button class="secondary" id="voiceToggleBtn">Voice: On</button></div>
@@ -364,13 +398,13 @@
           <button class="primary" id="listenPlayBtn">Play</button>
           <button>-10s</button><button>+10s</button><button>Speed</button><button>Offline</button>
         </div>
-        <div id="listenText" class="verse" style="margin-top:20px; white-space:pre-wrap; line-height:1.6;"><span class="muted">Load a passage to listen</span></div>
+        <textarea id="listenText" class="verse" style="margin-top:20px; line-height:1.6; background:rgba(255,255,255,.03);" readonly>Load a passage to listen</textarea>
       </div>
     </section>
 
     <!-- MEDITATION -->
     <section id="meditate" class="screen">
-      <div class="card">
+      <div class="card" id="meditateCard">
         <div class="section-title"><h2>Meditation</h2></div>
         <div class="setting-row">
           <label class="small muted">Duration (minutes)</label>
@@ -430,16 +464,20 @@
         <div class="card">
           <h2>Profile</h2>
           <div class="list">
-            <div class="item"><strong>Emma</strong><div class="muted small">Bible Buddy user</div></div>
-            <div class="item"><strong>Streak</strong><div class="muted small">12 days</div></div>
-            <div class="item"><strong>Saved verses</strong><div class="muted small">27</div></div>
+            <div class="item" data-setting="profile"><strong>Emma</strong><div class="muted small">Bible Buddy user</div></div>
+            <div class="item" data-setting="streak"><strong>Streak</strong><div class="muted small">12 days</div></div>
+            <div class="item" data-setting="verses"><strong>Saved verses</strong><div class="muted small">27</div></div>
           </div>
         </div>
         <div class="card">
           <h3>Settings</h3>
           <div class="list">
-            <div class="item">OpenRouter API</div><div class="item">Voice choice / speed</div><div class="item">Meditation duration</div>
-            <div class="item">User guide</div><div class="item">Onboarding preferences</div><div class="item">Offline downloads</div>
+            <div class="item" data-setting="api">OpenRouter API</div>
+            <div class="item" data-setting="voice">Voice choice / speed</div>
+            <div class="item" data-setting="meditation">Meditation duration</div>
+            <div class="item" data-setting="guide">User guide</div>
+            <div class="item" data-setting="onboarding">Onboarding preferences</div>
+            <div class="item" data-setting="offline">Offline downloads</div>
           </div>
         </div>
       </div>
@@ -583,8 +621,8 @@
       const readDisplay = document.getElementById('readDisplay'); const listenText = document.getElementById('listenText');
       if (!listenText || !readDisplay) return;
       const passage = readDisplay.innerText.trim();
-      if (passage && !passage.includes('Select book') && !passage.includes('Loading')) { listenText.innerHTML = readDisplay.innerHTML; }
-      else { listenText.innerHTML = '<span class="muted">Load a passage to listen</span>'; }
+      if (passage && !passage.includes('Select book') && !passage.includes('Loading')) { listenText.value = passage; }
+      else { listenText.value = 'Load a passage to listen'; }
     }
 
     // ---------- MEDITATION ----------
@@ -595,11 +633,12 @@
     function stopMeditateTimer(){ if(meditateTimerInterval){ clearInterval(meditateTimerInterval); meditateTimerInterval=null; } meditateRunning=false; }
     function stopMeditateGuidance(){ if(meditateGuidanceInterval){ clearInterval(meditateGuidanceInterval); meditateGuidanceInterval=null; } }
     function playMeditateChime(){ try{ const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.frequency.value = 880; osc.type = 'sine'; gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5); osc.start(); osc.stop(audioCtx.currentTime + 1.5); }catch(e){} }
-    function meditateTick(){ if(meditateSeconds <= 0){ stopMeditateTimer(); stopMeditateGuidance(); updateMeditateDisplay(); document.getElementById('meditateMessage').textContent = 'Session complete'; playMeditateChime(); return; } meditateSeconds--; updateMeditateDisplay(); }
+    function meditateTick(){ if(meditateSeconds <= 0){ stopMeditateTimer(); stopMeditateGuidance(); updateMeditateDisplay(); document.getElementById('meditateMessage').textContent = 'Session complete'; playMeditateChime(); document.getElementById('meditateCard').classList.remove('meditate-active'); return; } meditateSeconds--; updateMeditateDisplay(); }
     function startMeditate(){
       if(meditateRunning) return;
       if(meditateSeconds <= 0){ const mins = parseInt(document.getElementById('meditateMinutes')?.value) || 5; meditateSeconds = mins * 60; updateMeditateDisplay(); }
       meditateRunning = true; meditateTimerInterval = setInterval(meditateTick, 1000); document.getElementById('meditateMessage').textContent = '';
+      document.getElementById('meditateCard').classList.add('meditate-active');
       const toggle = document.getElementById('meditateGuidanceToggle');
       if(toggle && toggle.checked){
         const box = document.getElementById('meditateGuidanceBox'); const textEl = document.getElementById('meditateGuidanceText');
@@ -609,13 +648,17 @@
         meditateGuidanceInterval = setInterval(() => { if(textEl){ guidanceIndex = (guidanceIndex + 1) % scriptureGuidance.length; textEl.textContent = scriptureGuidance[guidanceIndex]; } }, 20000);
       }
     }
-    function pauseMeditate(){ stopMeditateTimer(); stopMeditateGuidance(); }
+    function pauseMeditate(){
+      stopMeditateTimer(); stopMeditateGuidance();
+      document.getElementById('meditateCard').classList.remove('meditate-active');
+    }
     function resetMeditate(){
       stopMeditateTimer(); stopMeditateGuidance();
       const mins = parseInt(document.getElementById('meditateMinutes')?.value) || 5; meditateSeconds = mins * 60; updateMeditateDisplay();
       document.getElementById('meditateMessage').textContent = '';
       const box = document.getElementById('meditateGuidanceBox'); const toggle = document.getElementById('meditateGuidanceToggle');
       if(box) box.style.display = 'none'; if(toggle) toggle.checked = false;
+      document.getElementById('meditateCard').classList.remove('meditate-active');
     }
 
     // ---------- INIT ----------
@@ -667,15 +710,21 @@
       const listenPlayBtn = document.getElementById('listenPlayBtn');
       if(listenPlayBtn) listenPlayBtn.onclick = function(){
         const textEl = document.getElementById('listenText'); const mode = document.getElementById('ttsMode')?.value || 'continuous'; if(!textEl) return;
-        const text = textEl.innerText.trim(); if(!text || text.includes('Load a passage')){ alert('Load a passage first'); return; }
+        const text = textEl.value.trim(); if(!text || text === 'Load a passage to listen'){ alert('Load a passage first'); return; }
         if(ttsPlaying){ stopTTS(); return; }
         mode === 'verse' ? speakVerseByVerse(text) : speakText(text);
       };
 
       document.getElementById('voiceToggleBtn')?.addEventListener('click', function(){ state.voiceOn = !state.voiceOn; this.textContent = `Voice: ${state.voiceOn ? 'On' : 'Off'}`; });
+
+      // Profile items click
+      document.querySelectorAll('#profile .item').forEach(item => {
+        item.addEventListener('click', () => { alert('Feature coming soon'); });
+      });
     });
     window.openScreen = openScreen; window.fetchBiblePassage = fetchBiblePassage;
   })();
 </script>
 </body>
 </html>
+```
