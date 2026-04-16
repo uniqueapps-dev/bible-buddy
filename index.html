@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -192,23 +191,24 @@
       bottom:0;
       left:0;
       right:0;
+      width:100%;
+      overflow-x:auto;
+      white-space:nowrap;
       z-index:100;
       background:rgba(7,16,33,.88);
       border-top:1px solid var(--border);
       backdrop-filter: blur(14px);
     }
     .nav-inner{
-      max-width:var(--max);
-      margin:0 auto;
-      display:grid;
-      grid-template-columns:repeat(7,1fr);
-      gap:8px;
-      padding:10px 12px;
+      display:flex;
+      gap:10px;
+      padding:10px;
+      min-width:max-content;
     }
     .nav-inner button{
-      width:100%;
-      padding:11px 4px;
-      font-size:.8rem;
+      flex:0 0 auto;
+      padding:11px 16px;
+      font-size:.9rem;
     }
     .nav-inner button.active{
       background:linear-gradient(135deg,var(--accent),#5b8cff);
@@ -321,7 +321,6 @@
     <section id="home" class="screen active">
       <div class="grid home-grid">
         <div class="card hero">
-          <div id="homeLabel" class="session-badge">Morning Focus</div>
           <h2 id="homeTitle">Start your day with Scripture</h2>
           <div id="homeVerse" class="verse">“This is the day which the LORD hath made; we will rejoice and be glad in it.”</div>
           <div id="homeTask" class="muted">Read your morning passage, ask AI for context, and begin with prayer.</div>
@@ -515,7 +514,6 @@
       document.getElementById('dateText').textContent = formatDate(now);
       document.getElementById('greetingText').textContent = `Good ${session.name} Emma`;
       document.getElementById('sessionBadge').textContent = `${session.name} Session`;
-      document.getElementById('homeLabel').textContent = session.label;
       document.getElementById('homeTitle').textContent = session.title;
       document.getElementById('homeTask').textContent = session.task;
       document.getElementById('homeVerse').textContent = session.verse;
@@ -707,13 +705,18 @@
       if(guidanceToggle){ guidanceToggle.addEventListener('change', function(){ guidanceBox.style.display = this.checked ? 'block' : 'none'; if(this.checked){ document.getElementById('meditateGuidanceText').textContent = scriptureGuidance[0]; } else { stopMeditateGuidance(); } }); }
 
       // TTS Play
-      const listenPlayBtn = document.getElementById('listenPlayBtn');
-      if(listenPlayBtn) listenPlayBtn.onclick = function(){
-        const textEl = document.getElementById('listenText'); const mode = document.getElementById('ttsMode')?.value || 'continuous'; if(!textEl) return;
-        const text = textEl.value.trim(); if(!text || text === 'Load a passage to listen'){ alert('Load a passage first'); return; }
-        if(ttsPlaying){ stopTTS(); return; }
-        mode === 'verse' ? speakVerseByVerse(text) : speakText(text);
-      };
+      const listenPlayBtn = document.querySelector('#listen .primary');
+      if (listenPlayBtn) {
+        listenPlayBtn.addEventListener('click', function () {
+          const textEl = document.getElementById('listenText');
+          if (!textEl) return;
+          const text = textEl.value.trim();
+          if (!text || text === 'Load a passage to listen') { alert('Load a passage first'); return; }
+          if (ttsPlaying) { stopTTS(); return; }
+          const mode = document.getElementById('ttsMode')?.value;
+          if (mode === 'verse') { speakVerseByVerse(text); } else { speakText(text); }
+        });
+      }
 
       document.getElementById('voiceToggleBtn')?.addEventListener('click', function(){ state.voiceOn = !state.voiceOn; this.textContent = `Voice: ${state.voiceOn ? 'On' : 'Off'}`; });
 
@@ -727,4 +730,3 @@
 </script>
 </body>
 </html>
-```
