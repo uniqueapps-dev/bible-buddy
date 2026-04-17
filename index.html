@@ -22,282 +22,109 @@
       --max:1100px;
     }
     *{box-sizing:border-box}
-    html, body {
-      height: 100%;
-      overflow: hidden;
-    }
+    html, body { height: 100%; overflow: hidden; }
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       background:linear-gradient(180deg,#071021 0%, #0b1020 100%);
       color:var(--text);
     }
-    .app{
-      height:100vh;
-      display:flex;
-      flex-direction:column;
-    }
+    .app{ height:100vh; display:flex; flex-direction:column; }
     .topbar{
-      position:sticky;
-      top:0;
-      z-index:10;
-      backdrop-filter: blur(14px);
-      background:rgba(7,16,33,.78);
-      border-bottom:1px solid var(--border);
+      position:sticky; top:0; z-index:10; backdrop-filter: blur(14px);
+      background:rgba(7,16,33,.78); border-bottom:1px solid var(--border);
     }
     .topbar-inner{
-      max-width:var(--max);
-      margin:0 auto;
-      padding:16px;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      justify-content:space-between;
+      max-width:var(--max); margin:0 auto; padding:16px;
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
     }
     .greeting-wrap{display:flex; flex-direction:column; gap:4px;}
-    .greeting{
-      font-size:clamp(1.2rem,2vw,1.7rem);
-      font-weight:800;
-      line-height:1.1;
-    }
-    .date{
-      color:var(--accent2);
-      font-size:.95rem;
-      font-weight:700;
-    }
+    .greeting{ font-size:clamp(1.2rem,2vw,1.7rem); font-weight:800; line-height:1.1; }
+    .date{ color:var(--accent2); font-size:.95rem; font-weight:700; }
     .top-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
-    .pill, button, select, input, textarea{
-      border:1px solid var(--border);
-      border-radius:14px;
-      background:var(--panel);
-      color:var(--text);
-      box-shadow:none;
+    button, select, input, textarea{
+      border:1px solid var(--border); border-radius:14px;
+      background:var(--panel); color:var(--text); box-shadow:none;
     }
-    button{
-      padding:12px 14px;
-      font-weight:700;
-      cursor:pointer;
-    }
+    button{ padding:12px 14px; font-weight:700; cursor:pointer; }
     button.primary{background:linear-gradient(135deg,var(--accent),#5b8cff);}
     button.secondary{background:var(--panel2);}
     button.ghost{background:transparent;}
-    .container{
-      width:100%;
-      max-width:var(--max);
-      margin:0 auto;
-      padding:16px;
-      flex:1;
-      overflow-y:auto;
-    }
-    .grid{
-      display:grid;
-      gap:16px;
-    }
+    .container{ width:100%; max-width:var(--max); margin:0 auto; padding:16px; flex:1; overflow-y:auto; }
+    .grid{ display:grid; gap:16px; }
     .home-grid{grid-template-columns:1fr;}
     .card{
       background:linear-gradient(180deg,var(--panel),rgba(18,26,51,.88));
-      border:1px solid var(--border);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:16px;
+      border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:16px;
     }
     .card h2,.card h3{margin:0 0 10px 0}
     .muted{color:var(--muted)}
-    .hero{
-      display:grid;
-      gap:12px;
-    }
+    .hero{ display:grid; gap:12px; }
     .verse{
-      font-size:1.1rem;
-      line-height:1.55;
-      padding:16px;
-      border-left:4px solid var(--accent2);
-      background:rgba(255,255,255,.03);
+      font-size:1.1rem; line-height:1.55; padding:16px;
+      border-left:4px solid var(--accent2); background:rgba(255,255,255,.03);
       border-radius:14px;
     }
     .session-badge{
-      display:inline-flex;
-      width:max-content;
-      align-items:center;
-      gap:8px;
-      font-size:.85rem;
-      font-weight:800;
-      color:#0b1020;
-      background:var(--accent2);
-      padding:8px 12px;
-      border-radius:999px;
+      display:inline-flex; width:max-content; align-items:center; gap:8px;
+      font-size:.85rem; font-weight:800; color:#0b1020; background:var(--accent2);
+      padding:8px 12px; border-radius:999px;
     }
-    .quick-actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-    }
+    .quick-actions{ display:flex; gap:10px; flex-wrap:wrap; }
     .quick-actions button{padding:10px 12px;}
-    .section-title{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      margin-bottom:10px;
-    }
-    .session-only{
-      display:grid;
-      gap:12px;
-    }
-    .list{
-      display:grid;
-      gap:10px;
-    }
+    .section-title{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+    .list{ display:grid; gap:10px; }
     .item{
-      padding:14px;
-      background:rgba(255,255,255,.03);
-      border:1px solid var(--border);
-      border-radius:14px;
-      cursor:pointer;
-      transition: background 0.15s;
+      padding:14px; background:rgba(255,255,255,.03); border:1px solid var(--border);
+      border-radius:14px; cursor:pointer; transition: background 0.15s;
     }
-    .item:hover{
-      background:rgba(255,255,255,.06);
-    }
+    .item:hover{ background:rgba(255,255,255,.06); }
     .hidden{display:none !important;}
-    .stack{display:grid; gap:14px;}
-    .two-col{display:grid; gap:16px;}
-    .screen{
-      display:none;
-      height:calc(100vh - 80px);
-      overflow-y:auto;
-      padding-bottom:80px;
-    }
+    .screen{ display:none; height:calc(100vh - 80px); overflow-y:auto; padding-bottom:80px; }
     .screen.active{display:block;}
-    .tabs{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
-    }
+    .tabs{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
     .tabs button.active{background:var(--accent); color:#fff;}
-    input, textarea, select{
-      width:100%;
-      padding:12px 14px;
-      font:inherit;
-    }
-    textarea{
-      min-height:200px;
-      resize:vertical;
-      background:rgba(255,255,255,.03);
-    }
+    input, textarea, select{ width:100%; padding:12px 14px; font:inherit; }
+    textarea{ min-height:200px; resize:vertical; background:rgba(255,255,255,.03); }
     .footer-nav{
-      position:fixed;
-      bottom:0;
-      left:0;
-      right:0;
-      width:100%;
-      overflow-x:auto;
-      white-space:nowrap;
-      z-index:100;
-      background:rgba(7,16,33,.88);
-      border-top:1px solid var(--border);
-      backdrop-filter: blur(14px);
+      position:fixed; bottom:0; left:0; right:0; width:100%; overflow-x:auto;
+      white-space:nowrap; z-index:100; background:rgba(7,16,33,.88);
+      border-top:1px solid var(--border); backdrop-filter: blur(14px);
     }
-    .nav-inner{
-      display:flex;
-      gap:10px;
-      padding:10px;
-      min-width:max-content;
-    }
-    .nav-inner button{
-      flex:0 0 auto;
-      padding:11px 16px;
-      font-size:.9rem;
-    }
-    .nav-inner button.active{
-      background:linear-gradient(135deg,var(--accent),#5b8cff);
-    }
-    .setting-row{
-      display:grid;
-      gap:8px;
-      margin-bottom:14px;
-    }
-    .split{
-      display:grid;
-      gap:16px;
-    }
+    .nav-inner{ display:flex; gap:10px; padding:10px; min-width:max-content; }
+    .nav-inner button{ flex:0 0 auto; padding:11px 16px; font-size:.9rem; }
+    .nav-inner button.active{ background:linear-gradient(135deg,var(--accent),#5b8cff); }
+    .setting-row{ display:grid; gap:8px; margin-bottom:14px; }
+    .split{ display:grid; gap:16px; }
     .small{font-size:.92rem}
-    .guided-steps {
-      display: grid;
-      gap: 10px;
-      margin: 16px 0 12px;
-    }
+    .guided-steps { display: grid; gap: 10px; margin: 16px 0 12px; }
     .step-item {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 14px 16px;
-      background: rgba(255,255,255,0.02);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      cursor: pointer;
-      transition: background 0.15s;
+      display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      border-radius: 18px; cursor: pointer; transition: background 0.15s;
     }
-    .step-item:hover {
-      background: rgba(255,255,255,0.06);
-    }
+    .step-item:hover { background: rgba(255,255,255,0.06); }
     .step-number {
-      width: 32px;
-      height: 32px;
-      background: var(--panel2);
-      border-radius: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      color: var(--accent2);
-      border: 1px solid var(--border);
+      width: 32px; height: 32px; background: var(--panel2); border-radius: 40px;
+      display: flex; align-items: center; justify-content: center; font-weight: 800;
+      color: var(--accent2); border: 1px solid var(--border);
     }
-    .step-content strong {
-      display: block;
-      font-size: 1rem;
-      margin-bottom: 2px;
-    }
-    .next-step-hint {
-      border-top: 1px dashed var(--border);
-      padding-top: 14px;
-      margin-top: 6px;
-    }
-    .timer-display {
-      font-size: 3rem;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-      text-align: center;
-      margin: 10px 0;
-    }
-    .toggle-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin: 12px 0;
-    }
-    .toggle-wrap input {
-      width: auto;
-      transform: scale(1.2);
-    }
-
-    /* Meditation pulse */
+    .step-content strong { display: block; font-size: 1rem; margin-bottom: 2px; }
+    .next-step-hint { border-top: 1px dashed var(--border); padding-top: 14px; margin-top: 6px; }
+    .timer-display { font-size: 3rem; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; margin: 10px 0; }
+    .toggle-wrap { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+    .toggle-wrap input { width: auto; transform: scale(1.2); }
     @keyframes pulseGlow {
       0% { box-shadow: 0 0 0px rgba(103,232,249,0.2); }
       50% { box-shadow: 0 0 25px rgba(103,232,249,0.5); }
       100% { box-shadow: 0 0 0px rgba(103,232,249,0.2); }
     }
-    .meditate-active {
-      animation: pulseGlow 2.5s infinite;
-      border-radius: 20px;
-    }
-
+    .meditate-active { animation: pulseGlow 2.5s infinite; border-radius: 20px; }
     @media (min-width: 900px){
       .home-grid{grid-template-columns:1.5fr .9fr}
       .two-col{grid-template-columns:1.2fr .8fr}
       .split{grid-template-columns:1.25fr .75fr}
-      .stack-desktop{grid-template-columns:repeat(2,1fr)}
     }
   </style>
 </head>
@@ -357,7 +184,10 @@
         <div id="readDisplay" class="verse" style="white-space:pre-wrap; line-height:1.6;"><span class="muted">Select book and chapter, then load.</span></div>
         <div id="readAIResponse" class="item" style="margin-top:16px; display:none;"></div>
         <div class="quick-actions" style="margin-top:14px;">
-          <button>Highlight</button><button>Note</button><button>Bookmark</button><button data-nav="listen">Listen</button>
+          <button id="highlightBtn">Highlight</button>
+          <button id="noteBtn">Note</button>
+          <button id="bookmarkBtn">Bookmark</button>
+          <button data-nav="listen">Listen</button>
         </div>
       </div>
     </section>
@@ -366,36 +196,44 @@
     <section id="study" class="screen">
       <div class="split">
         <div class="card">
-          <div class="section-title"><h2>Study</h2><button class="secondary" id="studyAskAIBtn">Explore</button></div>
+          <div class="section-title"><h2>Study</h2></div>
           <div class="tabs">
             <button class="active" data-tab="explain">Explain</button>
-            <button data-tab="context">Context</button>
+            <button data-tab="notes">Notes</button>
             <button data-tab="cross">Cross-refs</button>
             <button data-tab="apply">Application</button>
           </div>
           <div id="studyAIResponse" class="item" style="margin-top:16px;"></div>
-          <div id="studyPanel" class="item hidden"></div>
+          <div id="studyNotesPanel" style="display:none; margin-top:16px;">
+            <textarea id="studyNotesArea" placeholder="Write your personal notes here..."></textarea>
+            <div class="quick-actions" style="margin-top:10px;">
+              <button id="saveStudyNoteBtn" class="secondary">Save Note</button>
+              <button id="clearStudyNoteBtn" class="secondary">Clear</button>
+            </div>
+            <div id="savedNotesList" style="margin-top:16px;"></div>
+          </div>
         </div>
         <div class="card">
           <h3>Reflection</h3>
-          <div class="list">
-            <div class="item">What is God showing me?</div>
-            <div class="item">What should I obey today?</div>
-            <div class="item">What prayer follows this passage?</div>
+          <div class="list" id="reflectionList">
+            <div class="item reflection-item" data-reflection="showing">What is God showing me?</div>
+            <div class="item reflection-item" data-reflection="obey">What should I obey today?</div>
+            <div class="item reflection-item" data-reflection="prayer">What prayer follows this passage?</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- LISTEN (textarea for text) -->
+    <!-- LISTEN -->
     <section id="listen" class="screen">
       <div class="card">
-        <div class="section-title"><h2>Listen</h2><button class="secondary" id="voiceToggleBtn">Voice: On</button></div>
+        <div class="section-title"><h2>Listen</h2></div>
         <div class="item"><strong>Audio passage</strong><div class="muted small">John 1 • KJV</div></div>
         <select id="ttsMode" style="margin-top:12px;"><option value="continuous">Continuous</option><option value="verse">Verse by Verse</option></select>
         <div class="quick-actions" style="margin-top:14px;">
           <button class="primary" id="listenPlayBtn">Play</button>
-          <button>-10s</button><button>+10s</button><button>Speed</button><button>Offline</button>
+          <button id="listenPauseBtn">Pause</button>
+          <button id="listenStopBtn">Stop</button>
         </div>
         <textarea id="listenText" class="verse" style="margin-top:20px; line-height:1.6; background:rgba(255,255,255,.03);" readonly>Load a passage to listen</textarea>
       </div>
@@ -463,15 +301,16 @@
         <div class="card">
           <h2>Profile</h2>
           <div class="list">
-            <div class="item" data-setting="profile"><strong>Emma</strong><div class="muted small">Bible Buddy user</div></div>
-            <div class="item" data-setting="streak"><strong>Streak</strong><div class="muted small">12 days</div></div>
-            <div class="item" data-setting="verses"><strong>Saved verses</strong><div class="muted small">27</div></div>
+            <div class="item">
+              <strong>Name</strong>
+              <input type="text" id="profileNameInput" placeholder="Emma" style="margin-top:8px;" />
+              <button id="saveProfileNameBtn" class="secondary" style="margin-top:8px;">Save Name</button>
+            </div>
           </div>
         </div>
         <div class="card">
           <h3>Settings</h3>
           <div class="list">
-            <!-- API Key input with status -->
             <div class="item" style="flex-direction: column; align-items: flex-start; cursor: default;">
               <strong>OpenRouter API Key</strong>
               <input type="password" id="apiKeyInput" placeholder="Enter API key" style="margin-top:8px; width:100%;" />
@@ -480,11 +319,40 @@
                 <span id="apiStatus" class="small muted">Not connected</span>
               </div>
             </div>
-            <div class="item" data-setting="voice">Voice choice / speed</div>
-            <div class="item" data-setting="meditation">Meditation duration</div>
-            <div class="item" data-setting="guide">User guide</div>
-            <div class="item" data-setting="onboarding">Onboarding preferences</div>
-            <div class="item" data-setting="offline">Offline downloads</div>
+            <div class="item" style="flex-direction: column; align-items: flex-start; cursor: default;">
+              <strong>AI Model</strong>
+              <select id="aiModelSelect" style="margin-top:8px;">
+                <option value="openai/gpt-4o-mini">GPT-4o-mini</option>
+                <option value="deepseek/deepseek-chat">DeepSeek Chat</option>
+                <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              </select>
+              <button id="saveModelBtn" class="secondary" style="margin-top:8px;">Set Model</button>
+            </div>
+            <div class="item" id="voiceSpeedSetting">
+              <div style="display:flex; justify-content:space-between;"><strong>Voice speed</strong><span id="voiceSpeedValue" class="small" style="color:var(--accent2);">1.0x</span></div>
+              <div id="voiceSpeedPanel" style="display:none; margin-top:10px; gap:8px;">
+                <button class="voice-speed-btn secondary" data-rate="0.75">0.75x</button>
+                <button class="voice-speed-btn secondary" data-rate="1.0">1.0x</button>
+                <button class="voice-speed-btn secondary" data-rate="1.25">1.25x</button>
+              </div>
+            </div>
+            <div class="item" id="meditationDurationSetting">
+              <div style="display:flex; justify-content:space-between;"><strong>Meditation duration</strong><span id="meditationDurationValue" class="small" style="color:var(--accent2);">5 min</span></div>
+              <div id="meditationDurationPanel" style="display:none; margin-top:10px; gap:8px;">
+                <button class="meditation-duration-btn secondary" data-mins="3">3 min</button>
+                <button class="meditation-duration-btn secondary" data-mins="5">5 min</button>
+                <button class="meditation-duration-btn secondary" data-mins="10">10 min</button>
+              </div>
+            </div>
+            <div class="item" id="userGuideSetting"><strong>User guide</strong><div class="small muted">Quick start</div></div>
+            <div class="item" id="onboardingSetting">
+              <div style="display:flex; justify-content:space-between;"><strong>Onboarding</strong><span id="onboardingStatus" class="small" style="color:var(--accent2);"></span></div>
+              <div id="onboardingPanel" style="display:none; margin-top:10px;">
+                <label style="display:flex; gap:8px;"><input type="checkbox" id="morningReminderCheck"> Morning reminders</label>
+                <label style="display:flex; gap:8px; margin-top:8px;"><input type="checkbox" id="dailyVerseCheck"> Daily verse</label>
+                <button id="saveOnboardingBtn" class="secondary" style="margin-top:10px; width:100%;">Save</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -506,21 +374,26 @@
 
 <script>
   (function(){
-    // ---------- STATE & HELPERS ----------
-    const state = { voiceOn: true, screen: 'home' };
+    window.state = window.state || {};
+    const state = window.state;
+    
     const bibleBooksMap = {
       'GEN':50,'EXO':40,'LEV':27,'NUM':36,'DEU':34,'JOS':24,'JDG':21,'RUT':4,'1SA':31,'2SA':24,'1KI':22,'2KI':25,'1CH':29,'2CH':36,'EZR':10,'NEH':13,'EST':10,'JOB':42,'PSA':150,'PRO':31,'ECC':12,'SNG':8,'ISA':66,'JER':52,'LAM':5,'EZE':48,'DAN':12,'HOS':14,'JOL':3,'AMO':9,'OBA':1,'JON':4,'MIC':7,'NAH':3,'HAB':3,'ZEP':3,'HAG':2,'ZEC':14,'MAL':4,'MAT':28,'MRK':16,'LUK':24,'JHN':21,'ACT':28,'ROM':16,'1CO':16,'2CO':13,'GAL':6,'EPH':6,'PHP':4,'COL':4,'1TH':5,'2TH':3,'1TI':6,'2TI':4,'TIT':3,'PHM':1,'HEB':13,'JAS':5,'1PE':5,'2PE':3,'1JN':5,'2JN':1,'3JN':1,'JUD':1,'REV':22
     };
+    
+    let userName = localStorage.getItem('user_name') || 'Emma';
+    const AI_CONFIG = { apiKey: '', model: 'openai/gpt-4o-mini' };
+    
     function formatDate(d){ return d.toLocaleDateString('en-US',{weekday:'long', year:'numeric', month:'long', day:'numeric'}); }
     function getSession(hour){
-      if (hour >= 0 && hour < 12) return { name:'Morning', label:'Morning Focus', title:'Begin with the Word', task:'Read, understand, pray, and capture what God reveals.', verse:'“This is the day which the LORD hath made; we will rejoice and be glad in it.”', next:'Open your morning passage and follow the steps below.' };
-      if (hour >= 12 && hour < 18) return { name:'Afternoon', label:'Afternoon Pause', title:'Pause · Reflect · Realign', task:'Revisit a verse, pray through your midday, and let God renew your focus.', verse:'“Be still, and know that I am God.”', next:'Take a breath, read a short passage, and check your prayer list.' };
-      return { name:'Evening', label:'Evening Rest', title:'Close the day in peace', task:'Review, give thanks, and entrust tomorrow to God.', verse:'“I will both lay me down in peace, and sleep: for thou, LORD, only makest me dwell in safety.”', next:'Reflect on the day, pray, and prepare your heart for rest.' };
+      if (hour < 12) return { name:'Morning', title:'Begin with the Word', task:'Read, understand, pray.', verse:'“This is the day which the LORD hath made; we will rejoice and be glad in it.”', next:'Open your morning passage.' };
+      if (hour < 18) return { name:'Afternoon', title:'Pause · Reflect', task:'Revisit a verse, pray.', verse:'“Be still, and know that I am God.”', next:'Take a breath, read a short passage.' };
+      return { name:'Evening', title:'Close in peace', task:'Review, give thanks.', verse:'“I will both lay me down in peace, and sleep.”', next:'Reflect and prepare for rest.' };
     }
     function setHome(){
       const now = new Date(); const session = getSession(now.getHours());
       document.getElementById('dateText').textContent = formatDate(now);
-      document.getElementById('greetingText').textContent = `Good ${session.name} Emma`;
+      document.getElementById('greetingText').textContent = `Good ${session.name} ${userName}`;
       document.getElementById('sessionBadge').textContent = `${session.name} Session`;
       document.getElementById('homeTitle').textContent = session.title;
       document.getElementById('homeTask').textContent = session.task;
@@ -531,28 +404,24 @@
     function openScreen(id){
       state.screen = id;
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      const target = document.getElementById(id); if (target) target.classList.add('active');
+      document.getElementById(id)?.classList.add('active');
       document.querySelectorAll('[data-nav]').forEach(b => b.classList.remove('active'));
       document.querySelectorAll(`[data-nav="${id}"]`).forEach(b => b.classList.add('active'));
-      const greetingEl = document.getElementById('topGreeting');
-      const sessionBadge = document.getElementById('sessionBadge');
-      const isHome = (id === 'home');
-      if (greetingEl) greetingEl.style.display = isHome ? 'block' : 'none';
-      if (sessionBadge) sessionBadge.style.display = isHome ? 'inline-flex' : 'none';
-      if (id === 'read') { const displayDiv = document.getElementById('readDisplay'); if (displayDiv && displayDiv.innerText.includes('Select book')) fetchBiblePassage(); }
+      document.getElementById('topGreeting').style.display = (id==='home')?'block':'none';
+      document.getElementById('sessionBadge').style.display = (id==='home')?'inline-flex':'none';
+      if (id === 'read') { const d = document.getElementById('readDisplay'); if (d && d.innerText.includes('Select book')) fetchBiblePassage(); }
       if (id === 'listen') { syncListenText(); }
       if (id === 'journey') { renderJourney(); }
+      if (id === 'study') { updateStudyTabUI(); }
       if (id !== 'listen') { stopTTS(); }
-      window.scrollTo({top:0, behavior:'smooth'});
+      window.scrollTo({top:0});
     }
 
-    // ---------- BIBLE API ----------
     function populateChapters(){
-      const bookSelect = document.getElementById('bibleBook'), chapterSelect = document.getElementById('bibleChapter');
-      if(!bookSelect||!chapterSelect) return;
-      const max = bibleBooksMap[bookSelect.value]||1;
-      chapterSelect.innerHTML = '';
-      for(let i=1;i<=max;i++){ const o=document.createElement('option'); o.value=i; o.textContent=i; chapterSelect.appendChild(o); }
+      const book = document.getElementById('bibleBook'), ch = document.getElementById('bibleChapter');
+      if(!book||!ch) return;
+      const max = bibleBooksMap[book.value]||1;
+      ch.innerHTML = Array.from({length:max}, (_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
     }
     async function fetchBiblePassage(){
       const book=document.getElementById('bibleBook'), ch=document.getElementById('bibleChapter'), trans=document.getElementById('translation'), disp=document.getElementById('readDisplay');
@@ -560,321 +429,283 @@
       disp.innerHTML='<span class="muted">Loading Scripture...</span>';
       try{
         const res=await fetch(`https://bible-api.com/${book.value}+${ch.value}?translation=${trans.value}`);
-        if(!res.ok) throw new Error();
         const data=await res.json();
         let text='';
         data.verses.forEach(v=>text+=`${v.verse} ${v.text}\n`);
         disp.innerHTML=`<strong style="display:block;margin-bottom:8px;color:var(--accent2)">${data.reference}</strong>${text.replace(/\n/g,'<br>')}`;
         syncListenText();
-        const journeyData = getJourneyData(); const last = journeyData.length ? journeyData[0] : null;
+        const journey = getJourneyData(); const last = journey[0];
         if (data.reference && (!last || last.text !== data.reference)) {
           saveJourneyEntry({ type: 'Scripture', text: data.reference, date: new Date().toLocaleString() });
         }
       }catch(e){ disp.innerHTML='<span class="muted">⚠️ Unable to load passage.</span>'; }
     }
 
-    // ---------- API KEY MANAGEMENT ----------
-    const API_STORAGE_KEY = 'openrouter_api';
     function loadApiKey() {
-      const saved = localStorage.getItem(API_STORAGE_KEY);
-      if (saved) {
-        AI_CONFIG.apiKey = saved;
-        const input = document.getElementById('apiKeyInput');
-        if (input) input.value = saved;
-        updateApiStatus('API saved');
-      } else {
-        updateApiStatus('Not connected');
-      }
+      const saved = localStorage.getItem('openrouter_api');
+      if (saved) { AI_CONFIG.apiKey = saved; document.getElementById('apiKeyInput').value = saved; updateApiStatus('API saved'); }
+      else updateApiStatus('Not connected');
     }
-    function saveApiKey(key) {
-      localStorage.setItem(API_STORAGE_KEY, key);
-      AI_CONFIG.apiKey = key;
-      updateApiStatus('API saved');
+    function loadModel() {
+      const saved = localStorage.getItem('ai_model');
+      if (saved) { AI_CONFIG.model = saved; document.getElementById('aiModelSelect').value = saved; }
     }
-    function updateApiStatus(status) {
-      const statusEl = document.getElementById('apiStatus');
-      if (statusEl) statusEl.textContent = status;
-    }
+    function updateApiStatus(s){ document.getElementById('apiStatus').textContent = s; }
 
-    // ---------- AI (OpenRouter) ----------
-    const AI_CONFIG = { apiKey: '', model: 'openai/gpt-3.5-turbo', maxDailyCalls: 20 };
-    function getTodayKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
-    function getAICallCount(){ const today=getTodayKey(); const s=localStorage.getItem('aiCallData'); if(!s) return 0; try{ const d=JSON.parse(s); return d.date===today? d.count:0; }catch{return 0;} }
-    function incrementAICallCount(){ const today=getTodayKey(); const c=getAICallCount()+1; localStorage.setItem('aiCallData',JSON.stringify({date:today,count:c})); return c; }
-    function isAILimitReached(){ return getAICallCount() >= AI_CONFIG.maxDailyCalls; }
-    
-    async function askAI(prompt, screen='general', session='morning'){
-      // Check API key
-      if (!AI_CONFIG.apiKey) {
-        updateApiStatus('Not connected');
-        return { scripture:'No API key.', context:'Please enter your OpenRouter API key in Settings.', meaning:'', action:'', prayer:'' };
-      }
-      if(isAILimitReached()) {
-        updateApiStatus('Connected'); // still connected but limit reached
-        return { scripture:'Daily limit reached.', context:'You have used all 20 AI calls for today.', meaning:'', action:'', prayer:'' };
-      }
-      const sysPrompt='You are a wise, compassionate Bible teacher. Always respond with Scripture first, then context/meaning, then a practical action step, and finally a short prayer. Keep each section concise. Format your response exactly as JSON with keys: scripture, context, meaning, action, prayer.';
+    async function askAI(prompt, screen='general'){
+      if (!AI_CONFIG.apiKey) { updateApiStatus('Not connected'); return 'No API key.'; }
+      let system = 'You are a wise Bible teacher.';
+      if (screen==='study') system = 'You are a Bible study assistant. Respond with exactly what is asked: explanation (simple paragraph), cross-references (list with connections), or application (bullet points). No extra sections.';
+      else if (screen==='reflection') system = 'You are a spiritual guide. For "showing": introspective insight. For "obey": direct action. For "prayer": only a short prayer.';
       try{
-        const res=await fetch('https://openrouter.ai/api/v1/chat/completions',{
-          method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${AI_CONFIG.apiKey}`,'HTTP-Referer':location.origin,'X-Title':'Bible Buddy'},
-          body:JSON.stringify({ model:AI_CONFIG.model, messages:[{role:'system',content:sysPrompt},{role:'user',content:`Screen: ${screen}. Session: ${session}. User prompt: ${prompt}`}], response_format:{type:'json_object'}, temperature:0.7, max_tokens:600 })
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions',{
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${AI_CONFIG.apiKey}`,'HTTP-Referer':location.origin},
+          body:JSON.stringify({ model:AI_CONFIG.model, messages:[{role:'system',content:system},{role:'user',content:prompt}], temperature:0.7, max_tokens:500 })
         });
-        if(!res.ok) {
-          updateApiStatus('Error');
-          throw new Error('API error');
-        }
-        const data=await res.json(); const content=data.choices?.[0]?.message?.content;
-        if(!content) throw new Error('No content');
-        const parsed=JSON.parse(content); 
-        incrementAICallCount();
+        if(!res.ok) { updateApiStatus('Error'); return '⚠️ Unable to reach AI.'; }
+        const data = await res.json(); 
         updateApiStatus('Connected');
-        return { scripture:parsed.scripture||'', context:parsed.context||'', meaning:parsed.meaning||'', action:parsed.action||'', prayer:parsed.prayer||'' };
-      }catch(e){ 
-        updateApiStatus('Error');
-        return { scripture:'Error.', context:'Could not connect to AI.', meaning:'', action:'', prayer:'' }; 
-      }
+        return data.choices?.[0]?.message?.content || 'No response.';
+      }catch(e){ updateApiStatus('Error'); return '⚠️ Unable to reach AI.'; }
     }
-    
     function displayAIResponse(container, result){
       if(!container) return;
       container.style.display='block'; container.style.maxHeight='400px'; container.style.overflowY='auto';
-      container.innerHTML=`<div style="margin-bottom:12px;"><strong style="color:var(--accent2)">📖 Scripture</strong><br>${result.scripture}</div><div style="margin-bottom:12px;"><strong style="color:var(--accent2)">📚 Context</strong><br>${result.context}</div><div style="margin-bottom:12px;"><strong style="color:var(--accent2)">💡 Meaning</strong><br>${result.meaning}</div><div style="margin-bottom:12px;"><strong style="color:var(--accent2)">⚡ Action</strong><br>${result.action}</div><div><strong style="color:var(--accent2)">🙏 Prayer</strong><br>${result.prayer}</div>`;
+      container.innerHTML = typeof result === 'string' ? result.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>') : JSON.stringify(result);
     }
 
-    // ---------- JOURNEY STORAGE ----------
-    function getJourneyData() { const data = localStorage.getItem('journeyData'); return data ? JSON.parse(data) : []; }
+    function getJourneyData() { return JSON.parse(localStorage.getItem('journeyData')||'[]'); }
     function saveJourneyEntry(entry) {
-      const data = getJourneyData(); data.unshift(entry);
-      if (data.length > 50) data.pop();
+      const data = getJourneyData(); data.unshift(entry); if(data.length>50) data.pop();
       localStorage.setItem('journeyData', JSON.stringify(data));
     }
+    function getUserData(key) { return JSON.parse(localStorage.getItem(key)||'[]'); }
+    function saveUserData(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+
     function renderJourney() {
-      const container = document.getElementById('journeyList'); if (!container) return;
-      const data = getJourneyData();
-      if (data.length === 0) { container.innerHTML = '<div class="muted small">No entries yet.</div>'; return; }
-      container.innerHTML = data.map(item => `<div class="item"><strong>${item.type}</strong><div class="small muted">${item.date}</div><div>${item.text}</div></div>`).join('');
+      const container = document.getElementById('journeyList');
+      const journey = getJourneyData().map(i=>({...i, type:'Scripture'}));
+      const highlights = getUserData('highlights').map(i=>({...i, type:'Highlight'}));
+      const notes = getUserData('notes').map(i=>({...i, type:'Note'}));
+      const bookmarks = getUserData('bookmarks').map(i=>({...i, type:'Bookmark'}));
+      const combined = [...journey, ...highlights, ...notes, ...bookmarks].sort((a,b)=>new Date(b.date)-new Date(a.date));
+      container.innerHTML = combined.length ? combined.map(i=>`<div class="item"><strong>${i.type}</strong><div class="small muted">${i.date}</div><div>${i.text}${i.reference?`<br><span class="muted">${i.reference}</span>`:''}</div></div>`).join('') : '<div class="muted small">No entries yet.</div>';
     }
 
-    // ---------- TTS (Listen) ----------
-    let ttsUtterance = null, ttsPlaying = false;
-    function stopTTS() { speechSynthesis.cancel(); ttsPlaying = false; }
-    function speakText(text) { 
-      if(!text || text === 'Load a passage to listen') { alert('Load a passage first'); return; }
-      stopTTS(); 
-      ttsUtterance = new SpeechSynthesisUtterance(text); 
-      ttsUtterance.rate = 1; ttsUtterance.pitch = 1; 
-      speechSynthesis.speak(ttsUtterance); 
-      ttsPlaying = true; 
+    function cleanTextForTTS(raw) { return raw.replace(/^\d+\s*/gm,'').replace(/\n\d+\s*/g,'\n').replace(/([.!?])\s+/g,'$1 ').replace(/\s+/g,' ').trim(); }
+    function stopTTS() { speechSynthesis.cancel(); }
+    function pauseTTS() { if(speechSynthesis.speaking && !speechSynthesis.paused) speechSynthesis.pause(); }
+    function resumeTTS() { if(speechSynthesis.paused) speechSynthesis.resume(); }
+    window.getVoiceRate = () => state.ttsRate || 1.0;
+
+    function speakText(text) {
+      if(!text||text.includes('Load')) return showToast('Load a passage first');
+      stopTTS(); const cleaned = cleanTextForTTS(text);
+      const u = new SpeechSynthesisUtterance(cleaned); u.rate = window.getVoiceRate(); u.pitch = 1;
+      u.onend = () => { document.getElementById('listenPauseBtn').textContent = 'Pause'; };
+      speechSynthesis.speak(u);
     }
     function speakVerseByVerse(text) {
-      if(!text || text === 'Load a passage to listen') { alert('Load a passage first'); return; }
-      stopTTS(); 
-      const verses = text.split(/\d+\s/).filter(v => v.trim().length > 0); 
-      let index = 0;
-      function speakNext() { 
-        if(index>=verses.length){ ttsPlaying=false; return; } 
-        const utterance = new SpeechSynthesisUtterance(verses[index]); 
-        utterance.onend = () => { index++; setTimeout(speakNext, 800); }; 
-        speechSynthesis.speak(utterance); 
+      if(!text||text.includes('Load')) return showToast('Load a passage first');
+      stopTTS(); const cleaned = cleanTextForTTS(text);
+      const verses = cleaned.split(/\n+/).filter(v=>v.trim()); let idx=0;
+      function next(){
+        if(idx>=verses.length){ document.getElementById('listenPauseBtn').textContent = 'Pause'; return; }
+        const u = new SpeechSynthesisUtterance(verses[idx]); u.rate = window.getVoiceRate();
+        u.onend = ()=>{ idx++; setTimeout(next,600); };
+        speechSynthesis.cancel(); speechSynthesis.speak(u);
       }
-      ttsPlaying = true; 
-      speakNext();
+      next();
     }
     function syncListenText() {
-      const readDisplay = document.getElementById('readDisplay'); 
-      const listenText = document.getElementById('listenText');
-      if (!listenText || !readDisplay) return;
-      const passage = readDisplay.innerText.trim();
-      if (passage && !passage.includes('Select book') && !passage.includes('Loading')) { 
-        listenText.value = passage; 
-      } else { 
-        listenText.value = 'Load a passage to listen'; 
-      }
+      const rd=document.getElementById('readDisplay'), lt=document.getElementById('listenText');
+      if(rd&&lt){ const p=rd.innerText.trim(); lt.value = (p&&!p.includes('Select'))?p:'Load a passage to listen'; }
     }
 
-    // ---------- MEDITATION ----------
-    let meditateTimerInterval = null, meditateGuidanceInterval = null, meditateSeconds = 300, meditateRunning = false, guidanceIndex = 0;
-    const scriptureGuidance = ["Be still and know that I am God.","The Lord is my shepherd; I shall not want.","Cast your cares upon Him.","Trust in the Lord with all your heart.","The Lord is near to all who call on Him."];
-    function formatMeditateTime(sec){ const m=Math.floor(sec/60).toString().padStart(2,'0'); const s=(sec%60).toString().padStart(2,'0'); return `${m}:${s}`; }
-    function updateMeditateDisplay(){ const el = document.getElementById('meditateTimer'); if(el) el.textContent = formatMeditateTime(meditateSeconds); }
-    function stopMeditateTimer(){ if(meditateTimerInterval){ clearInterval(meditateTimerInterval); meditateTimerInterval=null; } meditateRunning=false; }
-    function stopMeditateGuidance(){ if(meditateGuidanceInterval){ clearInterval(meditateGuidanceInterval); meditateGuidanceInterval=null; } }
-    function playMeditateChime(){ try{ const audioCtx = new (window.AudioContext || window.webkitAudioContext)(); const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); osc.frequency.value = 880; osc.type = 'sine'; gain.gain.setValueAtTime(0.3, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.5); osc.start(); osc.stop(audioCtx.currentTime + 1.5); }catch(e){} }
-    function meditateTick(){ if(meditateSeconds <= 0){ stopMeditateTimer(); stopMeditateGuidance(); updateMeditateDisplay(); document.getElementById('meditateMessage').textContent = 'Session complete'; playMeditateChime(); document.getElementById('meditateCard').classList.remove('meditate-active'); return; } meditateSeconds--; updateMeditateDisplay(); }
+    let toastTimeout;
+    function showToast(msg) {
+      let t = document.getElementById('appToast');
+      if(!t){
+        t = document.createElement('div'); t.id='appToast';
+        t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,20px);background:rgba(0,0,0,0.85);color:#fff;padding:10px 16px;border-radius:10px;font-size:0.9rem;z-index:9999;transition:opacity 0.3s,transform 0.3s;opacity:0;';
+        document.body.appendChild(t);
+      }
+      if(toastTimeout) clearTimeout(toastTimeout);
+      t.textContent = msg; t.getBoundingClientRect();
+      t.style.opacity='1'; t.style.transform='translate(-50%,0)';
+      toastTimeout = setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translate(-50%,20px)'; },2000);
+    }
+
+    let meditateTimer, meditateGuidance, meditateSeconds=300, meditateRunning=false, guidanceIdx=0;
+    const guidanceVerses = ["Be still and know that I am God.","The Lord is my shepherd.","Cast your cares upon Him."];
+    function updateMeditateDisplay(){ document.getElementById('meditateTimer').textContent = `${Math.floor(meditateSeconds/60).toString().padStart(2,'0')}:${(meditateSeconds%60).toString().padStart(2,'0')}`; }
     function startMeditate(){
       if(meditateRunning) return;
-      if(meditateSeconds <= 0){ const mins = parseInt(document.getElementById('meditateMinutes')?.value) || 5; meditateSeconds = mins * 60; updateMeditateDisplay(); }
-      meditateRunning = true; meditateTimerInterval = setInterval(meditateTick, 1000); document.getElementById('meditateMessage').textContent = '';
+      if(meditateSeconds<=0) meditateSeconds = (parseInt(document.getElementById('meditateMinutes').value)||5)*60;
+      meditateRunning=true; meditateTimer=setInterval(()=>{ if(meditateSeconds<=0){ stopMeditate(); showToast('Session complete'); return; } meditateSeconds--; updateMeditateDisplay(); },1000);
       document.getElementById('meditateCard').classList.add('meditate-active');
-      const toggle = document.getElementById('meditateGuidanceToggle');
-      if(toggle && toggle.checked){
-        const box = document.getElementById('meditateGuidanceBox'); const textEl = document.getElementById('meditateGuidanceText');
-        if(box) box.style.display = 'block';
-        if(textEl) textEl.textContent = scriptureGuidance[guidanceIndex];
-        stopMeditateGuidance();
-        meditateGuidanceInterval = setInterval(() => { if(textEl){ guidanceIndex = (guidanceIndex + 1) % scriptureGuidance.length; textEl.textContent = scriptureGuidance[guidanceIndex]; } }, 20000);
+      if(document.getElementById('meditateGuidanceToggle').checked){
+        document.getElementById('meditateGuidanceBox').style.display='block';
+        document.getElementById('meditateGuidanceText').textContent=guidanceVerses[0];
+        meditateGuidance=setInterval(()=>{ guidanceIdx=(guidanceIdx+1)%guidanceVerses.length; document.getElementById('meditateGuidanceText').textContent=guidanceVerses[guidanceIdx]; },20000);
       }
     }
-    function pauseMeditate(){
-      stopMeditateTimer(); stopMeditateGuidance();
-      document.getElementById('meditateCard').classList.remove('meditate-active');
+    function stopMeditate(){ clearInterval(meditateTimer); clearInterval(meditateGuidance); meditateRunning=false; document.getElementById('meditateCard').classList.remove('meditate-active'); }
+    function pauseMeditate(){ stopMeditate(); }
+    function resetMeditate(){ stopMeditate(); meditateSeconds = (parseInt(document.getElementById('meditateMinutes').value)||5)*60; updateMeditateDisplay(); document.getElementById('meditateGuidanceBox').style.display='none'; }
+
+    let studyTabs, studyAI, notesPanel, notesArea, savedNotesList;
+    function getStudyNotes() { return JSON.parse(localStorage.getItem('study_notes')||'[]'); }
+    function loadStudyNotes() {
+      const notes = getStudyNotes();
+      savedNotesList.innerHTML = notes.length ? notes.map((n,i)=>`<div class="item" style="display:flex;justify-content:space-between;"><div><strong>${n.text}</strong><div class="small muted">${n.date}</div></div><button class="delete-note-btn ghost" data-index="${i}">🗑️</button></div>`).join('') : '<div class="muted small">No saved notes.</div>';
+      document.querySelectorAll('.delete-note-btn').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); const notes=getStudyNotes(); notes.splice(b.dataset.index,1); localStorage.setItem('study_notes',JSON.stringify(notes)); loadStudyNotes(); }));
     }
-    function resetMeditate(){
-      stopMeditateTimer(); stopMeditateGuidance();
-      const mins = parseInt(document.getElementById('meditateMinutes')?.value) || 5; meditateSeconds = mins * 60; updateMeditateDisplay();
-      document.getElementById('meditateMessage').textContent = '';
-      const box = document.getElementById('meditateGuidanceBox'); const toggle = document.getElementById('meditateGuidanceToggle');
-      if(box) box.style.display = 'none'; if(toggle) toggle.checked = false;
-      document.getElementById('meditateCard').classList.remove('meditate-active');
+    function updateStudyTabUI() {
+      const active = document.querySelector('#study .tabs button.active');
+      const tab = active?.dataset.tab;
+      if(tab==='notes'){ notesPanel.style.display='block'; studyAI.style.display='none'; loadStudyNotes(); }
+      else { notesPanel.style.display='none'; studyAI.style.display='block'; if(!studyAI.innerHTML.trim()||studyAI.innerText.includes('Error')) studyAI.innerHTML='<span class="muted">Tap a tab to generate insight</span>'; }
     }
 
-    // ---------- INIT ----------
-    document.addEventListener('DOMContentLoaded', function(){
-      // Load API key
-      loadApiKey();
+    document.addEventListener('DOMContentLoaded', ()=>{
+      userName = localStorage.getItem('user_name')||'Emma';
+      document.getElementById('profileNameInput').value = userName;
+      loadApiKey(); loadModel(); setHome();
+      document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>openScreen(b.dataset.nav)));
+      document.getElementById('bibleBook')?.addEventListener('change',populateChapters); populateChapters();
+      document.getElementById('loadPassageBtn')?.addEventListener('click',fetchBiblePassage);
+      document.getElementById('saveProfileNameBtn').addEventListener('click',()=>{ const n=document.getElementById('profileNameInput').value.trim(); if(n){ userName=n; localStorage.setItem('user_name',n); setHome(); showToast('Name updated'); } });
+      document.getElementById('saveApiKeyBtn').addEventListener('click',()=>{ const k=document.getElementById('apiKeyInput').value.trim(); if(k){ localStorage.setItem('openrouter_api',k); AI_CONFIG.apiKey=k; updateApiStatus('API saved'); } });
+      document.getElementById('saveModelBtn').addEventListener('click',()=>{ const m=document.getElementById('aiModelSelect').value; localStorage.setItem('ai_model',m); AI_CONFIG.model=m; showToast('Model set'); });
       
-      setHome();
-      document.querySelectorAll('[data-nav]').forEach(btn => { btn.addEventListener('click', function(){ const screen = this.getAttribute('data-nav'); if(screen) openScreen(screen); }); });
-      const bookSelect = document.getElementById('bibleBook'); if(bookSelect){ bookSelect.addEventListener('change', populateChapters); populateChapters(); }
-      document.getElementById('loadPassageBtn')?.addEventListener('click', fetchBiblePassage);
+      // Voice speed
+      const vsItem=document.getElementById('voiceSpeedSetting'), vsPanel=document.getElementById('voiceSpeedPanel'), vsSpan=document.getElementById('voiceSpeedValue');
+      let rate = parseFloat(localStorage.getItem('voice_speed'))||1.0; state.ttsRate=rate; vsSpan.textContent=rate.toFixed(2)+'x';
+      vsItem.addEventListener('click',e=>{ if(!e.target.closest('#voiceSpeedPanel')) vsPanel.style.display = vsPanel.style.display==='none'?'flex':'none'; });
+      document.querySelectorAll('.voice-speed-btn').forEach(b=>b.addEventListener('click',e=>{ const r=parseFloat(b.dataset.rate); state.ttsRate=r; localStorage.setItem('voice_speed',r); vsSpan.textContent=r.toFixed(2)+'x'; vsPanel.style.display='none'; }));
       
-      // Study tabs: make active switching work
-      document.querySelectorAll('#study .tabs button').forEach(btn=>{ 
-        btn.addEventListener('click', function(){ 
-          document.querySelectorAll('#study .tabs button').forEach(b=>b.classList.remove('active')); 
-          this.classList.add('active'); 
-        }); 
+      // Meditation duration
+      const mdItem=document.getElementById('meditationDurationSetting'), mdPanel=document.getElementById('meditationDurationPanel'), mdSpan=document.getElementById('meditationDurationValue');
+      let mins = parseInt(localStorage.getItem('meditation_duration'))||5; mdSpan.textContent=mins+' min'; meditateSeconds=mins*60; updateMeditateDisplay();
+      mdItem.addEventListener('click',e=>{ if(!e.target.closest('#meditationDurationPanel')) mdPanel.style.display = mdPanel.style.display==='none'?'flex':'none'; });
+      document.querySelectorAll('.meditation-duration-btn').forEach(b=>b.addEventListener('click',e=>{ const m=parseInt(b.dataset.mins); localStorage.setItem('meditation_duration',m); mdSpan.textContent=m+' min'; if(!meditateRunning){ meditateSeconds=m*60; updateMeditateDisplay(); } mdPanel.style.display='none'; }));
+      
+      document.getElementById('userGuideSetting').addEventListener('click',()=>showToast('1. Read 2. Study 3. Reflect 4. Journey'));
+      const onboardStatus=document.getElementById('onboardingStatus'), morningCheck=document.getElementById('morningReminderCheck'), dailyCheck=document.getElementById('dailyVerseCheck');
+      function loadOnboard(){ const s=JSON.parse(localStorage.getItem('onboarding_settings')||'{"morning":false,"dailyVerse":false}'); morningCheck.checked=s.morning; dailyCheck.checked=s.dailyVerse; onboardStatus.textContent = `Morning: ${s.morning?'on':'off'} · Daily: ${s.dailyVerse?'on':'off'}`; }
+      loadOnboard();
+      document.getElementById('onboardingSetting').addEventListener('click',e=>{ if(!e.target.closest('#onboardingPanel')) document.getElementById('onboardingPanel').style.display = document.getElementById('onboardingPanel').style.display==='none'?'block':'none'; });
+      document.getElementById('saveOnboardingBtn').addEventListener('click',()=>{ const s={morning:morningCheck.checked, dailyVerse:dailyCheck.checked}; localStorage.setItem('onboarding_settings',JSON.stringify(s)); loadOnboard(); document.getElementById('onboardingPanel').style.display='none'; });
+      
+      // Read actions
+      document.getElementById('highlightBtn').addEventListener('click',()=>{
+        const sel = window.getSelection().toString().trim(); if(!sel) return showToast('Select text');
+        const ref = document.getElementById('readDisplay')?.querySelector('strong')?.innerText||'';
+        const highlights = getUserData('highlights');
+        if(highlights.some(h=>h.text===sel && h.reference===ref)) return showToast('Already highlighted');
+        highlights.unshift({text:sel, reference:ref, date:new Date().toLocaleString()}); saveUserData('highlights',highlights); showToast('Highlight saved');
       });
-
-      // API key save button
-      const saveBtn = document.getElementById('saveApiKeyBtn');
-      const apiInput = document.getElementById('apiKeyInput');
-      if(saveBtn && apiInput) {
-        saveBtn.addEventListener('click', () => {
-          const key = apiInput.value.trim();
-          if (key) {
-            saveApiKey(key);
-          } else {
-            localStorage.removeItem(API_STORAGE_KEY);
-            AI_CONFIG.apiKey = '';
-            updateApiStatus('Not connected');
+      document.getElementById('noteBtn').addEventListener('click',()=>{
+        const note = prompt('Write your note:'); if(!note) return;
+        const notes = getUserData('notes'); notes.unshift({text:note, date:new Date().toLocaleString()}); saveUserData('notes',notes); showToast('Note saved');
+      });
+      document.getElementById('bookmarkBtn').addEventListener('click',()=>{
+        const passage = document.getElementById('readDisplay')?.innerText||''; if(!passage||passage.includes('Select')) return showToast('Load a passage first');
+        const bookmarks = getUserData('bookmarks'); bookmarks.unshift({text:passage.substring(0,100), date:new Date().toLocaleString()}); saveUserData('bookmarks',bookmarks); showToast('Bookmarked');
+      });
+      
+      // AI Inquire
+      document.getElementById('readAskAIBtn').addEventListener('click',async ()=>{
+        const txt = document.getElementById('readDisplay').innerText.trim(); if(!txt||txt.includes('Select')) return showToast('Load a passage');
+        const resp = document.getElementById('readAIResponse'); resp.style.display='block'; resp.innerHTML='<span class="muted">Inquiring...</span>';
+        const res = await askAI(`Explain: ${txt.substring(0,500)}`); displayAIResponse(resp, res);
+      });
+      
+      // Study setup
+      studyTabs = document.querySelectorAll('#study .tabs button');
+      studyAI = document.getElementById('studyAIResponse');
+      notesPanel = document.getElementById('studyNotesPanel');
+      notesArea = document.getElementById('studyNotesArea');
+      savedNotesList = document.getElementById('savedNotesList');
+      
+      studyTabs.forEach(tab=>tab.addEventListener('click', async function(){
+        studyTabs.forEach(t=>t.classList.remove('active')); this.classList.add('active');
+        const activeTab = this.dataset.tab;
+        if(notesPanel&&studyAI){
+          if(activeTab==='notes'){ notesPanel.style.display='block'; studyAI.style.display='none'; loadStudyNotes(); }
+          else {
+            if(state.lastStudyTab===activeTab && state.forceRefreshTab!==activeTab) return;
+            state.forceRefreshTab=null; state.lastStudyTab=activeTab;
+            notesPanel.style.display='none'; studyAI.style.display='block';
+            const disp = document.getElementById('readDisplay'); const passage = disp.innerText.trim();
+            if(!passage||passage.includes('Select')){ studyAI.innerHTML='<span class="muted">⚠️ Load a passage first</span>'; return; }
+            let prompt='';
+            if(activeTab==='explain') prompt=`Explain this passage: ${passage}`;
+            else if(activeTab==='cross') prompt=`List related verses and connections: ${passage}`;
+            else if(activeTab==='apply') prompt=`Give practical actions: ${passage}`;
+            studyAI.innerHTML='<span class="muted">Loading...</span>';
+            const res = await askAI(prompt, 'study');
+            if(!res||res.includes('Unable')) studyAI.innerHTML='<span class="muted">⚠️ Unable to generate</span>';
+            else { displayAIResponse(studyAI, res); if(res.length>20) saveJourneyEntry({type:'Insight', text:res.substring(0,100), date:new Date().toLocaleString()}); }
           }
-        });
-      }
-
-      // AI Buttons
-      const readAsk=document.getElementById('readAskAIBtn'), readDisp=document.getElementById('readDisplay'), readAI=document.getElementById('readAIResponse');
-      if(readAsk) readAsk.onclick=async ()=>{
-        const txt=readDisp?.innerText.trim()||''; 
-        if(!txt||txt.includes('Select book')||txt.includes('Loading')){ 
-          readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto'; 
-          readAI.innerHTML='<span class="muted">⚠️ Please load a Bible passage first.</span>'; return; 
         }
-        if(isAILimitReached() && AI_CONFIG.apiKey){ 
-          readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto'; 
-          readAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return; 
-        }
-        const sess=getSession(new Date().getHours()); 
-        readAI.style.display='block'; readAI.style.maxHeight='400px'; readAI.style.overflowY='auto'; 
-        readAI.innerHTML='<span class="muted">Inquiring...</span>';
-        const res=await askAI(`Explain this Bible passage: ${txt.substring(0,500)}`, 'read', sess.name.toLowerCase()); 
-        displayAIResponse(readAI, res);
-      };
+      }));
+      if(!state._dblClickBound){ studyTabs.forEach(b=>b.addEventListener('dblclick',()=>{ state.forceRefreshTab = b.dataset.tab; })); state._dblClickBound=true; }
       
-      const studyAsk=document.getElementById('studyAskAIBtn'), studyAI=document.getElementById('studyAIResponse');
-      if(studyAsk) studyAsk.onclick=async ()=>{
-        if(isAILimitReached() && AI_CONFIG.apiKey){ 
-          studyAI.style.display='block'; studyAI.style.maxHeight='400px'; studyAI.style.overflowY='auto'; 
-          studyAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return; 
-        }
-        const sess=getSession(new Date().getHours()); 
-        studyAI.style.display='block'; studyAI.style.maxHeight='400px'; studyAI.style.overflowY='auto'; 
-        studyAI.innerHTML='<span class="muted">Exploring...</span>';
-        
-        // Get current passage from readDisplay if possible
-        const readDisplay = document.getElementById('readDisplay');
-        let passageContext = '';
-        if (readDisplay && !readDisplay.innerText.includes('Select book') && !readDisplay.innerText.includes('Loading')) {
-          passageContext = `The current passage is: ${readDisplay.innerText.substring(0,300)}. `;
-        }
-        
-        const activeTab=document.querySelector('#study .tabs button.active'); 
-        const tab=activeTab?activeTab.textContent.trim().toLowerCase():'explain';
-        let prompt = '';
-        switch(tab) {
-          case 'explain': prompt = `Provide a simple, clear explanation of this Bible passage. ${passageContext} Explain its main message and key themes.`; break;
-          case 'context': prompt = `Provide the historical and cultural background for this passage. ${passageContext} What was happening at that time? Who was the audience?`; break;
-          case 'cross-refs': prompt = `List 3-5 cross-references (other Bible verses) that relate to or illuminate this passage. ${passageContext} Include a brief note on how each connects.`; break;
-          case 'application': prompt = `Give 2-3 practical, real-life applications from this passage for a believer today. ${passageContext} What should we do in response?`; break;
-          default: prompt = `Study this passage: ${passageContext}`;
-        }
-        
-        const res=await askAI(prompt,'study',sess.name.toLowerCase()); 
-        displayAIResponse(studyAI, res);
-        if (res.meaning) { saveJourneyEntry({ type: 'Insight', text: res.meaning, date: new Date().toLocaleString() }); }
-      };
-      
-      const prayerBtn=document.getElementById('prayerAskAIBtn'), prayerAI=document.getElementById('prayerAIResponse');
-      const strugglesTA=document.getElementById('prayerStruggles'), pointsTA=document.getElementById('prayerPoints');
-      if(prayerBtn) prayerBtn.onclick=async ()=>{
-        const struggles=strugglesTA?.value.trim()||'', points=pointsTA?.value.trim()||'';
-        if(!struggles&&!points){ 
-          prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto'; 
-          prayerAI.innerHTML='<span class="muted">⚠️ Please write your struggles or prayer points first.</span>'; return; 
-        }
-        if(isAILimitReached() && AI_CONFIG.apiKey){ 
-          prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto'; 
-          prayerAI.innerHTML='<span class="muted">⏳ Daily AI limit reached.</span>'; return; 
-        }
-        const sess=getSession(new Date().getHours()); 
-        prayerAI.style.display='block'; prayerAI.style.maxHeight='400px'; prayerAI.style.overflowY='auto'; 
-        prayerAI.innerHTML='<span class="muted">Seeking God\'s wisdom...</span>';
-        const res=await askAI(`My struggles: ${struggles}. My prayer points: ${points}. Provide biblical encouragement and practical next steps.`,'prayer',sess.name.toLowerCase()); 
-        displayAIResponse(prayerAI, res);
-        if (points || struggles) { saveJourneyEntry({ type: 'Prayer', text: points || struggles, date: new Date().toLocaleString() }); }
-      };
-
-      // Meditation
-      const minsInput = document.getElementById('meditateMinutes'); if(minsInput){ minsInput.addEventListener('input', function(){ if(!meditateRunning){ meditateSeconds = (parseInt(this.value)||5)*60; updateMeditateDisplay(); } }); meditateSeconds = (parseInt(minsInput.value)||5)*60; updateMeditateDisplay(); }
-      document.getElementById('meditateStart')?.addEventListener('click', startMeditate);
-      document.getElementById('meditatePause')?.addEventListener('click', pauseMeditate);
-      document.getElementById('meditateReset')?.addEventListener('click', resetMeditate);
-      const guidanceToggle = document.getElementById('meditateGuidanceToggle'), guidanceBox = document.getElementById('meditateGuidanceBox');
-      if(guidanceToggle){ guidanceToggle.addEventListener('change', function(){ guidanceBox.style.display = this.checked ? 'block' : 'none'; if(this.checked){ document.getElementById('meditateGuidanceText').textContent = scriptureGuidance[0]; } else { stopMeditateGuidance(); } }); }
-
-      // TTS Play button
-      const listenPlayBtn = document.getElementById('listenPlayBtn');
-      if (listenPlayBtn) {
-        listenPlayBtn.addEventListener('click', function () {
-          const textEl = document.getElementById('listenText');
-          if (!textEl) return;
-          const text = textEl.value.trim();
-          if (!text || text === 'Load a passage to listen') { alert('Load a passage first'); return; }
-          if (ttsPlaying) { stopTTS(); return; }
-          const mode = document.getElementById('ttsMode')?.value;
-          if (mode === 'verse') { speakVerseByVerse(text); } else { speakText(text); }
-        });
-      }
-
-      document.getElementById('voiceToggleBtn')?.addEventListener('click', function(){ state.voiceOn = !state.voiceOn; this.textContent = `Voice: ${state.voiceOn ? 'On' : 'Off'}`; });
-
-      // Settings items: remove "Feature coming soon", replace with simple alerts
-      document.querySelectorAll('#profile .item[data-setting]').forEach(item => {
-        const setting = item.getAttribute('data-setting');
-        if (setting === 'api') return; // already handled
-        item.addEventListener('click', () => { 
-          if (setting === 'voice') alert('Voice settings coming soon');
-          else if (setting === 'meditation') alert('Meditation settings coming soon');
-          else if (setting === 'guide') alert('User guide coming soon');
-          else if (setting === 'onboarding') alert('Onboarding preferences coming soon');
-          else if (setting === 'offline') alert('Offline downloads coming soon');
-          else alert(`${setting} setting coming soon`); 
-        });
+      document.getElementById('saveStudyNoteBtn').addEventListener('click',()=>{
+        const txt = notesArea.value.trim(); if(!txt) return;
+        const notes = getStudyNotes(); notes.unshift({text:txt, date:new Date().toLocaleString()}); if(notes.length>20) notes.pop();
+        localStorage.setItem('study_notes',JSON.stringify(notes)); notesArea.value=''; loadStudyNotes(); showToast('Note saved');
       });
+      document.getElementById('clearStudyNoteBtn').addEventListener('click',()=>notesArea.value='');
+      
+      // Reflection
+      document.querySelectorAll('.reflection-item').forEach(item=>item.addEventListener('click', async ()=>{
+        const disp = document.getElementById('readDisplay'); const passage = disp.innerText.trim();
+        if(!passage||passage.includes('Select')){ studyAI.innerHTML='<span class="muted">⚠️ Load a passage</span>'; return; }
+        notesPanel.style.display='none'; studyAI.style.display='block';
+        const refl = item.dataset.reflection; let prompt='';
+        if(refl==='showing') prompt=`What is God revealing personally? ${passage}`;
+        else if(refl==='obey') prompt=`What action should I take? ${passage}`;
+        else prompt=`Write a short prayer: ${passage}`;
+        studyAI.innerHTML='<span class="muted">Seeking...</span>';
+        const res = await askAI(prompt, 'reflection'); displayAIResponse(studyAI, res);
+      }));
+      
+      // Listen
+      const pauseBtn = document.getElementById('listenPauseBtn');
+      document.getElementById('listenPlayBtn').addEventListener('click',()=>{
+        const txt = document.getElementById('listenText').value.trim();
+        if(!txt||txt==='Load a passage to listen') return showToast('Load a passage first');
+        if(speechSynthesis.speaking||speechSynthesis.paused) speechSynthesis.cancel();
+        document.getElementById('ttsMode').value==='verse' ? speakVerseByVerse(txt) : speakText(txt);
+      });
+      pauseBtn.addEventListener('click',()=>{
+        if(speechSynthesis.speaking && !speechSynthesis.paused){ pauseTTS(); pauseBtn.textContent='Resume'; }
+        else if(speechSynthesis.paused){ resumeTTS(); pauseBtn.textContent='Pause'; }
+      });
+      document.getElementById('listenStopBtn').addEventListener('click',()=>{ stopTTS(); pauseBtn.textContent='Pause'; });
+      
+      // Meditation
+      document.getElementById('meditateStart').addEventListener('click',startMeditate);
+      document.getElementById('meditatePause').addEventListener('click',pauseMeditate);
+      document.getElementById('meditateReset').addEventListener('click',resetMeditate);
+      document.getElementById('meditateMinutes').addEventListener('input',function(){ if(!meditateRunning){ meditateSeconds=parseInt(this.value)*60; updateMeditateDisplay(); } });
+      
+      // Prayer AI
+      document.getElementById('prayerAskAIBtn').addEventListener('click',async ()=>{
+        const struggles = document.getElementById('prayerStruggles').value.trim();
+        const points = document.getElementById('prayerPoints').value.trim();
+        if(!struggles&&!points) return showToast('Write struggles or prayer points');
+        const resp = document.getElementById('prayerAIResponse'); resp.style.display='block'; resp.innerHTML='<span class="muted">Seeking...</span>';
+        const res = await askAI(`Struggles: ${struggles}. Prayer points: ${points}. Provide biblical encouragement.`);
+        displayAIResponse(resp, res);
+        if(points||struggles) saveJourneyEntry({type:'Prayer', text:points||struggles, date:new Date().toLocaleString()});
+      });
+      
+      loadStudyNotes(); updateStudyTabUI();
     });
-    
-    window.openScreen = openScreen; 
-    window.fetchBiblePassage = fetchBiblePassage;
   })();
 </script>
 </body>
