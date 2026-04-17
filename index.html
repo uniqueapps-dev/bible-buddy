@@ -243,24 +243,32 @@
     <section id="meditate" class="screen">
       <div class="card" id="meditateCard">
         <div class="section-title"><h2>Meditation</h2></div>
-        <div class="setting-row">
-          <label class="small muted">Duration (minutes)</label>
-          <input id="meditateMinutes" type="range" min="1" max="20" value="5" step="1">
-          <div class="timer-display" id="meditateTimer">05:00</div>
+        <div class="tabs" id="meditationTabs">
+          <button class="active" data-phase="reset">Reset</button>
+          <button data-phase="reflect">Reflect</button>
+          <button data-phase="silence">Silence</button>
         </div>
-        <div class="toggle-wrap">
-          <label class="small">Enable Scripture Guidance</label>
-          <input type="checkbox" id="meditateGuidanceToggle">
+        <div id="meditationPhaseContent" style="margin-top:16px;"></div>
+        <div id="meditationTimerSection">
+          <div class="setting-row">
+            <label class="small muted">Duration (minutes)</label>
+            <input id="meditateMinutes" type="range" min="1" max="20" value="5" step="1">
+            <div class="timer-display" id="meditateTimer">05:00</div>
+          </div>
+          <div class="toggle-wrap">
+            <label class="small">Enable Scripture Guidance</label>
+            <input type="checkbox" id="meditateGuidanceToggle">
+          </div>
+          <div id="meditateGuidanceBox" class="item" style="display:none; margin-bottom:16px;">
+            <span id="meditateGuidanceText">Be still and know that I am God.</span>
+          </div>
+          <div class="quick-actions">
+            <button class="primary" id="meditateStart">Start</button>
+            <button class="secondary" id="meditatePause">Pause</button>
+            <button class="secondary" id="meditateReset">Reset</button>
+          </div>
+          <div id="meditateMessage" class="muted small" style="margin-top:14px;"></div>
         </div>
-        <div id="meditateGuidanceBox" class="item" style="display:none; margin-bottom:16px;">
-          <span id="meditateGuidanceText">Be still and know that I am God.</span>
-        </div>
-        <div class="quick-actions">
-          <button class="primary" id="meditateStart">Start</button>
-          <button class="secondary" id="meditatePause">Pause</button>
-          <button class="secondary" id="meditateReset">Reset</button>
-        </div>
-        <div id="meditateMessage" class="muted small" style="margin-top:14px;"></div>
       </div>
     </section>
 
@@ -290,8 +298,11 @@
     <!-- JOURNEY -->
     <section id="journey" class="screen">
       <div class="card">
-        <div class="section-title"><h2>Journey</h2></div>
-        <div id="journeyList" class="list"><div class="muted small">No entries yet.</div></div>
+        <div class="section-title">
+          <h2>Journey</h2>
+          <input id="journeySearch" placeholder="Search..." style="margin-left:10px; padding:6px;">
+        </div>
+        <div id="journeyList"></div>
       </div>
     </section>
 
@@ -386,18 +397,31 @@
     
     function formatDate(d){ return d.toLocaleDateString('en-US',{weekday:'long', year:'numeric', month:'long', day:'numeric'}); }
     function getSession(hour){
-      if (hour < 12) return { name:'Morning', title:'Begin with the Word', task:'Read, understand, pray.', verse:'“This is the day which the LORD hath made; we will rejoice and be glad in it.”', next:'Open your morning passage.' };
-      if (hour < 18) return { name:'Afternoon', title:'Pause · Reflect', task:'Revisit a verse, pray.', verse:'“Be still, and know that I am God.”', next:'Take a breath, read a short passage.' };
-      return { name:'Evening', title:'Close in peace', task:'Review, give thanks.', verse:'“I will both lay me down in peace, and sleep.”', next:'Reflect and prepare for rest.' };
+      if (hour < 12) return { name:'Morning', title:'Begin with the Word', task:'Read, understand, pray.', verse:'', next:'Open your morning passage.' };
+      if (hour < 18) return { name:'Afternoon', title:'Pause · Reflect', task:'Revisit a verse, pray.', verse:'', next:'Take a breath, read a short passage.' };
+      return { name:'Evening', title:'Close in peace', task:'Review, give thanks.', verse:'', next:'Reflect and prepare for rest.' };
     }
+    
+    function getTodaysScripture() {
+      const scriptures = [
+        { ref: 'Psalm 118:24', text: 'This is the day which the LORD hath made; we will rejoice and be glad in it.' },
+        { ref: 'Proverbs 3:5', text: 'Trust in the LORD with all thine heart; and lean not unto thine own understanding.' },
+        { ref: 'Isaiah 41:10', text: 'Fear thou not; for I am with thee.' },
+        { ref: 'John 1:1', text: 'In the beginning was the Word, and the Word was with God, and the Word was God.' }
+      ];
+      const index = new Date().getDate() % scriptures.length;
+      return scriptures[index];
+    }
+    
     function setHome(){
       const now = new Date(); const session = getSession(now.getHours());
+      const today = getTodaysScripture();
       document.getElementById('dateText').textContent = formatDate(now);
       document.getElementById('greetingText').textContent = `Good ${session.name} ${userName}`;
       document.getElementById('sessionBadge').textContent = `${session.name} Session`;
       document.getElementById('homeTitle').textContent = session.title;
       document.getElementById('homeTask').textContent = session.task;
-      document.getElementById('homeVerse').textContent = session.verse;
+      document.getElementById('homeVerse').innerHTML = `<strong style="color:var(--accent2)">${today.ref}</strong><br>${today.text}`;
       document.getElementById('homeNextStep').textContent = session.next;
     }
 
@@ -409,11 +433,21 @@
       document.querySelectorAll(`[data-nav="${id}"]`).forEach(b => b.classList.add('active'));
       document.getElementById('topGreeting').style.display = (id==='home')?'block':'none';
       document.getElementById('sessionBadge').style.display = (id==='home')?'inline-flex':'none';
-      if (id === 'read') { const d = document.getElementById('readDisplay'); if (d && d.innerText.includes('Select book')) fetchBiblePassage(); }
-      if (id === 'listen') { syncListenText(); }
-      if (id === 'journey') { renderJourney(); }
-      if (id === 'study') { updateStudyTabUI(); }
-      if (id !== 'listen') { stopTTS(); }
+      if (id === 'read') {
+        const today = getTodaysScripture();
+        const display = document.getElementById('readDisplay');
+        if (display && display.innerText.includes('Select book')) {
+          const html = `<strong style="color:var(--accent2)">${today.ref}</strong><br>${today.text}`;
+          display.innerHTML = html;
+          const listenText = document.getElementById('listenText');
+          if (listenText) listenText.value = `${today.ref}\n${today.text}`;
+        }
+      }
+      if (id === 'listen') syncListenText();
+      if (id === 'journey') renderJourney();
+      if (id === 'study') updateStudyTabUI();
+      if (id === 'meditate') openMeditationPhase('reset');
+      if (id !== 'listen') stopTTS();
       window.scrollTo({top:0});
     }
 
@@ -423,6 +457,7 @@
       const max = bibleBooksMap[book.value]||1;
       ch.innerHTML = Array.from({length:max}, (_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
     }
+    
     async function fetchBiblePassage(){
       const book=document.getElementById('bibleBook'), ch=document.getElementById('bibleChapter'), trans=document.getElementById('translation'), disp=document.getElementById('readDisplay');
       if(!book||!ch||!trans||!disp) return;
@@ -455,8 +490,8 @@
     async function askAI(prompt, screen='general'){
       if (!AI_CONFIG.apiKey) { updateApiStatus('Not connected'); return 'No API key.'; }
       let system = 'You are a wise Bible teacher.';
-      if (screen==='study') system = 'You are a Bible study assistant. Respond with exactly what is asked: explanation (simple paragraph), cross-references (list with connections), or application (bullet points). No extra sections.';
-      else if (screen==='reflection') system = 'You are a spiritual guide. For "showing": introspective insight. For "obey": direct action. For "prayer": only a short prayer.';
+      if (screen==='study') system = 'You are a Bible study assistant. For explain: simple paragraph. For cross: list related verses with brief connections. For apply: bullet-point practical actions. No extra sections.';
+      else if (screen==='reflection') system = 'You are a spiritual guide. For showing: introspective insight. For obey: direct action instruction. For prayer: only a short heartfelt prayer.';
       try{
         const res = await fetch('https://openrouter.ai/api/v1/chat/completions',{
           method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${AI_CONFIG.apiKey}`,'HTTP-Referer':location.origin},
@@ -482,14 +517,44 @@
     function getUserData(key) { return JSON.parse(localStorage.getItem(key)||'[]'); }
     function saveUserData(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
 
-    function renderJourney() {
+    function renderJourney(filter = '') {
       const container = document.getElementById('journeyList');
+      if (!container) return;
       const journey = getJourneyData().map(i=>({...i, type:'Scripture'}));
       const highlights = getUserData('highlights').map(i=>({...i, type:'Highlight'}));
       const notes = getUserData('notes').map(i=>({...i, type:'Note'}));
       const bookmarks = getUserData('bookmarks').map(i=>({...i, type:'Bookmark'}));
-      const combined = [...journey, ...highlights, ...notes, ...bookmarks].sort((a,b)=>new Date(b.date)-new Date(a.date));
-      container.innerHTML = combined.length ? combined.map(i=>`<div class="item"><strong>${i.type}</strong><div class="small muted">${i.date}</div><div>${i.text}${i.reference?`<br><span class="muted">${i.reference}</span>`:''}</div></div>`).join('') : '<div class="muted small">No entries yet.</div>';
+      let combined = [...journey, ...highlights, ...notes, ...bookmarks].sort((a,b)=>new Date(b.date)-new Date(a.date));
+      if (filter) {
+        const f = filter.toLowerCase();
+        combined = combined.filter(item => (item.text&&item.text.toLowerCase().includes(f)) || (item.reference&&item.reference.toLowerCase().includes(f)) || item.type.toLowerCase().includes(f));
+      }
+      if (!combined.length) { container.innerHTML = '<div class="muted small">No entries found.</div>'; return; }
+      container.innerHTML = combined.map((item, idx) => `
+        <div class="item" style="margin-bottom:10px; cursor:pointer;">
+          <div style="display:flex; justify-content:space-between;"><strong>${item.type}</strong><button class="deleteEntryBtn" data-index="${idx}" style="font-size:0.8rem;">Delete</button></div>
+          <div class="small muted">${item.date}</div>
+          ${item.reference?`<div class="small" style="color:var(--accent2);">${item.reference}</div>`:''}
+          <div class="preview">${(item.text||'').substring(0,60)}...</div>
+          <div class="fullText" style="display:none; margin-top:8px;">${item.text}</div>
+        </div>
+      `).join('');
+      container.querySelectorAll('.item').forEach(card => card.addEventListener('click', (e) => {
+        if(e.target.classList.contains('deleteEntryBtn')) return;
+        const full = card.querySelector('.fullText'); if(full) full.style.display = full.style.display==='none'?'block':'none';
+      }));
+      container.querySelectorAll('.deleteEntryBtn').forEach(btn => btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const index = parseInt(btn.dataset.index,10);
+        const item = combined[index]; if(!item) return;
+        if(!confirm('Delete?')) return;
+        let key = item.type==='Highlight'?'highlights':item.type==='Note'?'notes':item.type==='Bookmark'?'bookmarks':null;
+        if(!key) return;
+        let data = getUserData(key);
+        const matchIndex = data.findIndex(d => (d.id && item.id && d.id===item.id) || (!d.id && d.text===item.text && d.date===item.date));
+        if(matchIndex > -1) { data.splice(matchIndex,1); saveUserData(key,data); }
+        renderJourney(document.getElementById('journeySearch')?.value||'');
+      }));
     }
 
     function cleanTextForTTS(raw) { return raw.replace(/^\d+\s*/gm,'').replace(/\n\d+\s*/g,'\n').replace(/([.!?])\s+/g,'$1 ').replace(/\s+/g,' ').trim(); }
@@ -502,7 +567,7 @@
       if(!text||text.includes('Load')) return showToast('Load a passage first');
       stopTTS(); const cleaned = cleanTextForTTS(text);
       const u = new SpeechSynthesisUtterance(cleaned); u.rate = window.getVoiceRate(); u.pitch = 1;
-      u.onend = () => { document.getElementById('listenPauseBtn').textContent = 'Pause'; };
+      u.onend = () => { const btn = document.getElementById('listenPauseBtn'); if(btn) btn.textContent = 'Pause'; };
       speechSynthesis.speak(u);
     }
     function speakVerseByVerse(text) {
@@ -519,7 +584,7 @@
     }
     function syncListenText() {
       const rd=document.getElementById('readDisplay'), lt=document.getElementById('listenText');
-      if(rd&&lt){ const p=rd.innerText.trim(); lt.value = (p&&!p.includes('Select'))?p:'Load a passage to listen'; }
+      if(rd&&lt){ const p=rd.innerText.trim(); if(p&&!p.includes('Select')) { const cleaned = p.replace(/\n{3,}/g,'\n\n').replace(/[ \t]+/g,' ').trim(); lt.value = cleaned; } }
     }
 
     let toastTimeout;
@@ -536,23 +601,80 @@
       toastTimeout = setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translate(-50%,20px)'; },2000);
     }
 
-    let meditateTimer, meditateGuidance, meditateSeconds=300, meditateRunning=false, guidanceIdx=0;
+    let meditateTimer, meditateGuidance, meditateSeconds=300, meditateRunning=false;
     const guidanceVerses = ["Be still and know that I am God.","The Lord is my shepherd.","Cast your cares upon Him."];
     function updateMeditateDisplay(){ document.getElementById('meditateTimer').textContent = `${Math.floor(meditateSeconds/60).toString().padStart(2,'0')}:${(meditateSeconds%60).toString().padStart(2,'0')}`; }
+    function stopMeditate(){ clearInterval(meditateTimer); clearInterval(meditateGuidance); meditateRunning=false; document.getElementById('meditateCard').classList.remove('meditate-active'); }
     function startMeditate(){
       if(meditateRunning) return;
       if(meditateSeconds<=0) meditateSeconds = (parseInt(document.getElementById('meditateMinutes').value)||5)*60;
       meditateRunning=true; meditateTimer=setInterval(()=>{ if(meditateSeconds<=0){ stopMeditate(); showToast('Session complete'); return; } meditateSeconds--; updateMeditateDisplay(); },1000);
       document.getElementById('meditateCard').classList.add('meditate-active');
-      if(document.getElementById('meditateGuidanceToggle').checked){
-        document.getElementById('meditateGuidanceBox').style.display='block';
-        document.getElementById('meditateGuidanceText').textContent=guidanceVerses[0];
-        meditateGuidance=setInterval(()=>{ guidanceIdx=(guidanceIdx+1)%guidanceVerses.length; document.getElementById('meditateGuidanceText').textContent=guidanceVerses[guidanceIdx]; },20000);
+    }
+
+    function openMeditationPhase(phase) {
+      state.currentPhase = phase;
+      document.querySelectorAll('#meditationTabs button').forEach(t => t.classList.toggle('active', t.dataset.phase===phase));
+      const container = document.getElementById('meditationPhaseContent');
+      const timerSection = document.getElementById('meditationTimerSection');
+      if(phase==='reset') {
+        timerSection.style.display='block';
+        container.innerHTML = `<div><label class="small muted">How are you feeling?</label><div class="quick-actions">${['stress','anger','fear','confusion','thankful','calm'].map(e=>`<button class="emotion-btn secondary" data-emotion="${e}">${e}</button>`).join('')}</div><div id="breathingExercise" style="display:none;"><div class="verse" style="text-align:center;"><div style="font-size:2rem;" id="breathInstruction">Breathe in</div><div class="timer-display" id="breathTimer">4</div><button class="primary" id="calmContinueBtn" style="display:none;">I'M CALM. CONTINUE →</button></div></div></div>`;
+        document.querySelectorAll('.emotion-btn').forEach(b=>b.addEventListener('click',()=>{ state.meditationState=b.dataset.emotion; document.getElementById('breathingExercise').style.display='block'; startBreathingCycle(); }));
+      } else if(phase==='reflect') {
+        timerSection.style.display='none';
+        const scripture = getMeditationScripture(state.meditationState);
+        container.innerHTML = `<div class="verse"><strong style="color:var(--accent2);">${scripture}</strong></div><textarea id="reflectInput" placeholder="Reflect on this: ${scripture}\n\nWhat is this revealing to you?"></textarea><div class="quick-actions"><button class="primary" id="analyzeReflectBtn">Analyze →</button><button class="secondary" id="skipToSilenceBtn">Skip to Silence</button></div><div id="reflectAIResponse" class="item" style="margin-top:16px; display:none;"></div>`;
+        document.getElementById('analyzeReflectBtn')?.addEventListener('click', analyzeReflection);
+        document.getElementById('skipToSilenceBtn')?.addEventListener('click', ()=>openMeditationPhase('silence'));
+      } else {
+        timerSection.style.display='block';
+        container.innerHTML = `<div class="verse" style="text-align:center;"><p>Enter stillness.<br>Nothing to do. Nowhere to be.</p><div class="timer-display" id="silenceTimerDisplay">05:00</div><div class="quick-actions">${[1,3,5].map(m=>`<button class="secondary" data-silence-mins="${m}">${m} min</button>`).join('')}</div><button class="primary" id="beginSilenceBtn">Begin</button></div>`;
+        document.querySelectorAll('[data-silence-mins]').forEach(b=>b.addEventListener('click',()=>{ meditateSeconds=parseInt(b.dataset.silenceMins)*60; updateMeditateDisplay(); document.getElementById('silenceTimerDisplay').textContent = `${Math.floor(meditateSeconds/60).toString().padStart(2,'0')}:${(meditateSeconds%60).toString().padStart(2,'0')}`; }));
+        document.getElementById('beginSilenceBtn').addEventListener('click', startSilenceMeditation);
       }
     }
-    function stopMeditate(){ clearInterval(meditateTimer); clearInterval(meditateGuidance); meditateRunning=false; document.getElementById('meditateCard').classList.remove('meditate-active'); }
-    function pauseMeditate(){ stopMeditate(); }
-    function resetMeditate(){ stopMeditate(); meditateSeconds = (parseInt(document.getElementById('meditateMinutes').value)||5)*60; updateMeditateDisplay(); document.getElementById('meditateGuidanceBox').style.display='none'; }
+    function getMeditationScripture(e){ return { stress:'Psalm 46:10 Be still', anger:'James 1:20 Human anger', fear:'Isaiah 41:10 Fear not', confusion:'1 Cor 14:33 God of peace', thankful:'1 Thess 5:18 Give thanks', calm:'Phil 4:7 Peace of God' }[e]||'Psalm 23 The Lord is my shepherd.'; }
+    function startBreathingCycle(){
+      let step=0; const inst=['Breathe in','Hold','Exhale'], dur=[4,4,6];
+      const timer=document.getElementById('breathTimer'), instEl=document.getElementById('breathInstruction');
+      let count=dur[0]; timer.textContent=count; instEl.textContent=inst[0];
+      const int=setInterval(()=>{ count--; timer.textContent=count; if(count<=0){ step++; if(step>=inst.length){ clearInterval(int); document.getElementById('calmContinueBtn').style.display='block'; instEl.textContent='Complete'; timer.textContent='✓'; } else { count=dur[step]; timer.textContent=count; instEl.textContent=inst[step]; } } },1000);
+      document.getElementById('calmContinueBtn').addEventListener('click',()=>{ clearInterval(int); openMeditationPhase('reflect'); });
+    }
+    async function analyzeReflection(){
+      const input=document.getElementById('reflectInput')?.value.trim(); if(!input) return showToast('Write your reflection');
+      const resp=document.getElementById('reflectAIResponse'); resp.style.display='block'; resp.innerHTML='<span class="muted">Analyzing...</span>';
+      const scripture=getMeditationScripture(state.meditationState);
+      const result=await askAI(`User reflects on ${state.meditationState}. Scripture: ${scripture}. Reflection: ${input}`, 'reflection');
+      displayAIResponse(resp, result);
+      const btn=document.createElement('button'); btn.className='primary'; btn.textContent='Continue to Silence'; btn.style.marginTop='12px';
+      btn.addEventListener('click',()=>openMeditationPhase('silence')); resp.appendChild(btn);
+    }
+    function startSilenceMeditation() {
+      if(meditateRunning) stopMeditate();
+      if(state._silenceInterval) clearInterval(state._silenceInterval);
+      state._silenceCompleted = false;
+      const onComplete = () => {
+        if(state._silenceCompleted) return; state._silenceCompleted=true;
+        showToast('Take a moment to write what stayed with you');
+        openMeditationPhase('reflect');
+        const ta=document.getElementById('reflectInput');
+        if(ta){ if(!ta.value.trim()) ta.placeholder='Add what stayed with you from the silence...'; else ta.placeholder='Continue your reflection...'; setTimeout(()=>ta.focus(),300); }
+        const text = ta?.value.trim(); if(text && text.length>10) saveMeditationIfNew(text);
+      };
+      state._silenceInterval = setInterval(() => { if(!meditateRunning && meditateSeconds===0) { clearInterval(state._silenceInterval); state._silenceInterval=null; onComplete(); } }, 500);
+      startMeditate();
+    }
+    function saveMeditationIfNew(text){
+      const normalize = s => s.toLowerCase().replace(/[^\w\s]/g,'').replace(/\s+/g,' ').trim();
+      const norm = normalize(text); const stop=['the','and','to','of','i','a','in','is','it','that','this','for','on','with','as','was','but','be','at','by','an'];
+      const words = [...new Set(norm.split(' ').filter(w=>w.length>1&&!stop.includes(w)))];
+      const recent = getJourneyData().slice(0,5);
+      const duplicate = recent.some(e=>{ if(!e.text) return false; const eNorm=normalize(e.text); if(eNorm===norm) return true; const eWords=[...new Set(eNorm.split(' ').filter(w=>w.length>1&&!stop.includes(w)))];
+        const overlap=words.filter(w=>eWords.includes(w)); return overlap.length/Math.max(words.length,1) > 0.6; });
+      if(!duplicate) saveJourneyEntry({ type:'Meditation', text, state:state.meditationState, date:new Date().toLocaleString() });
+    }
 
     let studyTabs, studyAI, notesPanel, notesArea, savedNotesList;
     function getStudyNotes() { return JSON.parse(localStorage.getItem('study_notes')||'[]'); }
@@ -562,8 +684,7 @@
       document.querySelectorAll('.delete-note-btn').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); const notes=getStudyNotes(); notes.splice(b.dataset.index,1); localStorage.setItem('study_notes',JSON.stringify(notes)); loadStudyNotes(); }));
     }
     function updateStudyTabUI() {
-      const active = document.querySelector('#study .tabs button.active');
-      const tab = active?.dataset.tab;
+      const active = document.querySelector('#study .tabs button.active'); const tab = active?.dataset.tab;
       if(tab==='notes'){ notesPanel.style.display='block'; studyAI.style.display='none'; loadStudyNotes(); }
       else { notesPanel.style.display='none'; studyAI.style.display='block'; if(!studyAI.innerHTML.trim()||studyAI.innerText.includes('Error')) studyAI.innerHTML='<span class="muted">Tap a tab to generate insight</span>'; }
     }
@@ -579,13 +700,11 @@
       document.getElementById('saveApiKeyBtn').addEventListener('click',()=>{ const k=document.getElementById('apiKeyInput').value.trim(); if(k){ localStorage.setItem('openrouter_api',k); AI_CONFIG.apiKey=k; updateApiStatus('API saved'); } });
       document.getElementById('saveModelBtn').addEventListener('click',()=>{ const m=document.getElementById('aiModelSelect').value; localStorage.setItem('ai_model',m); AI_CONFIG.model=m; showToast('Model set'); });
       
-      // Voice speed
       const vsItem=document.getElementById('voiceSpeedSetting'), vsPanel=document.getElementById('voiceSpeedPanel'), vsSpan=document.getElementById('voiceSpeedValue');
       let rate = parseFloat(localStorage.getItem('voice_speed'))||1.0; state.ttsRate=rate; vsSpan.textContent=rate.toFixed(2)+'x';
       vsItem.addEventListener('click',e=>{ if(!e.target.closest('#voiceSpeedPanel')) vsPanel.style.display = vsPanel.style.display==='none'?'flex':'none'; });
       document.querySelectorAll('.voice-speed-btn').forEach(b=>b.addEventListener('click',e=>{ const r=parseFloat(b.dataset.rate); state.ttsRate=r; localStorage.setItem('voice_speed',r); vsSpan.textContent=r.toFixed(2)+'x'; vsPanel.style.display='none'; }));
       
-      // Meditation duration
       const mdItem=document.getElementById('meditationDurationSetting'), mdPanel=document.getElementById('meditationDurationPanel'), mdSpan=document.getElementById('meditationDurationValue');
       let mins = parseInt(localStorage.getItem('meditation_duration'))||5; mdSpan.textContent=mins+' min'; meditateSeconds=mins*60; updateMeditateDisplay();
       mdItem.addEventListener('click',e=>{ if(!e.target.closest('#meditationDurationPanel')) mdPanel.style.display = mdPanel.style.display==='none'?'flex':'none'; });
@@ -598,69 +717,54 @@
       document.getElementById('onboardingSetting').addEventListener('click',e=>{ if(!e.target.closest('#onboardingPanel')) document.getElementById('onboardingPanel').style.display = document.getElementById('onboardingPanel').style.display==='none'?'block':'none'; });
       document.getElementById('saveOnboardingBtn').addEventListener('click',()=>{ const s={morning:morningCheck.checked, dailyVerse:dailyCheck.checked}; localStorage.setItem('onboarding_settings',JSON.stringify(s)); loadOnboard(); document.getElementById('onboardingPanel').style.display='none'; });
       
-      // Read actions
       document.getElementById('highlightBtn').addEventListener('click',()=>{
         const sel = window.getSelection().toString().trim(); if(!sel) return showToast('Select text');
         const ref = document.getElementById('readDisplay')?.querySelector('strong')?.innerText||'';
         const highlights = getUserData('highlights');
         if(highlights.some(h=>h.text===sel && h.reference===ref)) return showToast('Already highlighted');
-        highlights.unshift({text:sel, reference:ref, date:new Date().toLocaleString()}); saveUserData('highlights',highlights); showToast('Highlight saved');
+        highlights.unshift({ id:Date.now().toString(), text:sel, reference:ref, date:new Date().toLocaleString() }); saveUserData('highlights',highlights); showToast('Highlight saved');
       });
       document.getElementById('noteBtn').addEventListener('click',()=>{
         const note = prompt('Write your note:'); if(!note) return;
-        const notes = getUserData('notes'); notes.unshift({text:note, date:new Date().toLocaleString()}); saveUserData('notes',notes); showToast('Note saved');
+        const notes = getUserData('notes'); notes.unshift({ id:Date.now().toString(), text:note, date:new Date().toLocaleString() }); saveUserData('notes',notes); showToast('Note saved');
       });
       document.getElementById('bookmarkBtn').addEventListener('click',()=>{
         const passage = document.getElementById('readDisplay')?.innerText||''; if(!passage||passage.includes('Select')) return showToast('Load a passage first');
-        const bookmarks = getUserData('bookmarks'); bookmarks.unshift({text:passage.substring(0,100), date:new Date().toLocaleString()}); saveUserData('bookmarks',bookmarks); showToast('Bookmarked');
+        const bookmarks = getUserData('bookmarks'); bookmarks.unshift({ id:Date.now().toString(), text:passage.substring(0,100), date:new Date().toLocaleString() }); saveUserData('bookmarks',bookmarks); showToast('Bookmarked');
       });
       
-      // AI Inquire
       document.getElementById('readAskAIBtn').addEventListener('click',async ()=>{
         const txt = document.getElementById('readDisplay').innerText.trim(); if(!txt||txt.includes('Select')) return showToast('Load a passage');
         const resp = document.getElementById('readAIResponse'); resp.style.display='block'; resp.innerHTML='<span class="muted">Inquiring...</span>';
         const res = await askAI(`Explain: ${txt.substring(0,500)}`); displayAIResponse(resp, res);
       });
       
-      // Study setup
-      studyTabs = document.querySelectorAll('#study .tabs button');
-      studyAI = document.getElementById('studyAIResponse');
-      notesPanel = document.getElementById('studyNotesPanel');
-      notesArea = document.getElementById('studyNotesArea');
-      savedNotesList = document.getElementById('savedNotesList');
-      
+      studyTabs = document.querySelectorAll('#study .tabs button'); studyAI = document.getElementById('studyAIResponse');
+      notesPanel = document.getElementById('studyNotesPanel'); notesArea = document.getElementById('studyNotesArea'); savedNotesList = document.getElementById('savedNotesList');
       studyTabs.forEach(tab=>tab.addEventListener('click', async function(){
         studyTabs.forEach(t=>t.classList.remove('active')); this.classList.add('active');
         const activeTab = this.dataset.tab;
-        if(notesPanel&&studyAI){
-          if(activeTab==='notes'){ notesPanel.style.display='block'; studyAI.style.display='none'; loadStudyNotes(); }
-          else {
-            if(state.lastStudyTab===activeTab && state.forceRefreshTab!==activeTab) return;
-            state.forceRefreshTab=null; state.lastStudyTab=activeTab;
-            notesPanel.style.display='none'; studyAI.style.display='block';
-            const disp = document.getElementById('readDisplay'); const passage = disp.innerText.trim();
-            if(!passage||passage.includes('Select')){ studyAI.innerHTML='<span class="muted">⚠️ Load a passage first</span>'; return; }
-            let prompt='';
-            if(activeTab==='explain') prompt=`Explain this passage: ${passage}`;
-            else if(activeTab==='cross') prompt=`List related verses and connections: ${passage}`;
-            else if(activeTab==='apply') prompt=`Give practical actions: ${passage}`;
-            studyAI.innerHTML='<span class="muted">Loading...</span>';
-            const res = await askAI(prompt, 'study');
-            if(!res||res.includes('Unable')) studyAI.innerHTML='<span class="muted">⚠️ Unable to generate</span>';
-            else { displayAIResponse(studyAI, res); if(res.length>20) saveJourneyEntry({type:'Insight', text:res.substring(0,100), date:new Date().toLocaleString()}); }
-          }
+        if(activeTab==='notes'){ notesPanel.style.display='block'; studyAI.style.display='none'; loadStudyNotes(); }
+        else {
+          if(state.lastStudyTab===activeTab && state.forceRefreshTab!==activeTab) return;
+          state.forceRefreshTab=null; state.lastStudyTab=activeTab;
+          notesPanel.style.display='none'; studyAI.style.display='block';
+          const disp = document.getElementById('readDisplay'); const passage = disp.innerText.trim();
+          if(!passage||passage.includes('Select')){ studyAI.innerHTML='<span class="muted">⚠️ Load a passage first</span>'; return; }
+          let prompt='';
+          if(activeTab==='explain') prompt=`Explain this passage: ${passage}`;
+          else if(activeTab==='cross') prompt=`List related verses and connections: ${passage}`;
+          else if(activeTab==='apply') prompt=`Give practical actions: ${passage}`;
+          studyAI.innerHTML='<span class="muted">Loading...</span>';
+          const res = await askAI(prompt, 'study');
+          if(!res||res.includes('Unable')) studyAI.innerHTML='<span class="muted">⚠️ Unable to generate</span>';
+          else { displayAIResponse(studyAI, res); if(res.length>20) saveJourneyEntry({type:'Insight', text:res.substring(0,100), date:new Date().toLocaleString()}); }
         }
       }));
       if(!state._dblClickBound){ studyTabs.forEach(b=>b.addEventListener('dblclick',()=>{ state.forceRefreshTab = b.dataset.tab; })); state._dblClickBound=true; }
-      
-      document.getElementById('saveStudyNoteBtn').addEventListener('click',()=>{
-        const txt = notesArea.value.trim(); if(!txt) return;
-        const notes = getStudyNotes(); notes.unshift({text:txt, date:new Date().toLocaleString()}); if(notes.length>20) notes.pop();
-        localStorage.setItem('study_notes',JSON.stringify(notes)); notesArea.value=''; loadStudyNotes(); showToast('Note saved');
-      });
+      document.getElementById('saveStudyNoteBtn').addEventListener('click',()=>{ const txt=notesArea.value.trim(); if(!txt) return; const notes=getStudyNotes(); notes.unshift({text:txt, date:new Date().toLocaleString()}); if(notes.length>20) notes.pop(); localStorage.setItem('study_notes',JSON.stringify(notes)); notesArea.value=''; loadStudyNotes(); showToast('Note saved'); });
       document.getElementById('clearStudyNoteBtn').addEventListener('click',()=>notesArea.value='');
       
-      // Reflection
       document.querySelectorAll('.reflection-item').forEach(item=>item.addEventListener('click', async ()=>{
         const disp = document.getElementById('readDisplay'); const passage = disp.innerText.trim();
         if(!passage||passage.includes('Select')){ studyAI.innerHTML='<span class="muted">⚠️ Load a passage</span>'; return; }
@@ -673,27 +777,21 @@
         const res = await askAI(prompt, 'reflection'); displayAIResponse(studyAI, res);
       }));
       
-      // Listen
       const pauseBtn = document.getElementById('listenPauseBtn');
-      document.getElementById('listenPlayBtn').addEventListener('click',()=>{
+      if(!state._listenPlayBound){ document.getElementById('listenPlayBtn').addEventListener('click',()=>{
         const txt = document.getElementById('listenText').value.trim();
         if(!txt||txt==='Load a passage to listen') return showToast('Load a passage first');
         if(speechSynthesis.speaking||speechSynthesis.paused) speechSynthesis.cancel();
         document.getElementById('ttsMode').value==='verse' ? speakVerseByVerse(txt) : speakText(txt);
-      });
-      pauseBtn.addEventListener('click',()=>{
-        if(speechSynthesis.speaking && !speechSynthesis.paused){ pauseTTS(); pauseBtn.textContent='Resume'; }
-        else if(speechSynthesis.paused){ resumeTTS(); pauseBtn.textContent='Pause'; }
-      });
+      }); state._listenPlayBound=true; }
+      pauseBtn.addEventListener('click',()=>{ if(speechSynthesis.speaking && !speechSynthesis.paused){ pauseTTS(); pauseBtn.textContent='Resume'; } else if(speechSynthesis.paused){ resumeTTS(); pauseBtn.textContent='Pause'; } });
       document.getElementById('listenStopBtn').addEventListener('click',()=>{ stopTTS(); pauseBtn.textContent='Pause'; });
       
-      // Meditation
       document.getElementById('meditateStart').addEventListener('click',startMeditate);
-      document.getElementById('meditatePause').addEventListener('click',pauseMeditate);
-      document.getElementById('meditateReset').addEventListener('click',resetMeditate);
+      document.getElementById('meditatePause').addEventListener('click',()=>{ stopMeditate(); });
+      document.getElementById('meditateReset').addEventListener('click',()=>{ stopMeditate(); meditateSeconds=(parseInt(document.getElementById('meditateMinutes').value)||5)*60; updateMeditateDisplay(); });
       document.getElementById('meditateMinutes').addEventListener('input',function(){ if(!meditateRunning){ meditateSeconds=parseInt(this.value)*60; updateMeditateDisplay(); } });
       
-      // Prayer AI
       document.getElementById('prayerAskAIBtn').addEventListener('click',async ()=>{
         const struggles = document.getElementById('prayerStruggles').value.trim();
         const points = document.getElementById('prayerPoints').value.trim();
@@ -704,7 +802,8 @@
         if(points||struggles) saveJourneyEntry({type:'Prayer', text:points||struggles, date:new Date().toLocaleString()});
       });
       
-      loadStudyNotes(); updateStudyTabUI();
+      document.getElementById('journeySearch').addEventListener('input', e => renderJourney(e.target.value));
+      loadStudyNotes(); updateStudyTabUI(); openMeditationPhase('reset');
     });
   })();
 </script>
