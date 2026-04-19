@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0b1020">
-  <title>BibleBuddy · calm</title>
+  <title>BibleBuddy · calm companion</title>
   <style>
     :root{
       --bg:#0b1020;
@@ -97,14 +97,11 @@
     .split{ display:grid; gap:16px; }
     .small{font-size:.92rem}
 
-    /* HOME */
     .home-screen-content {
       max-width:600px; margin:0 auto; padding:8px 8px 32px;
       display:flex; flex-direction:column; align-items:center; text-align:center;
     }
-    .home-greeting-large {
-      font-size:2.4rem; font-weight:700; line-height:1.2; margin-top:8px; color:var(--text);
-    }
+    .home-greeting-large { font-size:2.4rem; font-weight:700; line-height:1.2; margin-top:8px; }
     .home-date { font-size:1rem; color:var(--muted); margin-top:4px; font-weight:400; }
     .home-session-tag {
       margin-top:8px; font-size:0.9rem; font-weight:500; text-transform:uppercase;
@@ -117,35 +114,18 @@
     }
     .home-verse-text { font-size:1.5rem; line-height:1.45; font-weight:500; margin-bottom:16px; }
     .home-verse-ref { font-size:1rem; color:var(--accent2); font-weight:600; }
-    .home-progression-hint {
-      font-size:0.95rem; color:var(--muted); margin-bottom:32px;
-      border-bottom:1px dashed var(--border); padding-bottom:12px; width:fit-content;
-    }
-    .home-continue-btn {
-      background:linear-gradient(135deg,var(--accent),#5b8cff);
-      border:none; padding:18px 40px; font-size:1.3rem; font-weight:700;
-      border-radius:60px; width:100%; max-width:300px; margin-bottom:20px;
-    }
-    .home-open-bible-link {
-      background:transparent; border:1px solid var(--border); color:var(--muted);
-      padding:10px 24px; border-radius:40px; font-size:0.95rem; cursor:pointer;
-      text-decoration:none; display:inline-block;
-    }
+    .home-progression-hint { font-size:0.95rem; color:var(--muted); margin-bottom:32px; border-bottom:1px dashed var(--border); padding-bottom:12px; width:fit-content; }
+    .home-continue-btn { background:linear-gradient(135deg,var(--accent),#5b8cff); border:none; padding:18px 40px; font-size:1.3rem; font-weight:700; border-radius:60px; width:100%; max-width:300px; margin-bottom:20px; }
+    .home-open-bible-link { background:transparent; border:1px solid var(--border); color:var(--muted); padding:10px 24px; border-radius:40px; font-size:0.95rem; cursor:pointer; text-decoration:none; display:inline-block; }
     .home-streak-mini { display:flex; align-items:center; gap:4px; color:#fbbf24; margin-left:8px; }
 
-    /* GUIDED FLOW */
     .flow-container { max-width:640px; margin:0 auto; padding:12px 8px 24px; display:flex; flex-direction:column; gap:24px; }
     .flow-step-indicator { display:flex; justify-content:space-between; color:var(--muted); }
-    .flow-content {
-      background:rgba(18,26,51,0.6); border:1px solid var(--border);
-      border-radius:24px; padding:24px 20px; backdrop-filter:blur(8px);
-    }
+    .flow-content { background:rgba(18,26,51,0.6); border:1px solid var(--border); border-radius:24px; padding:24px 20px; backdrop-filter:blur(8px); }
     .flow-verse { font-size:1.5rem; line-height:1.4; margin-bottom:20px; font-weight:500; }
     .flow-actions { display:flex; gap:12px; justify-content:center; margin-top:28px; }
-    .flow-actions button { min-width:140px; }
     .completed-check { font-size:3rem; margin-bottom:16px; color:var(--ok); }
 
-    /* MEDITATION */
     .meditation-container { max-width:500px; margin:0 auto; padding:32px 20px; text-align:center; }
     .meditation-entry { display:flex; flex-direction:column; gap:28px; }
     .meditation-title { font-size:2.2rem; font-weight:600; margin:0; }
@@ -154,72 +134,41 @@
     .meditation-start-btn { padding:18px 24px; font-size:1.2rem; border-radius:60px; width:100%; }
     .meditation-duration-toggle { margin-top:8px; }
     .meditation-duration-options { display:flex; gap:12px; justify-content:center; margin-top:12px; }
-    .meditation-duration-options button {
-      background:transparent; border:1px solid var(--border); padding:8px 20px; border-radius:40px;
-    }
+    .meditation-duration-options button { background:transparent; border:1px solid var(--border); padding:8px 20px; border-radius:40px; }
     .meditation-duration-options button.active { background:var(--accent2); color:#0b1020; }
     .meditation-active-state { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; gap:24px; }
     .meditation-timer-large { font-size:6rem; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.2; }
     .meditation-active-verse { font-size:1.2rem; color:var(--muted); max-width:300px; opacity:0.7; }
-    .meditation-breath-indicator {
-      width:80px; height:80px; border-radius:50%; background:rgba(103,232,249,0.1); margin-top:20px;
-    }
+    .meditation-breath-indicator { width:80px; height:80px; border-radius:50%; background:rgba(103,232,249,0.1); margin-top:20px; transition:transform 0.2s ease; }
     .meditation-breath-indicator.breathing { animation:softBreath 8s infinite; }
-    @keyframes softBreath {
-      0%,100% { transform:scale(1); opacity:0.3; }
-      50% { transform:scale(1.3); opacity:0.7; }
-    }
+    @keyframes softBreath { 0%,100% { transform:scale(1); opacity:0.3; } 50% { transform:scale(1.3); opacity:0.7; } }
     .meditation-end-state { display:flex; flex-direction:column; gap:20px; padding-top:30px; }
     .meditation-check { font-size:4rem; color:var(--ok); }
     .meditation-end-actions { display:flex; gap:12px; justify-content:center; }
 
-    /* PROFILE ROWS */
     .settings-section { margin-bottom:12px; }
     .section-subtitle { font-size:1rem; font-weight:600; margin:16px 0 6px; color:var(--accent2); text-transform:uppercase; letter-spacing:0.5px; }
-    .settings-row {
-      display:flex; justify-content:space-between; align-items:center; padding:8px 0;
-      border-bottom:1px solid rgba(255,255,255,0.05); font-weight:400;
-    }
+    .settings-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-weight:400; }
     .settings-row:last-child { border-bottom:none; }
     .settings-row span:last-child { color:var(--muted); }
     .settings-row .value-accent { color:var(--accent2); }
     .settings-row.clickable:active { background:rgba(255,255,255,0.03); }
     .settings-row select { font-size:0.95rem; background:transparent; color:var(--text); border:1px solid var(--border); border-radius:8px; padding:6px 10px; }
 
-    /* collapsible panel */
-    .ai-panel {
-      position: relative;
-      margin-top: 16px;
-      padding: 16px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-    }
-    .ai-panel .close-btn {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      background: transparent;
-      border: none;
-      padding: 6px 10px;
-      font-size: 1.2rem;
-      color: var(--muted);
-    }
+    .ai-panel { position: relative; margin-top: 16px; padding: 16px 24px 16px 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; max-height: 300px; overflow-y: auto; animation: fadeIn 0.2s ease; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .ai-panel .close-btn { position: absolute; top: 8px; right: 8px; background: transparent; border: none; padding: 6px 10px; font-size: 1.2rem; color: var(--muted); cursor: pointer; }
 
-    .reflection-item.active {
-      border-color: var(--accent2);
-      background: rgba(103,232,249,0.08);
-    }
+    .reflection-item.active { border-color: var(--accent2); background: rgba(103,232,249,0.08); }
+    .read-collapsed { max-height: 180px; overflow: hidden; position: relative; }
+    .read-collapsed::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 40px; background: linear-gradient(transparent, var(--panel)); }
 
-    @media (max-width:500px){
-      .home-greeting-large { font-size:2rem; }
-      .home-verse-text { font-size:1.3rem; }
-    }
+    @media (max-width:500px){ .home-greeting-large { font-size:2rem; } .home-verse-text { font-size:1.3rem; } }
   </style>
 </head>
 <body>
 <div class="app">
-  <header class="topbar" id="topbarHeader">
+  <header class="topbar" id="topbarHeader" style="display:none;">
     <div class="topbar-inner"><span class="topbar-title" id="topbarTitle">BibleBuddy</span></div>
   </header>
 
@@ -262,7 +211,10 @@
           <select id="translation"><option value="kjv">KJV</option><option value="web">WEB</option><option value="asv">ASV</option></select>
           <button class="secondary" id="loadPassageBtn">Load</button>
         </div>
-        <div id="readDisplay" class="verse"><span class="muted">Select book and chapter, then load.</span></div>
+        <div id="readDisplay" class="verse read-collapsed"><span class="muted">Select book and chapter, then load.</span></div>
+        <div style="text-align:right; margin-top:-12px; margin-bottom:16px;">
+          <button id="readExpandBtn" class="secondary small">Expand</button>
+        </div>
         <div id="readAIResponse" class="ai-panel hidden"></div>
         
         <div class="quick-actions" id="guidanceActions">
@@ -289,7 +241,7 @@
       <div class="split">
         <div class="card">
           <div class="section-title"><h2>Study</h2></div>
-          <div class="tabs">
+          <div class="tabs" id="studyTabs">
             <button class="active" data-tab="explain">Explain</button>
             <button data-tab="notes">Notes</button>
             <button data-tab="cross">Cross-refs</button>
@@ -451,25 +403,24 @@
   (function(){
     "use strict";
 
-    // ---------- CENTRAL STATE ----------
+    // --------------------- CENTRAL STATE (single source) ---------------------
     const state = {
       screen: 'home',
       userName: localStorage.getItem('user_name') || 'Emma',
       aiConfig: { apiKey: localStorage.getItem('openrouter_api') || '', model: localStorage.getItem('ai_model') || 'openai/gpt-4o-mini' },
       ttsRate: parseFloat(localStorage.getItem('voice_speed')) || 1.0,
-      voiceSpeed: parseFloat(localStorage.getItem('voice_speed')) || 1.0,
-      meditation: { active: false, duration: parseInt(localStorage.getItem('meditation_duration')) || 120, timer: null, remaining: 120, startTime: null },
+      meditation: { active: false, duration: parseInt(localStorage.getItem('meditation_duration')) || 120, timer: null, remaining: 120, startTime: null, state: 'idle' }, // idle, active, ended
       session: { step: 0, verse: '', data: null, loading: false },
-      currentScripture: '',
-      readActionLoading: false,
-      stepLock: false,
+      currentScripture: '',   // always contains formatted ref + text
+      activeAbortControllers: [], // for AI requests
     };
 
+    // Bible chapters mapping
     const bibleBooksMap = {
       'GEN':50,'EXO':40,'LEV':27,'NUM':36,'DEU':34,'JOS':24,'JDG':21,'RUT':4,'1SA':31,'2SA':24,'1KI':22,'2KI':25,'1CH':29,'2CH':36,'EZR':10,'NEH':13,'EST':10,'JOB':42,'PSA':150,'PRO':31,'ECC':12,'SNG':8,'ISA':66,'JER':52,'LAM':5,'EZE':48,'DAN':12,'HOS':14,'JOL':3,'AMO':9,'OBA':1,'JON':4,'MIC':7,'NAH':3,'HAB':3,'ZEP':3,'HAG':2,'ZEC':14,'MAL':4,'MAT':28,'MRK':16,'LUK':24,'JHN':21,'ACT':28,'ROM':16,'1CO':16,'2CO':13,'GAL':6,'EPH':6,'PHP':4,'COL':4,'1TH':5,'2TH':3,'1TI':6,'2TI':4,'TIT':3,'PHM':1,'HEB':13,'JAS':5,'1PE':5,'2PE':3,'1JN':5,'2JN':1,'3JN':1,'JUD':1,'REV':22
     };
 
-    // ---------- UTILS ----------
+    // --------------------- UTILITIES ---------------------
     const getEl = id => document.getElementById(id);
     const showToast = (msg, dur=2000) => {
       let t = getEl('appToast');
@@ -477,152 +428,145 @@
       t.textContent=msg; t.style.opacity='1';
       clearTimeout(window._toast); window._toast=setTimeout(()=>t.style.opacity='0',dur);
     };
-    const safeHtml = (text) => { const d=document.createElement('div'); d.textContent=(text||'').trim(); return d.innerHTML.replace(/\n{2,}/g,'<br><br>').replace(/\n/g,'<br>'); };
 
-    // Streak
-    function updateStreak(){
-      const today = new Date().toISOString().slice(0,10);
-      let s = JSON.parse(localStorage.getItem('bb_streak')||'{"count":0,"last":null}');
-      if(s.last===today) return;
-      const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
-      s.count = s.last===yesterday ? s.count+1 : 1;
-      s.last = today;
-      localStorage.setItem('bb_streak', JSON.stringify(s));
-      const mini = getEl('homeStreakMini'); if(mini) mini.textContent = s.count ? `🔥 ${s.count}` : '';
-    }
+    const formatForDisplay = (text) => {
+      if(!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text.trim();
+      let html = div.innerHTML;
+      html = html.replace(/\n{2,}/g, '<br><br>').replace(/\n/g, '<br>');
+      return html;
+    };
+    const formatForSpeech = (text) => {
+      return text.replace(/<[^>]*>/g, '').replace(/\d+/g,'').replace(/[^\w\s.,!?']/g,' ').replace(/\s+/g,' ').trim();
+    };
 
-    // ---------- RESET DYNAMIC UI (critical) ----------
-    function resetDynamicViews() {
-      // Hide all AI panels
-      document.querySelectorAll('.ai-panel').forEach(p => { p.classList.add('hidden'); p.innerHTML = ''; });
-      // Clear reflection active
-      document.querySelectorAll('.reflection-item').forEach(i => i.classList.remove('active'));
-      // Close more menu
-      getEl('readMoreActionsMenu')?.classList.add('hidden');
-    }
+    // Cancel all ongoing AI requests
+    const cancelAllAIRequests = () => {
+      state.activeAbortControllers.forEach(ctrl => ctrl.abort());
+      state.activeAbortControllers = [];
+    };
 
-    // ---------- AI with JSON parsing ----------
-    async function askAI(prompt, type='guidance') {
+    // Unified AI request with timeout and abort
+    async function requestAI(prompt, type='guidance', timeoutMs=15000) {
       if(!state.aiConfig.apiKey) { showToast('Set API key in Profile'); return null; }
-      let system = 'You are a wise Bible teacher.';
-      if(type==='study') system = 'Bible study assistant.';
-      else if(type==='reflection') system = 'Spiritual guide.';
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      state.activeAbortControllers.push(controller);
+      let system = 'You are a wise, calm Bible teacher. Respond with clear, warm language. Use no markdown, no bold, no headings.';
+      if(type==='study') system = 'Bible study assistant. Respond in plain text without markdown.';
+      else if(type==='reflection') system = 'Spiritual guide. Respond in plain text without markdown.';
       try{
         const res = await fetch('https://openrouter.ai/api/v1/chat/completions',{
           method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${state.aiConfig.apiKey}`,'HTTP-Referer':location.origin},
-          body:JSON.stringify({ model:state.aiConfig.model, messages:[{role:'system',content:system},{role:'user',content:prompt}], temperature:0.7, max_tokens:500 })
+          body:JSON.stringify({ model:state.aiConfig.model, messages:[{role:'system',content:system},{role:'user',content:prompt}], temperature:0.7, max_tokens:600 }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
         if(!res.ok) throw new Error('API error');
         const data = await res.json();
         return data.choices?.[0]?.message?.content || null;
-      }catch(e){ showToast('AI request failed'); return null; }
-    }
-
-    async function fetchSessionDataJSON(verse) {
-      const prompt = `Return a STRICT JSON object with keys: "explanation", "application", "prayer".
-For the verse: ${verse}
-Explanation: simple meaning (2-3 sentences).
-Application: 2 practical steps.
-Prayer: short personal prayer.
-Respond ONLY with valid JSON.`;
-      const raw = await askAI(prompt, 'guidance');
-      if(!raw) return { explanation:'Reflect on this verse.', application:'Apply this in your life.', prayer:'Lord, guide me.' };
-      try {
-        const json = JSON.parse(raw.replace(/```json|```/g,'').trim());
-        return { explanation: json.explanation || 'Reflect.', application: json.application || 'Apply.', prayer: json.prayer || 'Pray.' };
-      } catch {
-        return { explanation:'Reflect on this verse.', application:'Apply this in your life.', prayer:'Lord, guide me.' };
+      }catch(e){
+        if(e.name !== 'AbortError') showToast('AI request failed');
+        return null;
+      } finally {
+        const idx = state.activeAbortControllers.indexOf(controller);
+        if(idx !== -1) state.activeAbortControllers.splice(idx,1);
       }
     }
 
-    // ---------- RENDER SESSION FLOW (deterministic) ----------
-    async function renderSessionFlow() {
-      const step = state.session.step;
-      const verse = state.session.verse || `${getTodaysScripture().ref} ${getTodaysScripture().text}`;
-      const data = state.session.data || { explanation:'Reflect.', application:'Apply.', prayer:'Pray.' };
-      const container = getEl('flowContentArea'), actions = getEl('flowActionsArea');
-      const indicator = getEl('flowStepIndicator');
-      const steps = ['Read','Understand','Apply','Pray','Complete'];
-      indicator.textContent = step<4 ? `Step ${step+1}/4 · ${steps[step]}` : 'Done';
-      
-      if(step===0){
-        container.innerHTML = `<div class="flow-verse">${verse}</div><div class="quick-actions"><button class="secondary" id="flowListenBtn">🔊 Listen</button><button class="secondary" id="flowContinueReadingBtn">Continue reading →</button></div>`;
-        actions.innerHTML = `<button class="primary" id="flowNextBtn">Continue →</button>`;
-        getEl('flowListenBtn')?.addEventListener('click', ()=> speakText(verse));
-        getEl('flowContinueReadingBtn')?.addEventListener('click', ()=>{
-          const m = verse.match(/^([1-3]?\s?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/);
-          if(!m){ openScreen('read'); return; }
-          const book = getEl('bibleBook'), ch = getEl('bibleChapter');
-          if(book && ch){
-            const opt = Array.from(book.options).find(o=>o.text.toLowerCase()===m[1].toLowerCase()||o.value.toLowerCase()===m[1].toLowerCase());
-            if(opt) book.value = opt.value;
-            populateChapters();
-            if(Array.from(ch.options).some(o=>o.value===m[2])) ch.value = m[2];
-            fetchBiblePassage();
-          }
-          openScreen('read');
-        });
-      } else if(step===1){
-        container.innerHTML = `<div class="muted">${safeHtml(data.explanation)}</div>`;
-        actions.innerHTML = `<button class="primary" id="flowNextBtn">Continue</button><button class="secondary" id="flowMoreContextBtn">More context</button>`;
-        getEl('flowMoreContextBtn')?.addEventListener('click', async ()=>{
-          container.innerHTML = '<span class="muted">Loading…</span>';
-          const more = await askAI(`Give more context on: ${verse}`, 'study');
-          container.innerHTML = safeHtml(more||'No context.');
-        });
-      } else if(step===2){
-        container.innerHTML = `<h3>Apply</h3><div class="muted">${safeHtml(data.application)}</div>`;
-        actions.innerHTML = `<button class="primary" id="flowNextBtn">Continue</button><button class="secondary" id="flowGuidanceBtn">Need guidance</button>`;
-        getEl('flowGuidanceBtn')?.addEventListener('click', ()=>{
-          const fi = getEl('freeInputText'); if(fi){ fi.value = `Help me apply: ${verse}`; openScreen('read'); }
-        });
-      } else if(step===3){
-        container.innerHTML = `<h3>Prayer</h3><div>${safeHtml(data.prayer)}</div><textarea id="flowPrayerEdit" class="small" style="margin-top:12px;">${data.prayer}</textarea>`;
-        actions.innerHTML = `<button class="primary" id="flowSaveFinishBtn">Save & Finish</button>`;
-        getEl('flowSaveFinishBtn').addEventListener('click', ()=>{
-          const prayer = getEl('flowPrayerEdit').value.trim();
-          if(prayer) saveJourneyEntry({type:'Prayer', text:prayer, date:new Date().toLocaleString()});
-          state.session.step = 4; renderSessionFlow();
-        });
-        return;
-      } else {
-        localStorage.removeItem('bb_session');
-        container.innerHTML = `<div class="completed-check">✔️</div><h3>You spent time in the Word</h3><p class="muted">Come back later</p>`;
-        actions.innerHTML = `<button class="primary" id="flowDoneBtn">Done</button>`;
-        getEl('flowDoneBtn').addEventListener('click', ()=> openScreen('home'));
-        return;
-      }
-      getEl('flowNextBtn')?.addEventListener('click', ()=>{
-        if(state.stepLock) return; state.stepLock = true;
-        if(state.session.step < 3){ state.session.step++; renderSessionFlow(); }
-        state.stepLock = false;
+    // Format AI response to clean HTML (no markdown)
+    function formatAIResponse(raw) {
+      if(!raw) return '<span class="muted">No response available.</span>';
+      let cleaned = raw.replace(/[#*_`]/g, '').replace(/\r/g, '');
+      const paragraphs = cleaned.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
+      return paragraphs.map(p => `<p>${formatForDisplay(p)}</p>`).join('');
+    }
+
+    // Save journey entry
+    function saveJourneyEntry(entry){
+      const data = JSON.parse(localStorage.getItem('journeyData')||'[]');
+      data.unshift(entry);
+      if(data.length > 50) data.pop();
+      localStorage.setItem('journeyData', JSON.stringify(data));
+      if(state.screen === 'journey') renderJourney();
+    }
+
+    // Update currentScripture and propagate to dependent UI
+    function updateCurrentScripture(ref, text) {
+      state.currentScripture = `${ref} ${text}`;
+      // sync listen text
+      const listenTextarea = getEl('listenText');
+      if(listenTextarea) listenTextarea.value = formatForDisplay(state.currentScripture);
+    }
+
+    // --------------------- SCREEN LIFECYCLE ---------------------
+    function fullResetBeforeScreenChange() {
+      // Stop speech
+      speechSynthesis.cancel();
+      // Stop meditation
+      if(state.meditation.state === 'active') stopMeditation();
+      // Cancel all AI requests
+      cancelAllAIRequests();
+      // Clear all AI panels
+      document.querySelectorAll('.ai-panel').forEach(panel => {
+        panel.classList.add('hidden');
+        panel.innerHTML = '';
       });
-      window.scrollTo({top:0, behavior:'smooth'});
+      // Reset reflection active states
+      document.querySelectorAll('.reflection-item').forEach(i => i.classList.remove('active'));
+      // Collapse read panel if needed
+      const readDisplay = getEl('readDisplay');
+      const expandBtn = getEl('readExpandBtn');
+      if(readDisplay && !readDisplay.classList.contains('read-collapsed')) {
+        readDisplay.classList.add('read-collapsed');
+        if(expandBtn) expandBtn.textContent = 'Expand';
+      }
+      // Hide any floating menus
+      const moreMenu = getEl('readMoreActionsMenu');
+      if(moreMenu) moreMenu.classList.add('hidden');
     }
 
-    // ---------- SCREEN NAVIGATION (resets UI) ----------
+    function beforeLeave(screen) {
+      if(screen === 'sessionFlow') {
+        // save session progress
+        if(state.session.step > 0 && state.session.step < 4) {
+          localStorage.setItem('bb_session', JSON.stringify({ step: state.session.step, verse: state.session.verse, data: state.session.data }));
+        }
+      }
+      if(screen === 'meditate') {
+        stopMeditation();
+      }
+    }
+
+    function afterEnter(screen) {
+      if(screen === 'home') { setHome(); updateStreak(); }
+      else if(screen === 'sessionFlow') { renderSessionFlow(); }
+      else if(screen === 'read') { syncReadDefault(); }
+      else if(screen === 'listen') { syncListenText(); }
+      else if(screen === 'journey') { renderJourney(); }
+      else if(screen === 'meditate') { initMeditation(); }
+      else if(screen === 'study') { refreshStudyPanel(); }
+    }
+
     function openScreen(id) {
-      if(state.meditation.active) stopMeditation();
-      resetDynamicViews();
+      if(state.screen === id) return;
+      beforeLeave(state.screen);
+      fullResetBeforeScreenChange();
       state.screen = id;
-      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-      getEl(id)?.classList.add('active');
-      document.querySelectorAll('[data-nav]').forEach(b=>b.classList.remove('active'));
-      document.querySelectorAll(`[data-nav="${id}"]`).forEach(b=>b.classList.add('active'));
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      const targetScreen = getEl(id);
+      if(targetScreen) targetScreen.classList.add('active');
+      document.querySelectorAll('[data-nav]').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll(`[data-nav="${id}"]`).forEach(b => b.classList.add('active'));
       const topbar = getEl('topbarHeader');
-      if(id==='home'||id==='sessionFlow') topbar.style.display='none';
-      else { topbar.style.display='block'; getEl('topbarTitle').textContent = 'BibleBuddy'; }
-      
-      if(id==='home') setHome();
-      if(id==='sessionFlow') renderSessionFlow();
-      if(id==='read') syncReadDefault();
-      if(id==='listen') syncListenText();
-      if(id==='journey') renderJourney();
-      if(id==='meditate') initMeditation();
+      if(id === 'home' || id === 'sessionFlow') topbar.style.display = 'none';
+      else topbar.style.display = 'block';
+      afterEnter(id);
       window.scrollTo({top:0});
     }
 
-    // ---------- HOME ----------
+    // --------------------- HOME ---------------------
     function getTodaysScripture(){
       const list=[ {ref:'Psalm 118:24',text:'This is the day which the LORD hath made; we will rejoice and be glad in it.'}, {ref:'Proverbs 3:5',text:'Trust in the LORD with all thine heart; and lean not unto thine own understanding.'} ];
       return list[new Date().getDate()%2];
@@ -637,6 +581,7 @@ Respond ONLY with valid JSON.`;
       const today = getTodaysScripture();
       getEl('homeVerseText').textContent = `“${today.text}”`;
       getEl('homeVerseReference').textContent = today.ref;
+      updateCurrentScripture(today.ref, today.text);
       const journey = JSON.parse(localStorage.getItem('journeyData')||'[]');
       const last = journey.find(e=>e.type==='Scripture');
       let hint = 'Continue your journey in Psalms';
@@ -644,205 +589,502 @@ Respond ONLY with valid JSON.`;
       const saved = localStorage.getItem('bb_session');
       if(saved){ try{ const s=JSON.parse(saved); if(s.step>0 && s.step<4) hint='Resume your session'; }catch{} }
       getEl('homeProgressionHint').textContent = hint;
-      updateStreak();
+    }
+    function updateStreak(){
+      const today = new Date().toISOString().slice(0,10);
+      let s = JSON.parse(localStorage.getItem('bb_streak')||'{"count":0,"last":null}');
+      if(s.last===today) return;
+      const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+      s.count = s.last===yesterday ? s.count+1 : 1;
+      s.last = today;
+      localStorage.setItem('bb_streak', JSON.stringify(s));
+      const mini = getEl('homeStreakMini'); if(mini) mini.textContent = s.count ? `🔥 ${s.count}` : '';
     }
 
-    // ---------- READ ----------
-    function populateChapters(){ const b=getEl('bibleBook'),c=getEl('bibleChapter'); if(b&&c){ c.innerHTML = Array.from({length:bibleBooksMap[b.value]||1},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join(''); } }
-    async function fetchBiblePassage(){
-      const b=getEl('bibleBook'),c=getEl('bibleChapter'),t=getEl('translation'),d=getEl('readDisplay');
-      if(!b||!c||!t||!d) return;
-      d.innerHTML='<span class="muted">Loading…</span>';
+    // --------------------- READ & BIBLE API ---------------------
+    function populateChapters(){
+      const bookSelect = getEl('bibleBook');
+      const chapterSelect = getEl('bibleChapter');
+      if(bookSelect && chapterSelect){
+        const maxCh = bibleBooksMap[bookSelect.value] || 1;
+        chapterSelect.innerHTML = Array.from({length:maxCh}, (_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
+      }
+    }
+    async function loadPassage(){
+      const book = getEl('bibleBook').value;
+      const chapter = getEl('bibleChapter').value;
+      const translation = getEl('translation').value;
+      const displayDiv = getEl('readDisplay');
+      if(!displayDiv) return;
+      displayDiv.innerHTML = '<span class="muted">Loading…</span>';
       try{
-        const res=await fetch(`https://bible-api.com/${b.value}+${c.value}?translation=${t.value}`); const data=await res.json();
-        let text=''; data.verses.forEach(v=>text+=`${v.verse} ${v.text}\n`);
-        const ref=data.reference; d.innerHTML=`<strong style="color:var(--accent2)">${ref}</strong><br>${text.replace(/\n/g,'<br>')}`;
-        syncListenText(); state.currentScripture = `${ref} ${text.replace(/\n/g,' ')}`;
-        saveJourneyEntry({type:'Scripture', text:ref, date:new Date().toLocaleString()});
-      }catch(e){ d.innerHTML='<span class="muted">⚠️ Unable to load.</span>'; }
+        const res = await fetch(`https://bible-api.com/${book}+${chapter}?translation=${translation}`);
+        const data = await res.json();
+        let text = '';
+        data.verses.forEach(v => text += `${v.verse} ${v.text}\n`);
+        const ref = data.reference;
+        displayDiv.innerHTML = `<strong style="color:var(--accent2)">${ref}</strong><br>${text.replace(/\n/g,'<br>')}`;
+        updateCurrentScripture(ref, text.replace(/\n/g,' '));
+        // Save to journey if changed
+        const normalize = (str) => str.replace(/[^\w\s:]/g, '').replace(/\s+/g,' ').trim().toLowerCase();
+        let last = localStorage.getItem('bb_last_scripture');
+        const currentNorm = normalize(ref);
+        if(last !== currentNorm){
+          saveJourneyEntry({type:'Scripture', text:ref, date:new Date().toLocaleString()});
+          localStorage.setItem('bb_last_scripture', currentNorm);
+        }
+        // ensure collapsed state
+        displayDiv.classList.add('read-collapsed');
+        getEl('readExpandBtn').textContent = 'Expand';
+      } catch(e){
+        displayDiv.innerHTML = '<span class="muted">⚠️ Unable to load passage.</span>';
+      }
     }
-    function syncReadDefault(){ const d=getEl('readDisplay'); if(d&&d.innerText.includes('Select')){ const today=getTodaysScripture(); d.innerHTML=`<strong style="color:var(--accent2)">${today.ref}</strong><br>${today.text}`; syncListenText(); state.currentScripture=`${today.ref} ${today.text}`; } }
+    function syncReadDefault(){
+      const display = getEl('readDisplay');
+      if(display && (display.innerText.includes('Select') || display.innerText.trim() === '')){
+        const today = getTodaysScripture();
+        display.innerHTML = `<strong style="color:var(--accent2)">${today.ref}</strong><br>${today.text}`;
+        updateCurrentScripture(today.ref, today.text);
+      }
+    }
     function syncListenText(){
-      const r=getEl('readDisplay'), l=getEl('listenText');
-      if(!r||!l) return;
-      let text = r.innerText.replace(/\n+/g,'\n\n').replace(/\s+/g,' ').replace(/(\d+)\s/g,'\n$1 ').trim();
-      l.value = text;
-    }
-    async function handleGuidanceAction(action){
-      if(state.readActionLoading) return; state.readActionLoading=true;
-      const panel = getEl('guidanceOutput'); panel.classList.remove('hidden'); panel.innerHTML='Loading…';
-      const verse = state.currentScripture || getEl('readDisplay')?.innerText||'';
-      let prompt = action==='explain'?`Explain this verse simply: ${verse}`: action==='apply'?`Give 2 practical applications: ${verse}`:`Write a short prayer: ${verse}`;
-      const res = await askAI(prompt,'guidance');
-      panel.innerHTML = safeHtml(res||'No response.') + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden')">✕</button>`;
-      state.readActionLoading=false;
+      const readDisplay = getEl('readDisplay');
+      const listenText = getEl('listenText');
+      if(readDisplay && listenText){
+        let raw = readDisplay.innerText;
+        listenText.value = formatForDisplay(raw);
+      }
     }
 
-    // ---------- STUDY ----------
-    function renderJourney(filter=''){
-      const c=getEl('journeyList'); if(!c) return;
-      let data = JSON.parse(localStorage.getItem('journeyData')||'[]');
-      if(filter){ const f=filter.toLowerCase(); data=data.filter(e=> (e.text||'').toLowerCase().includes(f)||(e.type||'').toLowerCase().includes(f)); }
-      c.innerHTML = data.length ? data.map((e,i)=>`
-        <div class="item" onclick="window.toggleJourney(${i})">
-          <div style="display:flex;justify-content:space-between;"><strong>${e.type||'Entry'}</strong><span class="small muted">${e.date||''}</span></div>
-          <div id="journeyPreview${i}">${(e.text||'').substring(0,80)}...</div>
-          <div id="journeyFull${i}" class="hidden" style="margin-top:8px;">${e.text}
-            <div style="margin-top:10px;display:flex;gap:8px;"><button onclick="window.editJourney(${i});event.stopPropagation()">Edit</button><button onclick="window.deleteJourney(${i});event.stopPropagation()">Delete</button></div>
-          </div>
-        </div>
-      `).join('') : '<div class="muted">No entries</div>';
+    // --------------------- GUIDED SESSION FLOW ---------------------
+    async function fetchSessionData(verse) {
+      const prompt = `Return a STRICT JSON object with keys: "explanation", "application", "prayer". For the verse: ${verse}. Explanation: simple meaning (2-3 sentences). Application: 2 practical steps. Prayer: short personal prayer. Respond ONLY with valid JSON.`;
+      const raw = await requestAI(prompt, 'guidance');
+      if(!raw) return { explanation:'Reflect on this verse.', application:'Apply this in your life.', prayer:'Lord, guide me.' };
+      try {
+        const json = JSON.parse(raw.replace(/```json|```/g,'').trim());
+        return { explanation: json.explanation || 'Reflect.', application: json.application || 'Apply.', prayer: json.prayer || 'Pray.' };
+      } catch {
+        return { explanation:'Reflect on this verse.', application:'Apply this in your life.', prayer:'Lord, guide me.' };
+      }
     }
-    window.toggleJourney = (i)=>{ getEl('journeyFull'+i).classList.toggle('hidden'); };
-    window.editJourney = (i)=>{
-      const data = JSON.parse(localStorage.getItem('journeyData')||'[]');
-      const updated = prompt('Edit:', data[i].text);
-      if(updated){ data[i].text = updated; localStorage.setItem('journeyData', JSON.stringify(data)); renderJourney(); }
-    };
-    window.deleteJourney = (i)=>{
-      const data = JSON.parse(localStorage.getItem('journeyData')||'[]');
-      data.splice(i,1); localStorage.setItem('journeyData', JSON.stringify(data)); renderJourney();
-    };
-    function saveJourneyEntry(e){ const d=JSON.parse(localStorage.getItem('journeyData')||'[]'); d.unshift(e); if(d.length>50)d.pop(); localStorage.setItem('journeyData',JSON.stringify(d)); }
 
-    // ---------- MEDITATION ----------
+    async function renderSessionFlow() {
+      const step = state.session.step;
+      const verse = state.session.verse || `${getTodaysScripture().ref} ${getTodaysScripture().text}`;
+      const data = state.session.data || { explanation:'Reflect.', application:'Apply.', prayer:'Pray.' };
+      const container = getEl('flowContentArea');
+      const actionsDiv = getEl('flowActionsArea');
+      const indicator = getEl('flowStepIndicator');
+      const steps = ['Read','Understand','Apply','Pray','Complete'];
+      indicator.textContent = step<4 ? `Step ${step+1}/4 · ${steps[step]}` : 'Done';
+      
+      if(step===0){
+        container.innerHTML = `<div class="flow-verse">${verse}</div><div class="quick-actions"><button class="secondary" data-flow-action="listen">🔊 Listen</button><button class="secondary" data-flow-action="continueReading">Continue reading →</button></div>`;
+        actionsDiv.innerHTML = `<button class="primary" data-flow-action="next">Continue →</button>`;
+      } else if(step===1){
+        container.innerHTML = `<div class="muted">${formatForDisplay(data.explanation)}</div>`;
+        actionsDiv.innerHTML = `<button class="primary" data-flow-action="next">Continue</button><button class="secondary" data-flow-action="moreContext">More context</button>`;
+      } else if(step===2){
+        container.innerHTML = `<h3>Apply</h3><div class="muted">${formatForDisplay(data.application)}</div>`;
+        actionsDiv.innerHTML = `<button class="primary" data-flow-action="next">Continue</button><button class="secondary" data-flow-action="guidance">Need guidance</button>`;
+      } else if(step===3){
+        container.innerHTML = `<h3>Prayer</h3><div>${formatForDisplay(data.prayer)}</div><textarea id="flowPrayerEdit" class="small" style="margin-top:12px;">${data.prayer}</textarea>`;
+        actionsDiv.innerHTML = `<button class="primary" data-flow-action="saveFinish">Save & Finish</button>`;
+      } else {
+        localStorage.removeItem('bb_session');
+        container.innerHTML = `<div class="completed-check">✔️</div><h3>You spent time with the Word of God</h3><p class="muted">Come back later for your next session</p>`;
+        actionsDiv.innerHTML = `<button class="primary" data-flow-action="done">Done</button>`;
+      }
+      window.scrollTo({top:0});
+    }
+
+    // --------------------- MEDITATION STATE MACHINE ---------------------
     function initMeditation(){
-      stopMeditation();
+      if(state.meditation.state === 'active') stopMeditation();
+      state.meditation.state = 'idle';
       getEl('meditationEntry').classList.remove('hidden');
       getEl('meditationActive').classList.add('hidden');
       getEl('meditationEnd').classList.add('hidden');
-      const verse = state.session.verse || `${getTodaysScripture().ref} ${getTodaysScripture().text}`;
-      getEl('meditationVerse').textContent = verse;
+      const defaultVerse = state.currentScripture || `${getTodaysScripture().ref} ${getTodaysScripture().text}`;
+      getEl('meditationVerse').textContent = defaultVerse;
     }
     function startMeditation(){
-      if(state.meditation.active) return;
-      clearInterval(state.meditation.timer);
-      state.meditation.active = true; state.meditation.remaining = state.meditation.duration; state.meditation.startTime = Date.now();
+      if(state.meditation.state !== 'idle') return;
+      state.meditation.state = 'active';
+      state.meditation.remaining = state.meditation.duration;
+      state.meditation.startTime = Date.now();
       getEl('meditationEntry').classList.add('hidden');
       getEl('meditationActive').classList.remove('hidden');
       const custom = getEl('meditationCustomVerseInput').value.trim();
       getEl('meditationActiveVerse').textContent = custom || getEl('meditationVerse').textContent;
-      updateTimerDisplay();
-      state.meditation.timer = setInterval(()=>{
-        const elapsed = Math.floor((Date.now()-state.meditation.startTime)/1000);
-        state.meditation.remaining = Math.max(0, state.meditation.duration - elapsed);
-        updateTimerDisplay();
-        if(state.meditation.remaining<=0){ clearInterval(state.meditation.timer); finishMeditation(); }
-      }, 200);
+      updateMeditationTimerDisplay();
       getEl('meditationBreathIndicator').classList.add('breathing');
+      if(state.meditation.timer) clearInterval(state.meditation.timer);
+      state.meditation.timer = setInterval(() => {
+        if(state.meditation.state !== 'active') return;
+        const elapsed = Math.floor((Date.now() - state.meditation.startTime) / 1000);
+        state.meditation.remaining = Math.max(0, state.meditation.duration - elapsed);
+        updateMeditationTimerDisplay();
+        if(state.meditation.remaining <= 0){
+          clearInterval(state.meditation.timer);
+          state.meditation.timer = null;
+          finishMeditation();
+        }
+      }, 200);
     }
     function stopMeditation(){
-      clearInterval(state.meditation.timer); state.meditation.active = false;
+      if(state.meditation.timer){ clearInterval(state.meditation.timer); state.meditation.timer = null; }
+      state.meditation.state = 'idle';
       getEl('meditationBreathIndicator')?.classList.remove('breathing');
       initMeditation();
     }
-    function updateTimerDisplay(){ const m=Math.floor(state.meditation.remaining/60), s=state.meditation.remaining%60; getEl('meditationTimerDisplay').textContent=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
     function finishMeditation(){
-      clearInterval(state.meditation.timer); state.meditation.active = false;
-      getEl('meditationBreathIndicator')?.classList.remove('breathing');
+      if(state.meditation.timer){ clearInterval(state.meditation.timer); state.meditation.timer = null; }
+      state.meditation.state = 'ended';
       getEl('meditationActive').classList.add('hidden');
       getEl('meditationEnd').classList.remove('hidden');
     }
+    function updateMeditationTimerDisplay(){
+      const m = Math.floor(state.meditation.remaining/60);
+      const s = state.meditation.remaining%60;
+      getEl('meditationTimerDisplay').textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    }
 
-    // ---------- TTS ----------
-    function cleanTextForSpeech(t){ return t.replace(/\d+/g,'').replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,'').replace(/\s+/g,' ').trim(); }
-    function speakText(t){ if(!t) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(cleanTextForSpeech(t.replace(/<[^>]*>/g,''))); u.rate=state.ttsRate; speechSynthesis.speak(u); }
+    // --------------------- STUDY HELPERS ---------------------
+    async function refreshStudyPanel() {
+      const activeTab = document.querySelector('#studyTabs .active')?.dataset.tab || 'explain';
+      if(activeTab === 'notes') {
+        getEl('studyNotesPanel').style.display = 'block';
+        getEl('studyAIResponse').classList.add('hidden');
+        loadSavedNotes();
+      } else {
+        getEl('studyNotesPanel').style.display = 'none';
+        if(state.currentScripture) {
+          const panel = getEl('studyAIResponse');
+          panel.classList.remove('hidden');
+          panel.innerHTML = '<span class="muted">Loading insights…</span>';
+          let prompt = '';
+          if(activeTab === 'explain') prompt = `Explain this passage simply: ${state.currentScripture}`;
+          else if(activeTab === 'cross') prompt = `Give cross-references for: ${state.currentScripture}`;
+          else if(activeTab === 'apply') prompt = `Give 2-3 practical applications for: ${state.currentScripture}`;
+          if(prompt) {
+            const resp = await requestAI(prompt, 'study');
+            panel.innerHTML = formatAIResponse(resp) + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden'); this.parentElement.innerHTML='';">✕</button>`;
+          } else panel.classList.add('hidden');
+        }
+      }
+    }
+    function loadSavedNotes() {
+      const notes = JSON.parse(localStorage.getItem('study_notes')||'{}');
+      const currentRef = state.currentScripture.split(' ')[0];
+      const noteText = notes[currentRef] || '';
+      getEl('studyNotesArea').value = noteText;
+      const listDiv = getEl('savedNotesList');
+      if(listDiv) listDiv.innerHTML = Object.entries(notes).map(([ref, txt]) => `<div class="item"><strong>${ref}</strong><br>${txt.substring(0,80)}</div>`).join('');
+    }
+    function saveStudyNote() {
+      const ref = state.currentScripture.split(' ')[0];
+      const note = getEl('studyNotesArea').value;
+      if(!ref) return showToast('Load a passage first');
+      const notes = JSON.parse(localStorage.getItem('study_notes')||'{}');
+      notes[ref] = note;
+      localStorage.setItem('study_notes', JSON.stringify(notes));
+      showToast('Note saved');
+      loadSavedNotes();
+    }
 
-    // ---------- EVENT BINDING ----------
-    document.addEventListener('DOMContentLoaded', ()=>{
-      // restore session
+    // --------------------- JOURNEY RENDERING ---------------------
+    function renderJourney(filter=''){
+      const container = getEl('journeyList');
+      if(!container) return;
+      let data = JSON.parse(localStorage.getItem('journeyData')||'[]');
+      if(filter){
+        const f = filter.toLowerCase();
+        data = data.filter(e => (e.text||'').toLowerCase().includes(f) || (e.type||'').toLowerCase().includes(f));
+      }
+      container.innerHTML = data.length ? data.map((e,i)=>`
+        <div class="item" data-journey-index="${i}">
+          <div style="display:flex;justify-content:space-between;"><strong>${e.type||'Entry'}</strong><span class="small muted">${e.date||''}</span></div>
+          <div class="journey-preview">${(e.text||'').substring(0,80)}...</div>
+          <div class="journey-full hidden" style="margin-top:8px;">${e.text}
+            <div style="margin-top:10px;display:flex;gap:8px;"><button data-edit="${i}">Edit</button><button data-delete="${i}">Delete</button></div>
+          </div>
+        </div>
+      `).join('') : '<div class="muted">No entries</div>';
+    }
+
+    // --------------------- EVENT DELEGATION (GLOBAL) ---------------------
+    function handleGlobalClick(e) {
+      const target = e.target;
+      // Navigation
+      if(target.matches('[data-nav]')) {
+        e.preventDefault();
+        openScreen(target.dataset.nav);
+        return;
+      }
+      // Flow actions (dynamic)
+      if(target.matches('[data-flow-action]')) {
+        const action = target.dataset.flowAction;
+        if(action === 'next') {
+          if(state.session.step < 3) { state.session.step++; renderSessionFlow(); }
+        } else if(action === 'listen') {
+          speakText(state.session.verse);
+        } else if(action === 'continueReading') {
+          const match = state.session.verse.match(/^([1-3]?\s?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/);
+          if(match) {
+            const bookSelect = getEl('bibleBook');
+            const chapSelect = getEl('bibleChapter');
+            const opt = Array.from(bookSelect.options).find(o => o.text.toLowerCase()===match[1].toLowerCase() || o.value.toLowerCase()===match[1].toLowerCase());
+            if(opt) { bookSelect.value = opt.value; populateChapters(); }
+            if(Array.from(chapSelect.options).some(o=>o.value===match[2])) chapSelect.value = match[2];
+            loadPassage();
+            openScreen('read');
+          } else openScreen('read');
+        } else if(action === 'moreContext') {
+          (async () => {
+            const container = getEl('flowContentArea');
+            container.innerHTML = '<span class="muted">Loading…</span>';
+            const more = await requestAI(`Give more context on: ${state.session.verse}`, 'study');
+            container.innerHTML = formatAIResponse(more || 'No context.');
+          })();
+        } else if(action === 'guidance') {
+          const fi = getEl('freeInputText');
+          if(fi) fi.value = `Help me apply: ${state.session.verse}`;
+          openScreen('study');
+        } else if(action === 'saveFinish') {
+          const prayer = getEl('flowPrayerEdit')?.value.trim();
+          if(prayer) saveJourneyEntry({type:'Prayer', text:prayer, date:new Date().toLocaleString()});
+          state.session.step = 4;
+          renderSessionFlow();
+        } else if(action === 'done') {
+          openScreen('home');
+        }
+        return;
+      }
+      // Meditation duration selection
+      if(target.matches('#meditationDurationOptions button')) {
+        const dur = parseInt(target.dataset.duration);
+        state.meditation.duration = dur;
+        localStorage.setItem('meditation_duration', dur);
+        document.querySelectorAll('#meditationDurationOptions button').forEach(b=>b.classList.remove('active'));
+        target.classList.add('active');
+        getEl('meditationStartBtn').textContent = `Start ${dur/60}‑minute quiet time`;
+        getEl('meditationDurationOptions').classList.add('hidden');
+        return;
+      }
+      // Study tabs
+      if(target.matches('#studyTabs button')) {
+        document.querySelectorAll('#studyTabs button').forEach(b=>b.classList.remove('active'));
+        target.classList.add('active');
+        refreshStudyPanel();
+        return;
+      }
+      // Reflection items
+      if(target.closest('.reflection-item')) {
+        const item = target.closest('.reflection-item');
+        const wasActive = item.classList.contains('active');
+        document.querySelectorAll('.reflection-item').forEach(i=>i.classList.remove('active'));
+        const panel = getEl('reflectionOutput');
+        if(wasActive){ panel.classList.add('hidden'); panel.innerHTML=''; return; }
+        item.classList.add('active');
+        const type = item.dataset.reflection;
+        const prompt = type==='showing'?'What is God showing me': type==='obey'?'What should I obey today':'What prayer follows this passage';
+        panel.classList.remove('hidden');
+        panel.innerHTML = '<span class="muted">Thinking with you…</span>';
+        requestAI(`${prompt} from ${state.currentScripture}`, 'reflection').then(res => {
+          panel.innerHTML = formatAIResponse(res) + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden'); this.parentElement.innerHTML='';">✕</button>`;
+        });
+        return;
+      }
+      // Journey expand/edit/delete (delegation)
+      if(target.closest('[data-journey-index]')) {
+        const wrapper = target.closest('[data-journey-index]');
+        const preview = wrapper.querySelector('.journey-preview');
+        const full = wrapper.querySelector('.journey-full');
+        if(preview && full && !target.matches('button')) {
+          preview.classList.toggle('hidden');
+          full.classList.toggle('hidden');
+        }
+        if(target.matches('[data-edit]')) {
+          const idx = parseInt(target.dataset.edit);
+          const data = JSON.parse(localStorage.getItem('journeyData')||'[]');
+          const updated = prompt('Edit entry:', data[idx].text);
+          if(updated){ data[idx].text = updated; localStorage.setItem('journeyData', JSON.stringify(data)); renderJourney(); }
+        }
+        if(target.matches('[data-delete]')) {
+          const idx = parseInt(target.dataset.delete);
+          const data = JSON.parse(localStorage.getItem('journeyData')||'[]');
+          data.splice(idx,1);
+          localStorage.setItem('journeyData', JSON.stringify(data));
+          renderJourney();
+        }
+        return;
+      }
+      // Guidance actions (Explain, Apply, Pray)
+      if(target.closest('#guidanceActions button')) {
+        const action = target.dataset.action;
+        if(!state.currentScripture) { showToast('Load a passage first'); return; }
+        const panel = getEl('guidanceOutput');
+        panel.classList.remove('hidden');
+        panel.innerHTML = '<span class="muted">Seeking insight…</span>';
+        let prompt = action==='explain'?`Explain this verse simply: ${state.currentScripture}`: action==='apply'?`Give 2 practical applications: ${state.currentScripture}`:`Write a short prayer: ${state.currentScripture}`;
+        requestAI(prompt, 'guidance').then(res => {
+          panel.innerHTML = formatAIResponse(res) + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden'); this.parentElement.innerHTML='';">✕</button>`;
+        });
+        return;
+      }
+      // Read expand/collapse
+      if(target.id === 'readExpandBtn') {
+        const rd = getEl('readDisplay');
+        const btn = getEl('readExpandBtn');
+        rd.classList.toggle('read-collapsed');
+        btn.textContent = rd.classList.contains('read-collapsed') ? 'Expand' : 'Collapse';
+        return;
+      }
+      // More actions menu
+      if(target.id === 'readMoreActionsBtn') {
+        getEl('readMoreActionsMenu').classList.toggle('hidden');
+        return;
+      }
+      // AI panel close button
+      if(target.matches('.ai-panel .close-btn')) {
+        target.parentElement.classList.add('hidden');
+        target.parentElement.innerHTML = '';
+        return;
+      }
+    }
+
+    // TTS function
+    function speakText(text){
+      if(!text) return;
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(formatForSpeech(text));
+      utterance.rate = state.ttsRate;
+      speechSynthesis.speak(utterance);
+    }
+
+    // --------------------- INITIALIZATION ---------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      // Restore session
       const saved = localStorage.getItem('bb_session');
-      if(saved){ try{ const s=JSON.parse(saved); if(s.step>0&&s.step<4){ state.session=s; } }catch{} }
-      
-      setHome();
-      document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click', ()=> openScreen(b.dataset.nav)));
-      
-      getEl('homeContinueBtn').addEventListener('click', async ()=>{
-        if(state.session.loading) return; state.session.loading = true;
+      if(saved) {
+        try{ const s=JSON.parse(saved); if(s.step>0 && s.step<4) state.session = s; }catch(e){}
+      }
+      // Restore user settings
+      const savedModel = localStorage.getItem('ai_model');
+      if(savedModel) state.aiConfig.model = savedModel;
+      getEl('aiModelSelect').value = state.aiConfig.model;
+      getEl('voiceSpeedValue').textContent = state.ttsRate.toFixed(1)+'x';
+      getEl('meditationDurationValue').textContent = (state.meditation.duration/60)+' min';
+      getEl('apiKeyInput').value = state.aiConfig.apiKey;
+      getEl('profileNameInput').value = state.userName;
+
+      // Populate chapters
+      populateChapters();
+      // Event delegation
+      document.body.addEventListener('click', handleGlobalClick);
+      // Static button listeners
+      getEl('loadPassageBtn')?.addEventListener('click', loadPassage);
+      getEl('bibleBook')?.addEventListener('change', populateChapters);
+      getEl('readAskAIBtn')?.addEventListener('click', async () => {
+        if(!state.currentScripture) { showToast('Load a passage first'); return; }
+        const panel = getEl('readAIResponse');
+        panel.classList.remove('hidden');
+        panel.innerHTML = '<span class="muted">Loading…</span>';
+        const resp = await requestAI(`Explain: ${state.currentScripture}`, 'study');
+        panel.innerHTML = formatAIResponse(resp) + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden'); this.parentElement.innerHTML='';">✕</button>`;
+      });
+      getEl('homeContinueBtn')?.addEventListener('click', async () => {
+        if(state.session.loading) return;
+        state.session.loading = true;
         const ref = getEl('homeVerseReference').textContent;
         const text = getEl('homeVerseText').textContent.replace(/[“”]/g,'');
-        state.session.verse = `${ref} ${text}`; state.session.step = 0;
+        state.session.verse = `${ref} ${text}`;
+        state.session.step = 0;
         openScreen('sessionFlow');
         getEl('flowContentArea').innerHTML = '<div class="muted" style="padding:40px;text-align:center;">Preparing…</div>';
         getEl('flowActionsArea').innerHTML = '';
         try {
-          state.session.data = await fetchSessionDataJSON(state.session.verse);
-        } catch {
-          state.session.data = { explanation:'Reflect.', application:'Apply.', prayer:'Pray.' };
-        }
+          state.session.data = await fetchSessionData(state.session.verse);
+        } catch { state.session.data = { explanation:'Reflect.', application:'Apply.', prayer:'Pray.' }; }
         state.session.loading = false;
         renderSessionFlow();
-        localStorage.setItem('bb_session', JSON.stringify(state.session));
+        localStorage.setItem('bb_session', JSON.stringify({ step:0, verse:state.session.verse, data:state.session.data }));
       });
-      
-      getEl('homeOpenBibleLink').addEventListener('click', (e)=>{ e.preventDefault(); openScreen('read'); });
-      getEl('bibleBook')?.addEventListener('change', populateChapters); populateChapters();
-      getEl('loadPassageBtn')?.addEventListener('click', fetchBiblePassage);
-      document.querySelectorAll('#guidanceActions button').forEach(b=>b.addEventListener('click', ()=>handleGuidanceAction(b.dataset.action)));
-      getEl('readAskAIBtn')?.addEventListener('click', async ()=>{
-        const txt = getEl('readDisplay').innerText; if(txt.includes('Select')) return showToast('Load passage');
-        const panel = getEl('readAIResponse'); panel.classList.remove('hidden'); panel.innerHTML='Loading…';
-        const res = await askAI(`Explain: ${txt}`, 'study');
-        panel.innerHTML = safeHtml(res||'Error') + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden')">✕</button>`;
+      getEl('freeInputBtn')?.addEventListener('click', async () => {
+        const input = getEl('freeInputText').value.trim();
+        if(!input) return showToast('Describe your situation');
+        const panel = getEl('freeInputOutput');
+        panel.classList.remove('hidden');
+        panel.innerHTML = '<span class="muted">Thinking with you…</span>';
+        const prompt = `Speak as a calm, wise friend. Based on: ${input}. Respond with short paragraphs. No markdown. Give verse, meaning, two steps, prayer.`;
+        const resp = await requestAI(prompt, 'guidance');
+        panel.innerHTML = formatAIResponse(resp) + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden'); this.parentElement.innerHTML='';">✕</button>`;
       });
-      getEl('readMoreActionsBtn')?.addEventListener('click', ()=> getEl('readMoreActionsMenu').classList.toggle('hidden'));
-      
-      // reflection toggle
-      document.querySelectorAll('.reflection-item').forEach(item=>item.addEventListener('click', function(){
-        const wasActive = this.classList.contains('active');
-        document.querySelectorAll('.reflection-item').forEach(i=>i.classList.remove('active'));
-        const panel = getEl('reflectionOutput');
-        if(wasActive){ panel.classList.add('hidden'); return; }
-        this.classList.add('active');
-        const type = this.dataset.reflection;
-        const prompt = type==='showing'?'What is God showing me': type==='obey'?'What should I obey':'What prayer follows';
-        panel.classList.remove('hidden'); panel.innerHTML='Loading…';
-        askAI(`${prompt} from ${state.currentScripture}`, 'reflection').then(res=>{
-          panel.innerHTML = safeHtml(res||'') + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden')">✕</button>`;
-        });
-      }));
-      
-      getEl('freeInputBtn').addEventListener('click', ()=>{
-        const input = getEl('freeInputText').value.trim(); if(!input) return showToast('Describe situation');
-        const panel = getEl('freeInputOutput'); panel.classList.remove('hidden'); panel.innerHTML='Loading…';
-        askAI(`User situation: ${input}\nGive: 1. Verse 2. Explanation 3. Steps 4. Prayer`, 'guidance').then(res=>{
-          panel.innerHTML = safeHtml(res||'') + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden')">✕</button>`;
-        });
+      getEl('saveStudyNoteBtn')?.addEventListener('click', saveStudyNote);
+      getEl('clearStudyNoteBtn')?.addEventListener('click', () => { getEl('studyNotesArea').value = ''; saveStudyNote(); });
+      getEl('prayerAskAIBtn')?.addEventListener('click', async () => {
+        const struggles = getEl('prayerStruggles').value;
+        const points = getEl('prayerPoints').value;
+        if(!struggles && !points) return showToast('Write something');
+        const panel = getEl('prayerAIResponse');
+        panel.classList.remove('hidden');
+        panel.innerHTML = '<span class="muted">Praying with you…</span>';
+        const resp = await requestAI(`Struggles: ${struggles}. Prayer points: ${points}. Give Bible encouragement and a short prayer.`, 'guidance');
+        panel.innerHTML = formatAIResponse(resp) + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden'); this.parentElement.innerHTML='';">✕</button>`;
       });
-      
-      // meditation custom toggle
-      getEl('meditationCustomVerseToggle').addEventListener('click', ()=>{
-        const ta = getEl('meditationCustomVerseInput'); ta.classList.toggle('hidden');
-        if(!ta.classList.contains('hidden')) ta.focus();
-      });
-      getEl('meditationStartBtn').addEventListener('click', startMeditation);
-      getEl('meditationStopBtn').addEventListener('click', stopMeditation);
-      getEl('meditationSaveBtn').addEventListener('click', ()=>{
-        const r = getEl('meditationReflection').value.trim(); if(r) saveJourneyEntry({type:'Meditation', text:r, date:new Date().toLocaleString()});
+      getEl('listenPlayBtn')?.addEventListener('click', () => speakText(getEl('listenText').value));
+      getEl('listenPauseBtn')?.addEventListener('click', () => speechSynthesis.paused ? speechSynthesis.resume() : speechSynthesis.pause());
+      getEl('listenStopBtn')?.addEventListener('click', () => speechSynthesis.cancel());
+      getEl('meditationStartBtn')?.addEventListener('click', startMeditation);
+      getEl('meditationStopBtn')?.addEventListener('click', stopMeditation);
+      getEl('meditationSaveBtn')?.addEventListener('click', () => {
+        const reflection = getEl('meditationReflection').value.trim();
+        if(reflection) saveJourneyEntry({type:'Meditation', text:reflection, date:new Date().toLocaleString()});
         openScreen('home');
       });
-      getEl('meditationSkipBtn').addEventListener('click', ()=> openScreen('home'));
-      
-      // profile
-      getEl('voiceSpeedSetting').addEventListener('click', ()=>{
-        const speeds = [0.8,1.0,1.2,1.5]; let idx = speeds.indexOf(state.voiceSpeed); idx = (idx+1)%speeds.length;
-        state.voiceSpeed = speeds[idx]; state.ttsRate = state.voiceSpeed;
-        localStorage.setItem('voice_speed', state.voiceSpeed);
-        getEl('voiceSpeedValue').textContent = state.voiceSpeed.toFixed(1)+'x';
+      getEl('meditationSkipBtn')?.addEventListener('click', () => openScreen('home'));
+      getEl('meditationChangeDurationLink')?.addEventListener('click', (e) => { e.preventDefault(); getEl('meditationDurationOptions').classList.toggle('hidden'); });
+      getEl('meditationCustomVerseToggle')?.addEventListener('click', () => getEl('meditationCustomVerseInput').classList.toggle('hidden'));
+      getEl('voiceSpeedSetting')?.addEventListener('click', () => {
+        const speeds = [0.8,1.0,1.2,1.5];
+        let idx = speeds.indexOf(state.ttsRate);
+        idx = (idx+1)%speeds.length;
+        state.ttsRate = speeds[idx];
+        localStorage.setItem('voice_speed', state.ttsRate);
+        getEl('voiceSpeedValue').textContent = state.ttsRate.toFixed(1)+'x';
       });
-      getEl('meditationDurationSetting').addEventListener('click', ()=>{
-        const durs = [60,120,300]; let idx = durs.indexOf(state.meditation.duration); idx = (idx+1)%durs.length;
-        state.meditation.duration = durs[idx]; localStorage.setItem('meditation_duration', durs[idx]);
+      getEl('meditationDurationSetting')?.addEventListener('click', () => {
+        const durs = [60,120,300];
+        let idx = durs.indexOf(state.meditation.duration);
+        idx = (idx+1)%durs.length;
+        state.meditation.duration = durs[idx];
+        localStorage.setItem('meditation_duration', durs[idx]);
         getEl('meditationDurationValue').textContent = (durs[idx]/60)+' min';
       });
-      getEl('saveApiKeyBtn').addEventListener('click', ()=>{
-        const key = getEl('apiKeyInput').value.trim(); if(key){ state.aiConfig.apiKey=key; localStorage.setItem('openrouter_api',key); showToast('API saved'); }
+      getEl('saveApiKeyBtn')?.addEventListener('click', () => {
+        const key = getEl('apiKeyInput').value.trim();
+        if(key){ state.aiConfig.apiKey = key; localStorage.setItem('openrouter_api', key); showToast('API key saved'); }
       });
-      getEl('aiModelSelect').addEventListener('change', e=>{ state.aiConfig.model=e.target.value; localStorage.setItem('ai_model',e.target.value); });
+      getEl('aiModelSelect')?.addEventListener('change', (e) => { state.aiConfig.model = e.target.value; localStorage.setItem('ai_model', e.target.value); });
+      getEl('saveProfileNameBtn')?.addEventListener('click', () => {
+        const n = getEl('profileNameInput').value.trim();
+        if(n){ state.userName = n; localStorage.setItem('user_name', n); setHome(); showToast('Name updated'); }
+      });
+      getEl('userGuideSetting')?.addEventListener('click', () => showToast('Read, Study, Reflect, Journey – take your time.'));
+      getEl('onboardingSetting')?.addEventListener('click', () => {
+        let s = JSON.parse(localStorage.getItem('onboarding_settings')||'{"morning":false}');
+        s.morning = !s.morning;
+        localStorage.setItem('onboarding_settings', JSON.stringify(s));
+        getEl('onboardingStatus').textContent = s.morning?'on':'off';
+      });
+      getEl('journeySearch')?.addEventListener('input', (e) => renderJourney(e.target.value));
       
-      // listen
-      getEl('listenPlayBtn').addEventListener('click', ()=> speakText(getEl('listenText').value));
-      getEl('listenStopBtn').addEventListener('click', ()=> speechSynthesis.cancel());
+      // Final setup
+      setHome();
+      openScreen('home');
     });
   })();
 </script>
