@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0f172a">
-  <title>Bible Buddy</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0b1020">
+  <title>BibleBuddy · calm</title>
   <style>
     :root{
       --bg:#0b1020;
@@ -35,41 +37,37 @@
       background:rgba(7,16,33,.78); border-bottom:1px solid var(--border);
     }
     .topbar-inner{
-      max-width:var(--max); margin:0 auto; padding:16px;
-      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      max-width:var(--max); margin:0 auto; padding:12px 16px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .topbar-title{
+      font-weight:600; letter-spacing:0.3px; color:var(--accent2);
+      font-size:1.1rem;
     }
     .greeting-wrap{display:flex; flex-direction:column; gap:4px;}
     .greeting{ font-size:clamp(1.2rem,2vw,1.7rem); font-weight:800; line-height:1.1; }
     .date{ color:var(--accent2); font-size:.95rem; font-weight:700; }
-    .top-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
     button, select, input, textarea{
       border:1px solid var(--border); border-radius:14px;
       background:var(--panel); color:var(--text); box-shadow:none;
     }
-    button{ padding:12px 14px; font-weight:700; cursor:pointer; }
+    button{ padding:12px 14px; font-weight:700; cursor:pointer; transition: transform 0.1s, opacity 0.1s; }
     button.primary{background:linear-gradient(135deg,var(--accent),#5b8cff);}
     button.secondary{background:var(--panel2);}
     button.ghost{background:transparent;}
+    .quick-actions button:active { transform: scale(0.97); opacity: 0.9; }
     .container{ width:100%; max-width:var(--max); margin:0 auto; padding:16px; flex:1; overflow-y:auto; }
-    .grid{ display:grid; gap:16px; }
-    .home-grid{grid-template-columns:1fr;}
     .card{
       background:linear-gradient(180deg,var(--panel),rgba(18,26,51,.88));
       border:1px solid var(--border); border-radius:var(--radius);
       box-shadow:var(--shadow); padding:16px;
     }
-    .card h2,.card h3{margin:0 0 10px 0}
     .muted{color:var(--muted)}
-    .hero{ display:grid; gap:12px; }
     .verse{
-      font-size:1.1rem; line-height:1.55; padding:16px;
-      border-left:4px solid var(--accent2); background:rgba(255,255,255,.03);
-      border-radius:14px;
-    }
-    .session-badge{
-      display:inline-flex; width:max-content; align-items:center; gap:8px;
-      font-size:.85rem; font-weight:800; color:#0b1020; background:var(--accent2);
-      padding:8px 12px; border-radius:999px;
+      font-size:1.15rem; line-height:1.6; padding:24px 20px;
+      border-left:4px solid var(--accent2); background:rgba(255,255,255,.02);
+      border-radius:18px; border:1px solid var(--border); border-left:4px solid var(--accent2);
+      box-shadow:none; margin-bottom:20px;
     }
     .quick-actions{ display:flex; gap:10px; flex-wrap:wrap; }
     .quick-actions button{padding:10px 12px;}
@@ -86,7 +84,7 @@
     .tabs{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
     .tabs button.active{background:var(--accent); color:#fff;}
     input, textarea, select{ width:100%; padding:12px 14px; font:inherit; }
-    textarea{ min-height:200px; resize:vertical; background:rgba(255,255,255,.03); }
+    textarea{ min-height:120px; resize:vertical; background:rgba(255,255,255,.03); }
     .footer-nav{
       position:fixed; bottom:0; left:0; right:0; width:100%; overflow-x:auto;
       white-space:nowrap; z-index:100; background:rgba(7,16,33,.88);
@@ -98,76 +96,159 @@
     .setting-row{ display:grid; gap:8px; margin-bottom:14px; }
     .split{ display:grid; gap:16px; }
     .small{font-size:.92rem}
-    .guided-steps { display: grid; gap: 10px; margin: 16px 0 12px; }
-    .step-item {
-      display: flex; align-items: center; gap: 14px; padding: 14px 16px;
-      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
-      border-radius: 18px; cursor: pointer; transition: background 0.15s;
+
+    /* HOME */
+    .home-screen-content {
+      max-width:600px; margin:0 auto; padding:8px 8px 32px;
+      display:flex; flex-direction:column; align-items:center; text-align:center;
     }
-    .step-item:hover { background: rgba(255,255,255,0.06); }
-    .step-number {
-      width: 32px; height: 32px; background: var(--panel2); border-radius: 40px;
-      display: flex; align-items: center; justify-content: center; font-weight: 800;
-      color: var(--accent2); border: 1px solid var(--border);
+    .home-greeting-large {
+      font-size:2.4rem; font-weight:700; line-height:1.2; margin-top:8px; color:var(--text);
     }
-    .step-content strong { display: block; font-size: 1rem; margin-bottom: 2px; }
-    .next-step-hint { border-top: 1px dashed var(--border); padding-top: 14px; margin-top: 6px; }
-    .timer-display { font-size: 3rem; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; margin: 10px 0; }
-    .toggle-wrap { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
-    .toggle-wrap input { width: auto; transform: scale(1.2); }
-    @keyframes pulseGlow {
-      0% { box-shadow: 0 0 0px rgba(103,232,249,0.2); }
-      50% { box-shadow: 0 0 25px rgba(103,232,249,0.5); }
-      100% { box-shadow: 0 0 0px rgba(103,232,249,0.2); }
+    .home-date { font-size:1rem; color:var(--muted); margin-top:4px; font-weight:400; }
+    .home-session-tag {
+      margin-top:8px; font-size:0.9rem; font-weight:500; text-transform:uppercase;
+      letter-spacing:1px; color:var(--accent2); opacity:0.9;
     }
-    .meditate-active { animation: pulseGlow 2.5s infinite; border-radius: 20px; }
-    @media (min-width: 900px){
-      .home-grid{grid-template-columns:1.5fr .9fr}
-      .two-col{grid-template-columns:1.2fr .8fr}
-      .split{grid-template-columns:1.25fr .75fr}
+    .home-verse-card {
+      background:rgba(255,255,255,0.02); border:1px solid var(--border);
+      border-radius:28px; padding:28px 24px; margin:28px 0 16px; width:100%;
+      backdrop-filter:blur(4px); box-shadow:0 8px 20px rgba(0,0,0,0.2);
+    }
+    .home-verse-text { font-size:1.5rem; line-height:1.45; font-weight:500; margin-bottom:16px; }
+    .home-verse-ref { font-size:1rem; color:var(--accent2); font-weight:600; }
+    .home-progression-hint {
+      font-size:0.95rem; color:var(--muted); margin-bottom:32px;
+      border-bottom:1px dashed var(--border); padding-bottom:12px; width:fit-content;
+    }
+    .home-continue-btn {
+      background:linear-gradient(135deg,var(--accent),#5b8cff);
+      border:none; padding:18px 40px; font-size:1.3rem; font-weight:700;
+      border-radius:60px; width:100%; max-width:300px; margin-bottom:20px;
+    }
+    .home-open-bible-link {
+      background:transparent; border:1px solid var(--border); color:var(--muted);
+      padding:10px 24px; border-radius:40px; font-size:0.95rem; cursor:pointer;
+      text-decoration:none; display:inline-block;
+    }
+    .home-streak-mini { display:flex; align-items:center; gap:4px; color:#fbbf24; margin-left:8px; }
+
+    /* GUIDED FLOW */
+    .flow-container { max-width:640px; margin:0 auto; padding:12px 8px 24px; display:flex; flex-direction:column; gap:24px; }
+    .flow-step-indicator { display:flex; justify-content:space-between; color:var(--muted); }
+    .flow-content {
+      background:rgba(18,26,51,0.6); border:1px solid var(--border);
+      border-radius:24px; padding:24px 20px; backdrop-filter:blur(8px);
+    }
+    .flow-verse { font-size:1.5rem; line-height:1.4; margin-bottom:20px; font-weight:500; }
+    .flow-actions { display:flex; gap:12px; justify-content:center; margin-top:28px; }
+    .flow-actions button { min-width:140px; }
+    .completed-check { font-size:3rem; margin-bottom:16px; color:var(--ok); }
+
+    /* MEDITATION */
+    .meditation-container { max-width:500px; margin:0 auto; padding:32px 20px; text-align:center; }
+    .meditation-entry { display:flex; flex-direction:column; gap:28px; }
+    .meditation-title { font-size:2.2rem; font-weight:600; margin:0; }
+    .meditation-verse { font-size:1.4rem; line-height:1.4; color:var(--accent2); padding:0 8px; }
+    .meditation-subtle { color:var(--muted); font-size:1rem; }
+    .meditation-start-btn { padding:18px 24px; font-size:1.2rem; border-radius:60px; width:100%; }
+    .meditation-duration-toggle { margin-top:8px; }
+    .meditation-duration-options { display:flex; gap:12px; justify-content:center; margin-top:12px; }
+    .meditation-duration-options button {
+      background:transparent; border:1px solid var(--border); padding:8px 20px; border-radius:40px;
+    }
+    .meditation-duration-options button.active { background:var(--accent2); color:#0b1020; }
+    .meditation-active-state { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; gap:24px; }
+    .meditation-timer-large { font-size:6rem; font-weight:700; font-variant-numeric:tabular-nums; line-height:1.2; }
+    .meditation-active-verse { font-size:1.2rem; color:var(--muted); max-width:300px; opacity:0.7; }
+    .meditation-breath-indicator {
+      width:80px; height:80px; border-radius:50%; background:rgba(103,232,249,0.1); margin-top:20px;
+    }
+    .meditation-breath-indicator.breathing { animation:softBreath 8s infinite; }
+    @keyframes softBreath {
+      0%,100% { transform:scale(1); opacity:0.3; }
+      50% { transform:scale(1.3); opacity:0.7; }
+    }
+    .meditation-end-state { display:flex; flex-direction:column; gap:20px; padding-top:30px; }
+    .meditation-check { font-size:4rem; color:var(--ok); }
+    .meditation-end-actions { display:flex; gap:12px; justify-content:center; }
+
+    /* PROFILE ROWS */
+    .settings-section { margin-bottom:12px; }
+    .section-subtitle { font-size:1rem; font-weight:600; margin:16px 0 6px; color:var(--accent2); text-transform:uppercase; letter-spacing:0.5px; }
+    .settings-row {
+      display:flex; justify-content:space-between; align-items:center; padding:8px 0;
+      border-bottom:1px solid rgba(255,255,255,0.05); font-weight:400;
+    }
+    .settings-row:last-child { border-bottom:none; }
+    .settings-row span:last-child { color:var(--muted); }
+    .settings-row .value-accent { color:var(--accent2); }
+    .settings-row.clickable:active { background:rgba(255,255,255,0.03); }
+    .settings-row select { font-size:0.95rem; background:transparent; color:var(--text); border:1px solid var(--border); border-radius:8px; padding:6px 10px; }
+
+    /* collapsible panel */
+    .ai-panel {
+      position: relative;
+      margin-top: 16px;
+      padding: 16px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+    .ai-panel .close-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: transparent;
+      border: none;
+      padding: 6px 10px;
+      font-size: 1.2rem;
+      color: var(--muted);
+    }
+
+    .reflection-item.active {
+      border-color: var(--accent2);
+      background: rgba(103,232,249,0.08);
+    }
+
+    @media (max-width:500px){
+      .home-greeting-large { font-size:2rem; }
+      .home-verse-text { font-size:1.3rem; }
     }
   </style>
 </head>
 <body>
 <div class="app">
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div id="topGreeting" class="greeting-wrap">
-        <div id="greetingText" class="greeting">Good Morning Emma</div>
-        <div id="dateText" class="date">Sunday, April 12, 2026</div>
-      </div>
-      <div class="top-actions">
-        <span id="sessionBadge" class="session-badge">Morning Session</span>
-        <button class="secondary" data-nav="home">Home</button>
-      </div>
-    </div>
+  <header class="topbar" id="topbarHeader">
+    <div class="topbar-inner"><span class="topbar-title" id="topbarTitle">BibleBuddy</span></div>
   </header>
 
-  <main class="container">
+  <main class="container" id="mainContainer">
     <!-- HOME -->
     <section id="home" class="screen active">
-      <div class="grid home-grid">
-        <div class="card hero">
-          <h2 id="homeTitle">Start your day with Scripture</h2>
-          <div id="homeVerse" class="verse">“This is the day which the LORD hath made; we will rejoice and be glad in it.”</div>
-          <div id="homeTask" class="muted">Read your morning passage, ask AI for context, and begin with prayer.</div>
-          <div class="guided-steps">
-            <div class="step-item" data-nav="read"><div class="step-number">1</div><div class="step-content"><strong>Read</strong><div class="small muted">Open today's scripture passage</div></div></div>
-            <div class="step-item" data-nav="study"><div class="step-number">2</div><div class="step-content"><strong>Insight</strong><div class="small muted">Get context & meaning</div></div></div>
-            <div class="step-item" data-nav="prayer"><div class="step-number">3</div><div class="step-content"><strong>Pray</strong><div class="small muted">Respond with prayer</div></div></div>
-            <div class="step-item" data-nav="journey"><div class="step-number">4</div><div class="step-content"><strong>Save</strong><div class="small muted">Record in journey</div></div></div>
-          </div>
-          <div class="next-step-hint small muted" id="homeNextStep">Open your morning passage and begin with prayer.</div>
+      <div class="home-screen-content">
+        <div style="display:flex; align-items:baseline; justify-content:center; flex-wrap:wrap; gap:8px;">
+          <div id="homeGreetingLarge" class="home-greeting-large">Good Morning</div>
+          <span id="homeStreakMini" class="home-streak-mini"></span>
         </div>
-        <aside class="card">
-          <div class="section-title"><h3>Journey</h3><button class="ghost" data-nav="journey">View</button></div>
-          <div class="list">
-            <div class="item"><strong>Streak</strong><div class="muted small">12 days</div></div>
-            <div class="item"><strong>Prayer memory</strong><div class="muted small">3 active</div></div>
-            <div class="item"><strong>Saved verses</strong><div class="muted small">27</div></div>
-            <div class="item"><strong>Current plan</strong><div class="muted small">John study</div></div>
-          </div>
-        </aside>
+        <div id="homeDateDisplay" class="home-date"></div>
+        <div id="homeSessionLabel" class="home-session-tag">Morning Session</div>
+        <div class="home-verse-card">
+          <div id="homeVerseText" class="home-verse-text"></div>
+          <div id="homeVerseReference" class="home-verse-ref"></div>
+        </div>
+        <div id="homeProgressionHint" class="home-progression-hint"></div>
+        <button id="homeContinueBtn" class="primary home-continue-btn">Continue</button>
+        <a id="homeOpenBibleLink" class="home-open-bible-link" data-nav="read">Open Bible →</a>
+      </div>
+    </section>
+
+    <!-- GUIDED FLOW -->
+    <section id="sessionFlow" class="screen">
+      <div class="flow-container">
+        <div class="flow-step-indicator" id="flowStepIndicator"></div>
+        <div class="flow-content" id="flowContentArea"></div>
+        <div class="flow-actions" id="flowActionsArea"></div>
       </div>
     </section>
 
@@ -181,13 +262,24 @@
           <select id="translation"><option value="kjv">KJV</option><option value="web">WEB</option><option value="asv">ASV</option></select>
           <button class="secondary" id="loadPassageBtn">Load</button>
         </div>
-        <div id="readDisplay" class="verse" style="white-space:pre-wrap; line-height:1.6;"><span class="muted">Select book and chapter, then load.</span></div>
-        <div id="readAIResponse" class="item" style="margin-top:16px; display:none;"></div>
-        <div class="quick-actions" style="margin-top:14px;">
-          <button id="highlightBtn">Highlight</button>
-          <button id="noteBtn">Note</button>
-          <button id="bookmarkBtn">Bookmark</button>
-          <button data-nav="listen">Listen</button>
+        <div id="readDisplay" class="verse"><span class="muted">Select book and chapter, then load.</span></div>
+        <div id="readAIResponse" class="ai-panel hidden"></div>
+        
+        <div class="quick-actions" id="guidanceActions">
+          <button data-action="explain">Explain</button>
+          <button data-action="apply">Apply</button>
+          <button data-action="pray">Pray</button>
+        </div>
+        <div id="guidanceOutput" class="ai-panel hidden"></div>
+        
+        <div style="margin-top:20px; text-align:center;">
+          <button id="readMoreActionsBtn" class="secondary small">More</button>
+          <div id="readMoreActionsMenu" class="hidden" style="margin-top:12px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+            <button id="highlightBtn">Highlight</button>
+            <button id="noteBtn">Note</button>
+            <button id="bookmarkBtn">Bookmark</button>
+            <button data-nav="listen">Listen</button>
+          </div>
         </div>
       </div>
     </section>
@@ -203,13 +295,10 @@
             <button data-tab="cross">Cross-refs</button>
             <button data-tab="apply">Application</button>
           </div>
-          <div id="studyAIResponse" class="item" style="margin-top:16px;"></div>
+          <div id="studyAIResponse" class="ai-panel hidden"></div>
           <div id="studyNotesPanel" style="display:none; margin-top:16px;">
-            <textarea id="studyNotesArea" placeholder="Write your personal notes here..."></textarea>
-            <div class="quick-actions" style="margin-top:10px;">
-              <button id="saveStudyNoteBtn" class="secondary">Save Note</button>
-              <button id="clearStudyNoteBtn" class="secondary">Clear</button>
-            </div>
+            <textarea id="studyNotesArea" placeholder="Write your personal notes..."></textarea>
+            <div class="quick-actions"><button id="saveStudyNoteBtn" class="secondary">Save Note</button><button id="clearStudyNoteBtn" class="secondary">Clear</button></div>
             <div id="savedNotesList" style="margin-top:16px;"></div>
           </div>
         </div>
@@ -220,6 +309,12 @@
             <div class="item reflection-item" data-reflection="obey">What should I obey today?</div>
             <div class="item reflection-item" data-reflection="prayer">What prayer follows this passage?</div>
           </div>
+          <div id="reflectionOutput" class="ai-panel hidden"></div>
+          <div style="margin-top:16px;">
+            <textarea id="freeInputText" placeholder="Describe your situation..."></textarea>
+            <button id="freeInputBtn" class="primary" style="margin-top:8px; width:100%;">Get Guidance</button>
+            <div id="freeInputOutput" class="ai-panel hidden"></div>
+          </div>
         </div>
       </div>
     </section>
@@ -228,46 +323,50 @@
     <section id="listen" class="screen">
       <div class="card">
         <div class="section-title"><h2>Listen</h2></div>
-        <div class="item"><strong>Audio passage</strong><div class="muted small">John 1 • KJV</div></div>
-        <select id="ttsMode" style="margin-top:12px;"><option value="continuous">Continuous</option><option value="verse">Verse by Verse</option></select>
+        <select id="ttsMode"><option value="continuous">Continuous</option><option value="verse">Verse by Verse</option></select>
         <div class="quick-actions" style="margin-top:14px;">
-          <button class="primary" id="listenPlayBtn">Play</button>
-          <button id="listenPauseBtn">Pause</button>
-          <button id="listenStopBtn">Stop</button>
+          <button class="primary" id="listenPlayBtn">Play</button><button id="listenPauseBtn">Pause</button><button id="listenStopBtn">Stop</button>
         </div>
-        <textarea id="listenText" class="verse" style="margin-top:20px; line-height:1.6; background:rgba(255,255,255,.03);" readonly>Load a passage to listen</textarea>
+        <textarea id="listenText" class="verse" style="margin-top:20px; background:rgba(255,255,255,.03);" readonly>Load a passage to listen</textarea>
       </div>
     </section>
 
     <!-- MEDITATION -->
     <section id="meditate" class="screen">
-      <div class="card" id="meditateCard">
-        <div class="section-title"><h2>Meditation</h2></div>
-        <div class="tabs" id="meditationTabs">
-          <button class="active" data-phase="reset">Reset</button>
-          <button data-phase="reflect">Reflect</button>
-          <button data-phase="silence">Silence</button>
+      <div class="meditation-container" id="meditationContainer">
+        <div id="meditationEntry" class="meditation-entry">
+          <h2 class="meditation-title">Quiet Time</h2>
+          <div id="meditationVerse" class="meditation-verse">“Be still, and know that I am God.”</div>
+          <div class="meditation-subtle">Take a moment. Breathe. Be still.</div>
+          <button class="primary meditation-start-btn" id="meditationStartBtn">Start 2‑minute quiet time</button>
+          <div class="meditation-duration-toggle">
+            <a href="#" id="meditationChangeDurationLink" class="muted small">Change duration</a>
+            <div id="meditationDurationOptions" class="meditation-duration-options hidden">
+              <button data-duration="60">1 min</button>
+              <button data-duration="120" class="active">2 min</button>
+              <button data-duration="300">5 min</button>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <button id="meditationCustomVerseToggle" class="secondary small">Use custom verse</button>
+            <textarea id="meditationCustomVerseInput" class="hidden" placeholder="Enter a verse or thought…" style="margin-top:8px;"></textarea>
+          </div>
         </div>
-        <div id="meditationPhaseContent" style="margin-top:16px;"></div>
-        <div id="meditationTimerSection">
-          <div class="setting-row">
-            <label class="small muted">Duration (minutes)</label>
-            <input id="meditateMinutes" type="range" min="1" max="20" value="5" step="1">
-            <div class="timer-display" id="meditateTimer">05:00</div>
+        <div id="meditationActive" class="meditation-active-state hidden">
+          <div class="meditation-timer-large" id="meditationTimerDisplay">02:00</div>
+          <div id="meditationActiveVerse" class="meditation-active-verse"></div>
+          <div class="meditation-breath-indicator" id="meditationBreathIndicator"></div>
+          <button class="secondary" id="meditationStopBtn" style="margin-top:30px;">Stop</button>
+        </div>
+        <div id="meditationEnd" class="meditation-end-state hidden">
+          <div class="meditation-check">✔️</div>
+          <h3>You took a moment to be still</h3>
+          <p class="muted">Write one thought (optional)</p>
+          <textarea id="meditationReflection" placeholder="What stayed with you…" rows="2"></textarea>
+          <div class="meditation-end-actions">
+            <button class="primary" id="meditationSaveBtn">Save & finish</button>
+            <button class="secondary" id="meditationSkipBtn">Skip</button>
           </div>
-          <div class="toggle-wrap">
-            <label class="small">Enable Scripture Guidance</label>
-            <input type="checkbox" id="meditateGuidanceToggle">
-          </div>
-          <div id="meditateGuidanceBox" class="item" style="display:none; margin-bottom:16px;">
-            <span id="meditateGuidanceText">Be still and know that I am God.</span>
-          </div>
-          <div class="quick-actions">
-            <button class="primary" id="meditateStart">Start</button>
-            <button class="secondary" id="meditatePause">Pause</button>
-            <button class="secondary" id="meditateReset">Reset</button>
-          </div>
-          <div id="meditateMessage" class="muted small" style="margin-top:14px;"></div>
         </div>
       </div>
     </section>
@@ -275,22 +374,16 @@
     <!-- PRAYER -->
     <section id="prayer" class="screen">
       <div class="split">
-        <div class="card">
-          <h2>Prayer & Struggles</h2>
-          <div class="setting-row">
-            <textarea id="prayerStruggles" placeholder="Write your current struggles..."></textarea>
-            <textarea id="prayerPoints" placeholder="Write prayer points..."></textarea>
-          </div>
+        <div class="card"><h2>Prayer & Struggles</h2>
+          <textarea id="prayerStruggles" placeholder="Write your current struggles..."></textarea>
+          <textarea id="prayerPoints" placeholder="Write prayer points..."></textarea>
           <button class="primary" id="prayerAskAIBtn">Generate Bible Help</button>
-          <div id="prayerAIResponse" class="item" style="margin-top:16px; display:none;"></div>
+          <div id="prayerAIResponse" class="ai-panel hidden"></div>
         </div>
-        <div class="card">
-          <h3>Answered Prayer</h3>
-          <div class="list">
-            <label class="item"><input type="checkbox"> Healing for family</label>
-            <label class="item"><input type="checkbox"> Guidance for work</label>
-            <label class="item"><input type="checkbox"> Peace in decision</label>
-          </div>
+        <div class="card"><h3>Answered Prayer</h3>
+          <label class="item"><input type="checkbox"> Healing for family</label>
+          <label class="item"><input type="checkbox"> Guidance for work</label>
+          <label class="item"><input type="checkbox"> Peace in decision</label>
         </div>
       </div>
     </section>
@@ -298,10 +391,7 @@
     <!-- JOURNEY -->
     <section id="journey" class="screen">
       <div class="card">
-        <div class="section-title">
-          <h2>Journey</h2>
-          <input id="journeySearch" placeholder="Search..." style="margin-left:10px; padding:6px;">
-        </div>
+        <div class="section-title"><h2>Journey</h2><input id="journeySearch" placeholder="Search..." style="margin-left:10px; padding:6px;"></div>
         <div id="journeyList"></div>
       </div>
     </section>
@@ -311,59 +401,33 @@
       <div class="split">
         <div class="card">
           <h2>Profile</h2>
-          <div class="list">
-            <div class="item">
-              <strong>Name</strong>
-              <input type="text" id="profileNameInput" placeholder="Emma" style="margin-top:8px;" />
-              <button id="saveProfileNameBtn" class="secondary" style="margin-top:8px;">Save Name</button>
-            </div>
-          </div>
+          <div class="list"><div class="item"><strong>Name</strong><input type="text" id="profileNameInput" placeholder="Emma"><button id="saveProfileNameBtn" class="secondary" style="margin-top:8px;">Save Name</button></div></div>
         </div>
         <div class="card">
           <h3>Settings</h3>
-          <div class="list">
-            <div class="item" style="flex-direction: column; align-items: flex-start; cursor: default;">
-              <strong>OpenRouter API Key</strong>
-              <input type="password" id="apiKeyInput" placeholder="Enter API key" style="margin-top:8px; width:100%;" />
-              <div style="display:flex; gap:8px; margin-top:8px; align-items:center;">
-                <button id="saveApiKeyBtn" class="secondary" style="padding:8px 12px;">Save</button>
-                <span id="apiStatus" class="small muted">Not connected</span>
-              </div>
-            </div>
-            <div class="item" style="flex-direction: column; align-items: flex-start; cursor: default;">
-              <strong>AI Model</strong>
-              <select id="aiModelSelect" style="margin-top:8px;">
-                <option value="openai/gpt-4o-mini">GPT-4o-mini</option>
+          <div class="settings-section">
+            <h4 class="section-subtitle">App Core</h4>
+            <div class="settings-row"><span>AI Model</span>
+              <select id="aiModelSelect" style="width:auto;">
+                <option value="openai/gpt-4o-mini">GPT‑4o‑mini</option>
                 <option value="deepseek/deepseek-chat">DeepSeek Chat</option>
-                <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="openai/gpt-3.5-turbo">GPT‑3.5 Turbo</option>
               </select>
-              <button id="saveModelBtn" class="secondary" style="margin-top:8px;">Set Model</button>
             </div>
-            <div class="item" id="voiceSpeedSetting">
-              <div style="display:flex; justify-content:space-between;"><strong>Voice speed</strong><span id="voiceSpeedValue" class="small" style="color:var(--accent2);">1.0x</span></div>
-              <div id="voiceSpeedPanel" style="display:none; margin-top:10px; gap:8px;">
-                <button class="voice-speed-btn secondary" data-rate="0.75">0.75x</button>
-                <button class="voice-speed-btn secondary" data-rate="1.0">1.0x</button>
-                <button class="voice-speed-btn secondary" data-rate="1.25">1.25x</button>
-              </div>
-            </div>
-            <div class="item" id="meditationDurationSetting">
-              <div style="display:flex; justify-content:space-between;"><strong>Meditation duration</strong><span id="meditationDurationValue" class="small" style="color:var(--accent2);">5 min</span></div>
-              <div id="meditationDurationPanel" style="display:none; margin-top:10px; gap:8px;">
-                <button class="meditation-duration-btn secondary" data-mins="3">3 min</button>
-                <button class="meditation-duration-btn secondary" data-mins="5">5 min</button>
-                <button class="meditation-duration-btn secondary" data-mins="10">10 min</button>
-              </div>
-            </div>
-            <div class="item" id="userGuideSetting"><strong>User guide</strong><div class="small muted">Quick start</div></div>
-            <div class="item" id="onboardingSetting">
-              <div style="display:flex; justify-content:space-between;"><strong>Onboarding</strong><span id="onboardingStatus" class="small" style="color:var(--accent2);"></span></div>
-              <div id="onboardingPanel" style="display:none; margin-top:10px;">
-                <label style="display:flex; gap:8px;"><input type="checkbox" id="morningReminderCheck"> Morning reminders</label>
-                <label style="display:flex; gap:8px; margin-top:8px;"><input type="checkbox" id="dailyVerseCheck"> Daily verse</label>
-                <button id="saveOnboardingBtn" class="secondary" style="margin-top:10px; width:100%;">Save</button>
-              </div>
-            </div>
+            <div class="settings-row clickable" id="voiceSpeedSetting"><span>Voice speed</span><span id="voiceSpeedValue" class="value-accent">1.0x</span></div>
+            <div class="settings-row clickable" id="meditationDurationSetting"><span>Meditation duration</span><span id="meditationDurationValue" class="value-accent">5 min</span></div>
+            <div class="settings-row"><span>API key</span><input type="password" id="apiKeyInput" placeholder="Enter key" style="width:auto;"><button id="saveApiKeyBtn" class="secondary" style="padding:6px 10px;">Save</button><span id="apiStatus" class="small muted"></span></div>
+          </div>
+          <div class="settings-section">
+            <h4 class="section-subtitle">Journey</h4>
+            <div class="settings-row"><span>Saved verses</span><span id="savedVersesCount">—</span></div>
+            <div class="settings-row"><span>Prayer memory</span><span>—</span></div>
+            <div class="settings-row"><span>Current plan</span><span>John study</span></div>
+          </div>
+          <div class="settings-section">
+            <h4 class="section-subtitle">Support</h4>
+            <div class="settings-row clickable" id="userGuideSetting"><span>User guide</span><span class="small muted">Quick start</span></div>
+            <div class="settings-row clickable" id="onboardingSetting"><span>Onboarding</span><span id="onboardingStatus" class="value-accent">off</span></div>
           </div>
         </div>
       </div>
@@ -385,425 +449,400 @@
 
 <script>
   (function(){
-    window.state = window.state || {};
-    const state = window.state;
-    
+    "use strict";
+
+    // ---------- CENTRAL STATE ----------
+    const state = {
+      screen: 'home',
+      userName: localStorage.getItem('user_name') || 'Emma',
+      aiConfig: { apiKey: localStorage.getItem('openrouter_api') || '', model: localStorage.getItem('ai_model') || 'openai/gpt-4o-mini' },
+      ttsRate: parseFloat(localStorage.getItem('voice_speed')) || 1.0,
+      voiceSpeed: parseFloat(localStorage.getItem('voice_speed')) || 1.0,
+      meditation: { active: false, duration: parseInt(localStorage.getItem('meditation_duration')) || 120, timer: null, remaining: 120, startTime: null },
+      session: { step: 0, verse: '', data: null, loading: false },
+      currentScripture: '',
+      readActionLoading: false,
+      stepLock: false,
+    };
+
     const bibleBooksMap = {
       'GEN':50,'EXO':40,'LEV':27,'NUM':36,'DEU':34,'JOS':24,'JDG':21,'RUT':4,'1SA':31,'2SA':24,'1KI':22,'2KI':25,'1CH':29,'2CH':36,'EZR':10,'NEH':13,'EST':10,'JOB':42,'PSA':150,'PRO':31,'ECC':12,'SNG':8,'ISA':66,'JER':52,'LAM':5,'EZE':48,'DAN':12,'HOS':14,'JOL':3,'AMO':9,'OBA':1,'JON':4,'MIC':7,'NAH':3,'HAB':3,'ZEP':3,'HAG':2,'ZEC':14,'MAL':4,'MAT':28,'MRK':16,'LUK':24,'JHN':21,'ACT':28,'ROM':16,'1CO':16,'2CO':13,'GAL':6,'EPH':6,'PHP':4,'COL':4,'1TH':5,'2TH':3,'1TI':6,'2TI':4,'TIT':3,'PHM':1,'HEB':13,'JAS':5,'1PE':5,'2PE':3,'1JN':5,'2JN':1,'3JN':1,'JUD':1,'REV':22
     };
-    
-    let userName = localStorage.getItem('user_name') || 'Emma';
-    const AI_CONFIG = { apiKey: '', model: 'openai/gpt-4o-mini' };
-    
-    function formatDate(d){ return d.toLocaleDateString('en-US',{weekday:'long', year:'numeric', month:'long', day:'numeric'}); }
-    function getSession(hour){
-      if (hour < 12) return { name:'Morning', title:'Begin with the Word', task:'Read, understand, pray.', verse:'', next:'Open your morning passage.' };
-      if (hour < 18) return { name:'Afternoon', title:'Pause · Reflect', task:'Revisit a verse, pray.', verse:'', next:'Take a breath, read a short passage.' };
-      return { name:'Evening', title:'Close in peace', task:'Review, give thanks.', verse:'', next:'Reflect and prepare for rest.' };
-    }
-    
-    function getTodaysScripture() {
-      const scriptures = [
-        { ref: 'Psalm 118:24', text: 'This is the day which the LORD hath made; we will rejoice and be glad in it.' },
-        { ref: 'Proverbs 3:5', text: 'Trust in the LORD with all thine heart; and lean not unto thine own understanding.' },
-        { ref: 'Isaiah 41:10', text: 'Fear thou not; for I am with thee.' },
-        { ref: 'John 1:1', text: 'In the beginning was the Word, and the Word was with God, and the Word was God.' }
-      ];
-      const index = new Date().getDate() % scriptures.length;
-      return scriptures[index];
-    }
-    
-    function setHome(){
-      const now = new Date(); const session = getSession(now.getHours());
-      const today = getTodaysScripture();
-      document.getElementById('dateText').textContent = formatDate(now);
-      document.getElementById('greetingText').textContent = `Good ${session.name} ${userName}`;
-      document.getElementById('sessionBadge').textContent = `${session.name} Session`;
-      document.getElementById('homeTitle').textContent = session.title;
-      document.getElementById('homeTask').textContent = session.task;
-      document.getElementById('homeVerse').innerHTML = `<strong style="color:var(--accent2)">${today.ref}</strong><br>${today.text}`;
-      document.getElementById('homeNextStep').textContent = session.next;
+
+    // ---------- UTILS ----------
+    const getEl = id => document.getElementById(id);
+    const showToast = (msg, dur=2000) => {
+      let t = getEl('appToast');
+      if(!t){ t=document.createElement('div'); t.id='appToast'; t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#000c;color:#fff;padding:8px 16px;border-radius:40px;z-index:9999;transition:opacity 0.3s;'; document.body.appendChild(t); }
+      t.textContent=msg; t.style.opacity='1';
+      clearTimeout(window._toast); window._toast=setTimeout(()=>t.style.opacity='0',dur);
+    };
+    const safeHtml = (text) => { const d=document.createElement('div'); d.textContent=(text||'').trim(); return d.innerHTML.replace(/\n{2,}/g,'<br><br>').replace(/\n/g,'<br>'); };
+
+    // Streak
+    function updateStreak(){
+      const today = new Date().toISOString().slice(0,10);
+      let s = JSON.parse(localStorage.getItem('bb_streak')||'{"count":0,"last":null}');
+      if(s.last===today) return;
+      const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+      s.count = s.last===yesterday ? s.count+1 : 1;
+      s.last = today;
+      localStorage.setItem('bb_streak', JSON.stringify(s));
+      const mini = getEl('homeStreakMini'); if(mini) mini.textContent = s.count ? `🔥 ${s.count}` : '';
     }
 
-    function openScreen(id){
-      state.screen = id;
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.getElementById(id)?.classList.add('active');
-      document.querySelectorAll('[data-nav]').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll(`[data-nav="${id}"]`).forEach(b => b.classList.add('active'));
-      document.getElementById('topGreeting').style.display = (id==='home')?'block':'none';
-      document.getElementById('sessionBadge').style.display = (id==='home')?'inline-flex':'none';
-      if (id === 'read') {
-        const today = getTodaysScripture();
-        const display = document.getElementById('readDisplay');
-        if (display && display.innerText.includes('Select book')) {
-          const html = `<strong style="color:var(--accent2)">${today.ref}</strong><br>${today.text}`;
-          display.innerHTML = html;
-          const listenText = document.getElementById('listenText');
-          if (listenText) listenText.value = `${today.ref}\n${today.text}`;
-        }
+    // ---------- RESET DYNAMIC UI (critical) ----------
+    function resetDynamicViews() {
+      // Hide all AI panels
+      document.querySelectorAll('.ai-panel').forEach(p => { p.classList.add('hidden'); p.innerHTML = ''; });
+      // Clear reflection active
+      document.querySelectorAll('.reflection-item').forEach(i => i.classList.remove('active'));
+      // Close more menu
+      getEl('readMoreActionsMenu')?.classList.add('hidden');
+    }
+
+    // ---------- AI with JSON parsing ----------
+    async function askAI(prompt, type='guidance') {
+      if(!state.aiConfig.apiKey) { showToast('Set API key in Profile'); return null; }
+      let system = 'You are a wise Bible teacher.';
+      if(type==='study') system = 'Bible study assistant.';
+      else if(type==='reflection') system = 'Spiritual guide.';
+      try{
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions',{
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${state.aiConfig.apiKey}`,'HTTP-Referer':location.origin},
+          body:JSON.stringify({ model:state.aiConfig.model, messages:[{role:'system',content:system},{role:'user',content:prompt}], temperature:0.7, max_tokens:500 })
+        });
+        if(!res.ok) throw new Error('API error');
+        const data = await res.json();
+        return data.choices?.[0]?.message?.content || null;
+      }catch(e){ showToast('AI request failed'); return null; }
+    }
+
+    async function fetchSessionDataJSON(verse) {
+      const prompt = `Return a STRICT JSON object with keys: "explanation", "application", "prayer".
+For the verse: ${verse}
+Explanation: simple meaning (2-3 sentences).
+Application: 2 practical steps.
+Prayer: short personal prayer.
+Respond ONLY with valid JSON.`;
+      const raw = await askAI(prompt, 'guidance');
+      if(!raw) return { explanation:'Reflect on this verse.', application:'Apply this in your life.', prayer:'Lord, guide me.' };
+      try {
+        const json = JSON.parse(raw.replace(/```json|```/g,'').trim());
+        return { explanation: json.explanation || 'Reflect.', application: json.application || 'Apply.', prayer: json.prayer || 'Pray.' };
+      } catch {
+        return { explanation:'Reflect on this verse.', application:'Apply this in your life.', prayer:'Lord, guide me.' };
       }
-      if (id === 'listen') syncListenText();
-      if (id === 'journey') renderJourney();
-      if (id === 'study') updateStudyTabUI();
-      if (id === 'meditate') openMeditationPhase('reset');
-      if (id !== 'listen') stopTTS();
+    }
+
+    // ---------- RENDER SESSION FLOW (deterministic) ----------
+    async function renderSessionFlow() {
+      const step = state.session.step;
+      const verse = state.session.verse || `${getTodaysScripture().ref} ${getTodaysScripture().text}`;
+      const data = state.session.data || { explanation:'Reflect.', application:'Apply.', prayer:'Pray.' };
+      const container = getEl('flowContentArea'), actions = getEl('flowActionsArea');
+      const indicator = getEl('flowStepIndicator');
+      const steps = ['Read','Understand','Apply','Pray','Complete'];
+      indicator.textContent = step<4 ? `Step ${step+1}/4 · ${steps[step]}` : 'Done';
+      
+      if(step===0){
+        container.innerHTML = `<div class="flow-verse">${verse}</div><div class="quick-actions"><button class="secondary" id="flowListenBtn">🔊 Listen</button><button class="secondary" id="flowContinueReadingBtn">Continue reading →</button></div>`;
+        actions.innerHTML = `<button class="primary" id="flowNextBtn">Continue →</button>`;
+        getEl('flowListenBtn')?.addEventListener('click', ()=> speakText(verse));
+        getEl('flowContinueReadingBtn')?.addEventListener('click', ()=>{
+          const m = verse.match(/^([1-3]?\s?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/);
+          if(!m){ openScreen('read'); return; }
+          const book = getEl('bibleBook'), ch = getEl('bibleChapter');
+          if(book && ch){
+            const opt = Array.from(book.options).find(o=>o.text.toLowerCase()===m[1].toLowerCase()||o.value.toLowerCase()===m[1].toLowerCase());
+            if(opt) book.value = opt.value;
+            populateChapters();
+            if(Array.from(ch.options).some(o=>o.value===m[2])) ch.value = m[2];
+            fetchBiblePassage();
+          }
+          openScreen('read');
+        });
+      } else if(step===1){
+        container.innerHTML = `<div class="muted">${safeHtml(data.explanation)}</div>`;
+        actions.innerHTML = `<button class="primary" id="flowNextBtn">Continue</button><button class="secondary" id="flowMoreContextBtn">More context</button>`;
+        getEl('flowMoreContextBtn')?.addEventListener('click', async ()=>{
+          container.innerHTML = '<span class="muted">Loading…</span>';
+          const more = await askAI(`Give more context on: ${verse}`, 'study');
+          container.innerHTML = safeHtml(more||'No context.');
+        });
+      } else if(step===2){
+        container.innerHTML = `<h3>Apply</h3><div class="muted">${safeHtml(data.application)}</div>`;
+        actions.innerHTML = `<button class="primary" id="flowNextBtn">Continue</button><button class="secondary" id="flowGuidanceBtn">Need guidance</button>`;
+        getEl('flowGuidanceBtn')?.addEventListener('click', ()=>{
+          const fi = getEl('freeInputText'); if(fi){ fi.value = `Help me apply: ${verse}`; openScreen('read'); }
+        });
+      } else if(step===3){
+        container.innerHTML = `<h3>Prayer</h3><div>${safeHtml(data.prayer)}</div><textarea id="flowPrayerEdit" class="small" style="margin-top:12px;">${data.prayer}</textarea>`;
+        actions.innerHTML = `<button class="primary" id="flowSaveFinishBtn">Save & Finish</button>`;
+        getEl('flowSaveFinishBtn').addEventListener('click', ()=>{
+          const prayer = getEl('flowPrayerEdit').value.trim();
+          if(prayer) saveJourneyEntry({type:'Prayer', text:prayer, date:new Date().toLocaleString()});
+          state.session.step = 4; renderSessionFlow();
+        });
+        return;
+      } else {
+        localStorage.removeItem('bb_session');
+        container.innerHTML = `<div class="completed-check">✔️</div><h3>You spent time in the Word</h3><p class="muted">Come back later</p>`;
+        actions.innerHTML = `<button class="primary" id="flowDoneBtn">Done</button>`;
+        getEl('flowDoneBtn').addEventListener('click', ()=> openScreen('home'));
+        return;
+      }
+      getEl('flowNextBtn')?.addEventListener('click', ()=>{
+        if(state.stepLock) return; state.stepLock = true;
+        if(state.session.step < 3){ state.session.step++; renderSessionFlow(); }
+        state.stepLock = false;
+      });
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    // ---------- SCREEN NAVIGATION (resets UI) ----------
+    function openScreen(id) {
+      if(state.meditation.active) stopMeditation();
+      resetDynamicViews();
+      state.screen = id;
+      document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+      getEl(id)?.classList.add('active');
+      document.querySelectorAll('[data-nav]').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll(`[data-nav="${id}"]`).forEach(b=>b.classList.add('active'));
+      const topbar = getEl('topbarHeader');
+      if(id==='home'||id==='sessionFlow') topbar.style.display='none';
+      else { topbar.style.display='block'; getEl('topbarTitle').textContent = 'BibleBuddy'; }
+      
+      if(id==='home') setHome();
+      if(id==='sessionFlow') renderSessionFlow();
+      if(id==='read') syncReadDefault();
+      if(id==='listen') syncListenText();
+      if(id==='journey') renderJourney();
+      if(id==='meditate') initMeditation();
       window.scrollTo({top:0});
     }
 
-    function populateChapters(){
-      const book = document.getElementById('bibleBook'), ch = document.getElementById('bibleChapter');
-      if(!book||!ch) return;
-      const max = bibleBooksMap[book.value]||1;
-      ch.innerHTML = Array.from({length:max}, (_,i)=>`<option value="${i+1}">${i+1}</option>`).join('');
+    // ---------- HOME ----------
+    function getTodaysScripture(){
+      const list=[ {ref:'Psalm 118:24',text:'This is the day which the LORD hath made; we will rejoice and be glad in it.'}, {ref:'Proverbs 3:5',text:'Trust in the LORD with all thine heart; and lean not unto thine own understanding.'} ];
+      return list[new Date().getDate()%2];
     }
-    
+    function setHome(){
+      const now = new Date();
+      const hour = now.getHours();
+      const sessionName = hour<12?'Morning':hour<18?'Afternoon':'Evening';
+      getEl('homeGreetingLarge').textContent = `Good ${sessionName} ${state.userName}`;
+      getEl('homeDateDisplay').textContent = now.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric'});
+      getEl('homeSessionLabel').textContent = `${sessionName} Session`;
+      const today = getTodaysScripture();
+      getEl('homeVerseText').textContent = `“${today.text}”`;
+      getEl('homeVerseReference').textContent = today.ref;
+      const journey = JSON.parse(localStorage.getItem('journeyData')||'[]');
+      const last = journey.find(e=>e.type==='Scripture');
+      let hint = 'Continue your journey in Psalms';
+      if(last){ const m = last.text.match(/^([1-3]?\s?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/); if(m) hint = `You're in ${m[1]} ${m[2]}`; }
+      const saved = localStorage.getItem('bb_session');
+      if(saved){ try{ const s=JSON.parse(saved); if(s.step>0 && s.step<4) hint='Resume your session'; }catch{} }
+      getEl('homeProgressionHint').textContent = hint;
+      updateStreak();
+    }
+
+    // ---------- READ ----------
+    function populateChapters(){ const b=getEl('bibleBook'),c=getEl('bibleChapter'); if(b&&c){ c.innerHTML = Array.from({length:bibleBooksMap[b.value]||1},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join(''); } }
     async function fetchBiblePassage(){
-      const book=document.getElementById('bibleBook'), ch=document.getElementById('bibleChapter'), trans=document.getElementById('translation'), disp=document.getElementById('readDisplay');
-      if(!book||!ch||!trans||!disp) return;
-      disp.innerHTML='<span class="muted">Loading Scripture...</span>';
+      const b=getEl('bibleBook'),c=getEl('bibleChapter'),t=getEl('translation'),d=getEl('readDisplay');
+      if(!b||!c||!t||!d) return;
+      d.innerHTML='<span class="muted">Loading…</span>';
       try{
-        const res=await fetch(`https://bible-api.com/${book.value}+${ch.value}?translation=${trans.value}`);
-        const data=await res.json();
-        let text='';
-        data.verses.forEach(v=>text+=`${v.verse} ${v.text}\n`);
-        disp.innerHTML=`<strong style="display:block;margin-bottom:8px;color:var(--accent2)">${data.reference}</strong>${text.replace(/\n/g,'<br>')}`;
-        syncListenText();
-        const journey = getJourneyData(); const last = journey[0];
-        if (data.reference && (!last || last.text !== data.reference)) {
-          saveJourneyEntry({ type: 'Scripture', text: data.reference, date: new Date().toLocaleString() });
-        }
-      }catch(e){ disp.innerHTML='<span class="muted">⚠️ Unable to load passage.</span>'; }
+        const res=await fetch(`https://bible-api.com/${b.value}+${c.value}?translation=${t.value}`); const data=await res.json();
+        let text=''; data.verses.forEach(v=>text+=`${v.verse} ${v.text}\n`);
+        const ref=data.reference; d.innerHTML=`<strong style="color:var(--accent2)">${ref}</strong><br>${text.replace(/\n/g,'<br>')}`;
+        syncListenText(); state.currentScripture = `${ref} ${text.replace(/\n/g,' ')}`;
+        saveJourneyEntry({type:'Scripture', text:ref, date:new Date().toLocaleString()});
+      }catch(e){ d.innerHTML='<span class="muted">⚠️ Unable to load.</span>'; }
+    }
+    function syncReadDefault(){ const d=getEl('readDisplay'); if(d&&d.innerText.includes('Select')){ const today=getTodaysScripture(); d.innerHTML=`<strong style="color:var(--accent2)">${today.ref}</strong><br>${today.text}`; syncListenText(); state.currentScripture=`${today.ref} ${today.text}`; } }
+    function syncListenText(){
+      const r=getEl('readDisplay'), l=getEl('listenText');
+      if(!r||!l) return;
+      let text = r.innerText.replace(/\n+/g,'\n\n').replace(/\s+/g,' ').replace(/(\d+)\s/g,'\n$1 ').trim();
+      l.value = text;
+    }
+    async function handleGuidanceAction(action){
+      if(state.readActionLoading) return; state.readActionLoading=true;
+      const panel = getEl('guidanceOutput'); panel.classList.remove('hidden'); panel.innerHTML='Loading…';
+      const verse = state.currentScripture || getEl('readDisplay')?.innerText||'';
+      let prompt = action==='explain'?`Explain this verse simply: ${verse}`: action==='apply'?`Give 2 practical applications: ${verse}`:`Write a short prayer: ${verse}`;
+      const res = await askAI(prompt,'guidance');
+      panel.innerHTML = safeHtml(res||'No response.') + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden')">✕</button>`;
+      state.readActionLoading=false;
     }
 
-    function loadApiKey() {
-      const saved = localStorage.getItem('openrouter_api');
-      if (saved) { AI_CONFIG.apiKey = saved; document.getElementById('apiKeyInput').value = saved; updateApiStatus('API saved'); }
-      else updateApiStatus('Not connected');
-    }
-    function loadModel() {
-      const saved = localStorage.getItem('ai_model');
-      if (saved) { AI_CONFIG.model = saved; document.getElementById('aiModelSelect').value = saved; }
-    }
-    function updateApiStatus(s){ document.getElementById('apiStatus').textContent = s; }
-
-    async function askAI(prompt, screen='general'){
-      if (!AI_CONFIG.apiKey) { updateApiStatus('Not connected'); return 'No API key.'; }
-      let system = 'You are a wise Bible teacher.';
-      if (screen==='study') system = 'You are a Bible study assistant. For explain: simple paragraph. For cross: list related verses with brief connections. For apply: bullet-point practical actions. No extra sections.';
-      else if (screen==='reflection') system = 'You are a spiritual guide. For showing: introspective insight. For obey: direct action instruction. For prayer: only a short heartfelt prayer.';
-      try{
-        const res = await fetch('https://openrouter.ai/api/v1/chat/completions',{
-          method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${AI_CONFIG.apiKey}`,'HTTP-Referer':location.origin},
-          body:JSON.stringify({ model:AI_CONFIG.model, messages:[{role:'system',content:system},{role:'user',content:prompt}], temperature:0.7, max_tokens:500 })
-        });
-        if(!res.ok) { updateApiStatus('Error'); return '⚠️ Unable to reach AI.'; }
-        const data = await res.json(); 
-        updateApiStatus('Connected');
-        return data.choices?.[0]?.message?.content || 'No response.';
-      }catch(e){ updateApiStatus('Error'); return '⚠️ Unable to reach AI.'; }
-    }
-    function displayAIResponse(container, result){
-      if(!container) return;
-      container.style.display='block'; container.style.maxHeight='400px'; container.style.overflowY='auto';
-      container.innerHTML = typeof result === 'string' ? result.replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>') : JSON.stringify(result);
-    }
-
-    function getJourneyData() { return JSON.parse(localStorage.getItem('journeyData')||'[]'); }
-    function saveJourneyEntry(entry) {
-      const data = getJourneyData(); data.unshift(entry); if(data.length>50) data.pop();
-      localStorage.setItem('journeyData', JSON.stringify(data));
-    }
-    function getUserData(key) { return JSON.parse(localStorage.getItem(key)||'[]'); }
-    function saveUserData(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
-
-    function renderJourney(filter = '') {
-      const container = document.getElementById('journeyList');
-      if (!container) return;
-      const journey = getJourneyData().map(i=>({...i, type:'Scripture'}));
-      const highlights = getUserData('highlights').map(i=>({...i, type:'Highlight'}));
-      const notes = getUserData('notes').map(i=>({...i, type:'Note'}));
-      const bookmarks = getUserData('bookmarks').map(i=>({...i, type:'Bookmark'}));
-      let combined = [...journey, ...highlights, ...notes, ...bookmarks].sort((a,b)=>new Date(b.date)-new Date(a.date));
-      if (filter) {
-        const f = filter.toLowerCase();
-        combined = combined.filter(item => (item.text&&item.text.toLowerCase().includes(f)) || (item.reference&&item.reference.toLowerCase().includes(f)) || item.type.toLowerCase().includes(f));
-      }
-      if (!combined.length) { container.innerHTML = '<div class="muted small">No entries found.</div>'; return; }
-      container.innerHTML = combined.map((item, idx) => `
-        <div class="item" style="margin-bottom:10px; cursor:pointer;">
-          <div style="display:flex; justify-content:space-between;"><strong>${item.type}</strong><button class="deleteEntryBtn" data-index="${idx}" style="font-size:0.8rem;">Delete</button></div>
-          <div class="small muted">${item.date}</div>
-          ${item.reference?`<div class="small" style="color:var(--accent2);">${item.reference}</div>`:''}
-          <div class="preview">${(item.text||'').substring(0,60)}...</div>
-          <div class="fullText" style="display:none; margin-top:8px;">${item.text}</div>
+    // ---------- STUDY ----------
+    function renderJourney(filter=''){
+      const c=getEl('journeyList'); if(!c) return;
+      let data = JSON.parse(localStorage.getItem('journeyData')||'[]');
+      if(filter){ const f=filter.toLowerCase(); data=data.filter(e=> (e.text||'').toLowerCase().includes(f)||(e.type||'').toLowerCase().includes(f)); }
+      c.innerHTML = data.length ? data.map((e,i)=>`
+        <div class="item" onclick="window.toggleJourney(${i})">
+          <div style="display:flex;justify-content:space-between;"><strong>${e.type||'Entry'}</strong><span class="small muted">${e.date||''}</span></div>
+          <div id="journeyPreview${i}">${(e.text||'').substring(0,80)}...</div>
+          <div id="journeyFull${i}" class="hidden" style="margin-top:8px;">${e.text}
+            <div style="margin-top:10px;display:flex;gap:8px;"><button onclick="window.editJourney(${i});event.stopPropagation()">Edit</button><button onclick="window.deleteJourney(${i});event.stopPropagation()">Delete</button></div>
+          </div>
         </div>
-      `).join('');
-      container.querySelectorAll('.item').forEach(card => card.addEventListener('click', (e) => {
-        if(e.target.classList.contains('deleteEntryBtn')) return;
-        const full = card.querySelector('.fullText'); if(full) full.style.display = full.style.display==='none'?'block':'none';
-      }));
-      container.querySelectorAll('.deleteEntryBtn').forEach(btn => btn.addEventListener('click', e => {
-        e.stopPropagation();
-        const index = parseInt(btn.dataset.index,10);
-        const item = combined[index]; if(!item) return;
-        if(!confirm('Delete?')) return;
-        let key = item.type==='Highlight'?'highlights':item.type==='Note'?'notes':item.type==='Bookmark'?'bookmarks':null;
-        if(!key) return;
-        let data = getUserData(key);
-        const matchIndex = data.findIndex(d => (d.id && item.id && d.id===item.id) || (!d.id && d.text===item.text && d.date===item.date));
-        if(matchIndex > -1) { data.splice(matchIndex,1); saveUserData(key,data); }
-        renderJourney(document.getElementById('journeySearch')?.value||'');
-      }));
+      `).join('') : '<div class="muted">No entries</div>';
+    }
+    window.toggleJourney = (i)=>{ getEl('journeyFull'+i).classList.toggle('hidden'); };
+    window.editJourney = (i)=>{
+      const data = JSON.parse(localStorage.getItem('journeyData')||'[]');
+      const updated = prompt('Edit:', data[i].text);
+      if(updated){ data[i].text = updated; localStorage.setItem('journeyData', JSON.stringify(data)); renderJourney(); }
+    };
+    window.deleteJourney = (i)=>{
+      const data = JSON.parse(localStorage.getItem('journeyData')||'[]');
+      data.splice(i,1); localStorage.setItem('journeyData', JSON.stringify(data)); renderJourney();
+    };
+    function saveJourneyEntry(e){ const d=JSON.parse(localStorage.getItem('journeyData')||'[]'); d.unshift(e); if(d.length>50)d.pop(); localStorage.setItem('journeyData',JSON.stringify(d)); }
+
+    // ---------- MEDITATION ----------
+    function initMeditation(){
+      stopMeditation();
+      getEl('meditationEntry').classList.remove('hidden');
+      getEl('meditationActive').classList.add('hidden');
+      getEl('meditationEnd').classList.add('hidden');
+      const verse = state.session.verse || `${getTodaysScripture().ref} ${getTodaysScripture().text}`;
+      getEl('meditationVerse').textContent = verse;
+    }
+    function startMeditation(){
+      if(state.meditation.active) return;
+      clearInterval(state.meditation.timer);
+      state.meditation.active = true; state.meditation.remaining = state.meditation.duration; state.meditation.startTime = Date.now();
+      getEl('meditationEntry').classList.add('hidden');
+      getEl('meditationActive').classList.remove('hidden');
+      const custom = getEl('meditationCustomVerseInput').value.trim();
+      getEl('meditationActiveVerse').textContent = custom || getEl('meditationVerse').textContent;
+      updateTimerDisplay();
+      state.meditation.timer = setInterval(()=>{
+        const elapsed = Math.floor((Date.now()-state.meditation.startTime)/1000);
+        state.meditation.remaining = Math.max(0, state.meditation.duration - elapsed);
+        updateTimerDisplay();
+        if(state.meditation.remaining<=0){ clearInterval(state.meditation.timer); finishMeditation(); }
+      }, 200);
+      getEl('meditationBreathIndicator').classList.add('breathing');
+    }
+    function stopMeditation(){
+      clearInterval(state.meditation.timer); state.meditation.active = false;
+      getEl('meditationBreathIndicator')?.classList.remove('breathing');
+      initMeditation();
+    }
+    function updateTimerDisplay(){ const m=Math.floor(state.meditation.remaining/60), s=state.meditation.remaining%60; getEl('meditationTimerDisplay').textContent=`${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`; }
+    function finishMeditation(){
+      clearInterval(state.meditation.timer); state.meditation.active = false;
+      getEl('meditationBreathIndicator')?.classList.remove('breathing');
+      getEl('meditationActive').classList.add('hidden');
+      getEl('meditationEnd').classList.remove('hidden');
     }
 
-    function cleanTextForTTS(raw) { return raw.replace(/^\d+\s*/gm,'').replace(/\n\d+\s*/g,'\n').replace(/([.!?])\s+/g,'$1 ').replace(/\s+/g,' ').trim(); }
-    function stopTTS() { speechSynthesis.cancel(); }
-    function pauseTTS() { if(speechSynthesis.speaking && !speechSynthesis.paused) speechSynthesis.pause(); }
-    function resumeTTS() { if(speechSynthesis.paused) speechSynthesis.resume(); }
-    window.getVoiceRate = () => state.ttsRate || 1.0;
+    // ---------- TTS ----------
+    function cleanTextForSpeech(t){ return t.replace(/\d+/g,'').replace(/[.,/#!$%^&*;:{}=\-_`~()]/g,'').replace(/\s+/g,' ').trim(); }
+    function speakText(t){ if(!t) return; speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(cleanTextForSpeech(t.replace(/<[^>]*>/g,''))); u.rate=state.ttsRate; speechSynthesis.speak(u); }
 
-    function speakText(text) {
-      if(!text||text.includes('Load')) return showToast('Load a passage first');
-      stopTTS(); const cleaned = cleanTextForTTS(text);
-      const u = new SpeechSynthesisUtterance(cleaned); u.rate = window.getVoiceRate(); u.pitch = 1;
-      u.onend = () => { const btn = document.getElementById('listenPauseBtn'); if(btn) btn.textContent = 'Pause'; };
-      speechSynthesis.speak(u);
-    }
-    function speakVerseByVerse(text) {
-      if(!text||text.includes('Load')) return showToast('Load a passage first');
-      stopTTS(); const cleaned = cleanTextForTTS(text);
-      const verses = cleaned.split(/\n+/).filter(v=>v.trim()); let idx=0;
-      function next(){
-        if(idx>=verses.length){ document.getElementById('listenPauseBtn').textContent = 'Pause'; return; }
-        const u = new SpeechSynthesisUtterance(verses[idx]); u.rate = window.getVoiceRate();
-        u.onend = ()=>{ idx++; setTimeout(next,600); };
-        speechSynthesis.cancel(); speechSynthesis.speak(u);
-      }
-      next();
-    }
-    function syncListenText() {
-      const rd=document.getElementById('readDisplay'), lt=document.getElementById('listenText');
-      if(rd&&lt){ const p=rd.innerText.trim(); if(p&&!p.includes('Select')) { const cleaned = p.replace(/\n{3,}/g,'\n\n').replace(/[ \t]+/g,' ').trim(); lt.value = cleaned; } }
-    }
-
-    let toastTimeout;
-    function showToast(msg) {
-      let t = document.getElementById('appToast');
-      if(!t){
-        t = document.createElement('div'); t.id='appToast';
-        t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,20px);background:rgba(0,0,0,0.85);color:#fff;padding:10px 16px;border-radius:10px;font-size:0.9rem;z-index:9999;transition:opacity 0.3s,transform 0.3s;opacity:0;';
-        document.body.appendChild(t);
-      }
-      if(toastTimeout) clearTimeout(toastTimeout);
-      t.textContent = msg; t.getBoundingClientRect();
-      t.style.opacity='1'; t.style.transform='translate(-50%,0)';
-      toastTimeout = setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translate(-50%,20px)'; },2000);
-    }
-
-    let meditateTimer, meditateGuidance, meditateSeconds=300, meditateRunning=false;
-    const guidanceVerses = ["Be still and know that I am God.","The Lord is my shepherd.","Cast your cares upon Him."];
-    function updateMeditateDisplay(){ document.getElementById('meditateTimer').textContent = `${Math.floor(meditateSeconds/60).toString().padStart(2,'0')}:${(meditateSeconds%60).toString().padStart(2,'0')}`; }
-    function stopMeditate(){ clearInterval(meditateTimer); clearInterval(meditateGuidance); meditateRunning=false; document.getElementById('meditateCard').classList.remove('meditate-active'); }
-    function startMeditate(){
-      if(meditateRunning) return;
-      if(meditateSeconds<=0) meditateSeconds = (parseInt(document.getElementById('meditateMinutes').value)||5)*60;
-      meditateRunning=true; meditateTimer=setInterval(()=>{ if(meditateSeconds<=0){ stopMeditate(); showToast('Session complete'); return; } meditateSeconds--; updateMeditateDisplay(); },1000);
-      document.getElementById('meditateCard').classList.add('meditate-active');
-    }
-
-    function openMeditationPhase(phase) {
-      state.currentPhase = phase;
-      document.querySelectorAll('#meditationTabs button').forEach(t => t.classList.toggle('active', t.dataset.phase===phase));
-      const container = document.getElementById('meditationPhaseContent');
-      const timerSection = document.getElementById('meditationTimerSection');
-      if(phase==='reset') {
-        timerSection.style.display='block';
-        container.innerHTML = `<div><label class="small muted">How are you feeling?</label><div class="quick-actions">${['stress','anger','fear','confusion','thankful','calm'].map(e=>`<button class="emotion-btn secondary" data-emotion="${e}">${e}</button>`).join('')}</div><div id="breathingExercise" style="display:none;"><div class="verse" style="text-align:center;"><div style="font-size:2rem;" id="breathInstruction">Breathe in</div><div class="timer-display" id="breathTimer">4</div><button class="primary" id="calmContinueBtn" style="display:none;">I'M CALM. CONTINUE →</button></div></div></div>`;
-        document.querySelectorAll('.emotion-btn').forEach(b=>b.addEventListener('click',()=>{ state.meditationState=b.dataset.emotion; document.getElementById('breathingExercise').style.display='block'; startBreathingCycle(); }));
-      } else if(phase==='reflect') {
-        timerSection.style.display='none';
-        const scripture = getMeditationScripture(state.meditationState);
-        container.innerHTML = `<div class="verse"><strong style="color:var(--accent2);">${scripture}</strong></div><textarea id="reflectInput" placeholder="Reflect on this: ${scripture}\n\nWhat is this revealing to you?"></textarea><div class="quick-actions"><button class="primary" id="analyzeReflectBtn">Analyze →</button><button class="secondary" id="skipToSilenceBtn">Skip to Silence</button></div><div id="reflectAIResponse" class="item" style="margin-top:16px; display:none;"></div>`;
-        document.getElementById('analyzeReflectBtn')?.addEventListener('click', analyzeReflection);
-        document.getElementById('skipToSilenceBtn')?.addEventListener('click', ()=>openMeditationPhase('silence'));
-      } else {
-        timerSection.style.display='block';
-        container.innerHTML = `<div class="verse" style="text-align:center;"><p>Enter stillness.<br>Nothing to do. Nowhere to be.</p><div class="timer-display" id="silenceTimerDisplay">05:00</div><div class="quick-actions">${[1,3,5].map(m=>`<button class="secondary" data-silence-mins="${m}">${m} min</button>`).join('')}</div><button class="primary" id="beginSilenceBtn">Begin</button></div>`;
-        document.querySelectorAll('[data-silence-mins]').forEach(b=>b.addEventListener('click',()=>{ meditateSeconds=parseInt(b.dataset.silenceMins)*60; updateMeditateDisplay(); document.getElementById('silenceTimerDisplay').textContent = `${Math.floor(meditateSeconds/60).toString().padStart(2,'0')}:${(meditateSeconds%60).toString().padStart(2,'0')}`; }));
-        document.getElementById('beginSilenceBtn').addEventListener('click', startSilenceMeditation);
-      }
-    }
-    function getMeditationScripture(e){ return { stress:'Psalm 46:10 Be still', anger:'James 1:20 Human anger', fear:'Isaiah 41:10 Fear not', confusion:'1 Cor 14:33 God of peace', thankful:'1 Thess 5:18 Give thanks', calm:'Phil 4:7 Peace of God' }[e]||'Psalm 23 The Lord is my shepherd.'; }
-    function startBreathingCycle(){
-      let step=0; const inst=['Breathe in','Hold','Exhale'], dur=[4,4,6];
-      const timer=document.getElementById('breathTimer'), instEl=document.getElementById('breathInstruction');
-      let count=dur[0]; timer.textContent=count; instEl.textContent=inst[0];
-      const int=setInterval(()=>{ count--; timer.textContent=count; if(count<=0){ step++; if(step>=inst.length){ clearInterval(int); document.getElementById('calmContinueBtn').style.display='block'; instEl.textContent='Complete'; timer.textContent='✓'; } else { count=dur[step]; timer.textContent=count; instEl.textContent=inst[step]; } } },1000);
-      document.getElementById('calmContinueBtn').addEventListener('click',()=>{ clearInterval(int); openMeditationPhase('reflect'); });
-    }
-    async function analyzeReflection(){
-      const input=document.getElementById('reflectInput')?.value.trim(); if(!input) return showToast('Write your reflection');
-      const resp=document.getElementById('reflectAIResponse'); resp.style.display='block'; resp.innerHTML='<span class="muted">Analyzing...</span>';
-      const scripture=getMeditationScripture(state.meditationState);
-      const result=await askAI(`User reflects on ${state.meditationState}. Scripture: ${scripture}. Reflection: ${input}`, 'reflection');
-      displayAIResponse(resp, result);
-      const btn=document.createElement('button'); btn.className='primary'; btn.textContent='Continue to Silence'; btn.style.marginTop='12px';
-      btn.addEventListener('click',()=>openMeditationPhase('silence')); resp.appendChild(btn);
-    }
-    function startSilenceMeditation() {
-      if(meditateRunning) stopMeditate();
-      if(state._silenceInterval) clearInterval(state._silenceInterval);
-      state._silenceCompleted = false;
-      const onComplete = () => {
-        if(state._silenceCompleted) return; state._silenceCompleted=true;
-        showToast('Take a moment to write what stayed with you');
-        openMeditationPhase('reflect');
-        const ta=document.getElementById('reflectInput');
-        if(ta){ if(!ta.value.trim()) ta.placeholder='Add what stayed with you from the silence...'; else ta.placeholder='Continue your reflection...'; setTimeout(()=>ta.focus(),300); }
-        const text = ta?.value.trim(); if(text && text.length>10) saveMeditationIfNew(text);
-      };
-      state._silenceInterval = setInterval(() => { if(!meditateRunning && meditateSeconds===0) { clearInterval(state._silenceInterval); state._silenceInterval=null; onComplete(); } }, 500);
-      startMeditate();
-    }
-    function saveMeditationIfNew(text){
-      const normalize = s => s.toLowerCase().replace(/[^\w\s]/g,'').replace(/\s+/g,' ').trim();
-      const norm = normalize(text); const stop=['the','and','to','of','i','a','in','is','it','that','this','for','on','with','as','was','but','be','at','by','an'];
-      const words = [...new Set(norm.split(' ').filter(w=>w.length>1&&!stop.includes(w)))];
-      const recent = getJourneyData().slice(0,5);
-      const duplicate = recent.some(e=>{ if(!e.text) return false; const eNorm=normalize(e.text); if(eNorm===norm) return true; const eWords=[...new Set(eNorm.split(' ').filter(w=>w.length>1&&!stop.includes(w)))];
-        const overlap=words.filter(w=>eWords.includes(w)); return overlap.length/Math.max(words.length,1) > 0.6; });
-      if(!duplicate) saveJourneyEntry({ type:'Meditation', text, state:state.meditationState, date:new Date().toLocaleString() });
-    }
-
-    let studyTabs, studyAI, notesPanel, notesArea, savedNotesList;
-    function getStudyNotes() { return JSON.parse(localStorage.getItem('study_notes')||'[]'); }
-    function loadStudyNotes() {
-      const notes = getStudyNotes();
-      savedNotesList.innerHTML = notes.length ? notes.map((n,i)=>`<div class="item" style="display:flex;justify-content:space-between;"><div><strong>${n.text}</strong><div class="small muted">${n.date}</div></div><button class="delete-note-btn ghost" data-index="${i}">🗑️</button></div>`).join('') : '<div class="muted small">No saved notes.</div>';
-      document.querySelectorAll('.delete-note-btn').forEach(b=>b.addEventListener('click',e=>{ e.stopPropagation(); const notes=getStudyNotes(); notes.splice(b.dataset.index,1); localStorage.setItem('study_notes',JSON.stringify(notes)); loadStudyNotes(); }));
-    }
-    function updateStudyTabUI() {
-      const active = document.querySelector('#study .tabs button.active'); const tab = active?.dataset.tab;
-      if(tab==='notes'){ notesPanel.style.display='block'; studyAI.style.display='none'; loadStudyNotes(); }
-      else { notesPanel.style.display='none'; studyAI.style.display='block'; if(!studyAI.innerHTML.trim()||studyAI.innerText.includes('Error')) studyAI.innerHTML='<span class="muted">Tap a tab to generate insight</span>'; }
-    }
-
+    // ---------- EVENT BINDING ----------
     document.addEventListener('DOMContentLoaded', ()=>{
-      userName = localStorage.getItem('user_name')||'Emma';
-      document.getElementById('profileNameInput').value = userName;
-      loadApiKey(); loadModel(); setHome();
-      document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click',()=>openScreen(b.dataset.nav)));
-      document.getElementById('bibleBook')?.addEventListener('change',populateChapters); populateChapters();
-      document.getElementById('loadPassageBtn')?.addEventListener('click',fetchBiblePassage);
-      document.getElementById('saveProfileNameBtn').addEventListener('click',()=>{ const n=document.getElementById('profileNameInput').value.trim(); if(n){ userName=n; localStorage.setItem('user_name',n); setHome(); showToast('Name updated'); } });
-      document.getElementById('saveApiKeyBtn').addEventListener('click',()=>{ const k=document.getElementById('apiKeyInput').value.trim(); if(k){ localStorage.setItem('openrouter_api',k); AI_CONFIG.apiKey=k; updateApiStatus('API saved'); } });
-      document.getElementById('saveModelBtn').addEventListener('click',()=>{ const m=document.getElementById('aiModelSelect').value; localStorage.setItem('ai_model',m); AI_CONFIG.model=m; showToast('Model set'); });
+      // restore session
+      const saved = localStorage.getItem('bb_session');
+      if(saved){ try{ const s=JSON.parse(saved); if(s.step>0&&s.step<4){ state.session=s; } }catch{} }
       
-      const vsItem=document.getElementById('voiceSpeedSetting'), vsPanel=document.getElementById('voiceSpeedPanel'), vsSpan=document.getElementById('voiceSpeedValue');
-      let rate = parseFloat(localStorage.getItem('voice_speed'))||1.0; state.ttsRate=rate; vsSpan.textContent=rate.toFixed(2)+'x';
-      vsItem.addEventListener('click',e=>{ if(!e.target.closest('#voiceSpeedPanel')) vsPanel.style.display = vsPanel.style.display==='none'?'flex':'none'; });
-      document.querySelectorAll('.voice-speed-btn').forEach(b=>b.addEventListener('click',e=>{ const r=parseFloat(b.dataset.rate); state.ttsRate=r; localStorage.setItem('voice_speed',r); vsSpan.textContent=r.toFixed(2)+'x'; vsPanel.style.display='none'; }));
+      setHome();
+      document.querySelectorAll('[data-nav]').forEach(b=>b.addEventListener('click', ()=> openScreen(b.dataset.nav)));
       
-      const mdItem=document.getElementById('meditationDurationSetting'), mdPanel=document.getElementById('meditationDurationPanel'), mdSpan=document.getElementById('meditationDurationValue');
-      let mins = parseInt(localStorage.getItem('meditation_duration'))||5; mdSpan.textContent=mins+' min'; meditateSeconds=mins*60; updateMeditateDisplay();
-      mdItem.addEventListener('click',e=>{ if(!e.target.closest('#meditationDurationPanel')) mdPanel.style.display = mdPanel.style.display==='none'?'flex':'none'; });
-      document.querySelectorAll('.meditation-duration-btn').forEach(b=>b.addEventListener('click',e=>{ const m=parseInt(b.dataset.mins); localStorage.setItem('meditation_duration',m); mdSpan.textContent=m+' min'; if(!meditateRunning){ meditateSeconds=m*60; updateMeditateDisplay(); } mdPanel.style.display='none'; }));
-      
-      document.getElementById('userGuideSetting').addEventListener('click',()=>showToast('1. Read 2. Study 3. Reflect 4. Journey'));
-      const onboardStatus=document.getElementById('onboardingStatus'), morningCheck=document.getElementById('morningReminderCheck'), dailyCheck=document.getElementById('dailyVerseCheck');
-      function loadOnboard(){ const s=JSON.parse(localStorage.getItem('onboarding_settings')||'{"morning":false,"dailyVerse":false}'); morningCheck.checked=s.morning; dailyCheck.checked=s.dailyVerse; onboardStatus.textContent = `Morning: ${s.morning?'on':'off'} · Daily: ${s.dailyVerse?'on':'off'}`; }
-      loadOnboard();
-      document.getElementById('onboardingSetting').addEventListener('click',e=>{ if(!e.target.closest('#onboardingPanel')) document.getElementById('onboardingPanel').style.display = document.getElementById('onboardingPanel').style.display==='none'?'block':'none'; });
-      document.getElementById('saveOnboardingBtn').addEventListener('click',()=>{ const s={morning:morningCheck.checked, dailyVerse:dailyCheck.checked}; localStorage.setItem('onboarding_settings',JSON.stringify(s)); loadOnboard(); document.getElementById('onboardingPanel').style.display='none'; });
-      
-      document.getElementById('highlightBtn').addEventListener('click',()=>{
-        const sel = window.getSelection().toString().trim(); if(!sel) return showToast('Select text');
-        const ref = document.getElementById('readDisplay')?.querySelector('strong')?.innerText||'';
-        const highlights = getUserData('highlights');
-        if(highlights.some(h=>h.text===sel && h.reference===ref)) return showToast('Already highlighted');
-        highlights.unshift({ id:Date.now().toString(), text:sel, reference:ref, date:new Date().toLocaleString() }); saveUserData('highlights',highlights); showToast('Highlight saved');
-      });
-      document.getElementById('noteBtn').addEventListener('click',()=>{
-        const note = prompt('Write your note:'); if(!note) return;
-        const notes = getUserData('notes'); notes.unshift({ id:Date.now().toString(), text:note, date:new Date().toLocaleString() }); saveUserData('notes',notes); showToast('Note saved');
-      });
-      document.getElementById('bookmarkBtn').addEventListener('click',()=>{
-        const passage = document.getElementById('readDisplay')?.innerText||''; if(!passage||passage.includes('Select')) return showToast('Load a passage first');
-        const bookmarks = getUserData('bookmarks'); bookmarks.unshift({ id:Date.now().toString(), text:passage.substring(0,100), date:new Date().toLocaleString() }); saveUserData('bookmarks',bookmarks); showToast('Bookmarked');
-      });
-      
-      document.getElementById('readAskAIBtn').addEventListener('click',async ()=>{
-        const txt = document.getElementById('readDisplay').innerText.trim(); if(!txt||txt.includes('Select')) return showToast('Load a passage');
-        const resp = document.getElementById('readAIResponse'); resp.style.display='block'; resp.innerHTML='<span class="muted">Inquiring...</span>';
-        const res = await askAI(`Explain: ${txt.substring(0,500)}`); displayAIResponse(resp, res);
-      });
-      
-      studyTabs = document.querySelectorAll('#study .tabs button'); studyAI = document.getElementById('studyAIResponse');
-      notesPanel = document.getElementById('studyNotesPanel'); notesArea = document.getElementById('studyNotesArea'); savedNotesList = document.getElementById('savedNotesList');
-      studyTabs.forEach(tab=>tab.addEventListener('click', async function(){
-        studyTabs.forEach(t=>t.classList.remove('active')); this.classList.add('active');
-        const activeTab = this.dataset.tab;
-        if(activeTab==='notes'){ notesPanel.style.display='block'; studyAI.style.display='none'; loadStudyNotes(); }
-        else {
-          if(state.lastStudyTab===activeTab && state.forceRefreshTab!==activeTab) return;
-          state.forceRefreshTab=null; state.lastStudyTab=activeTab;
-          notesPanel.style.display='none'; studyAI.style.display='block';
-          const disp = document.getElementById('readDisplay'); const passage = disp.innerText.trim();
-          if(!passage||passage.includes('Select')){ studyAI.innerHTML='<span class="muted">⚠️ Load a passage first</span>'; return; }
-          let prompt='';
-          if(activeTab==='explain') prompt=`Explain this passage: ${passage}`;
-          else if(activeTab==='cross') prompt=`List related verses and connections: ${passage}`;
-          else if(activeTab==='apply') prompt=`Give practical actions: ${passage}`;
-          studyAI.innerHTML='<span class="muted">Loading...</span>';
-          const res = await askAI(prompt, 'study');
-          if(!res||res.includes('Unable')) studyAI.innerHTML='<span class="muted">⚠️ Unable to generate</span>';
-          else { displayAIResponse(studyAI, res); if(res.length>20) saveJourneyEntry({type:'Insight', text:res.substring(0,100), date:new Date().toLocaleString()}); }
+      getEl('homeContinueBtn').addEventListener('click', async ()=>{
+        if(state.session.loading) return; state.session.loading = true;
+        const ref = getEl('homeVerseReference').textContent;
+        const text = getEl('homeVerseText').textContent.replace(/[“”]/g,'');
+        state.session.verse = `${ref} ${text}`; state.session.step = 0;
+        openScreen('sessionFlow');
+        getEl('flowContentArea').innerHTML = '<div class="muted" style="padding:40px;text-align:center;">Preparing…</div>';
+        getEl('flowActionsArea').innerHTML = '';
+        try {
+          state.session.data = await fetchSessionDataJSON(state.session.verse);
+        } catch {
+          state.session.data = { explanation:'Reflect.', application:'Apply.', prayer:'Pray.' };
         }
-      }));
-      if(!state._dblClickBound){ studyTabs.forEach(b=>b.addEventListener('dblclick',()=>{ state.forceRefreshTab = b.dataset.tab; })); state._dblClickBound=true; }
-      document.getElementById('saveStudyNoteBtn').addEventListener('click',()=>{ const txt=notesArea.value.trim(); if(!txt) return; const notes=getStudyNotes(); notes.unshift({text:txt, date:new Date().toLocaleString()}); if(notes.length>20) notes.pop(); localStorage.setItem('study_notes',JSON.stringify(notes)); notesArea.value=''; loadStudyNotes(); showToast('Note saved'); });
-      document.getElementById('clearStudyNoteBtn').addEventListener('click',()=>notesArea.value='');
-      
-      document.querySelectorAll('.reflection-item').forEach(item=>item.addEventListener('click', async ()=>{
-        const disp = document.getElementById('readDisplay'); const passage = disp.innerText.trim();
-        if(!passage||passage.includes('Select')){ studyAI.innerHTML='<span class="muted">⚠️ Load a passage</span>'; return; }
-        notesPanel.style.display='none'; studyAI.style.display='block';
-        const refl = item.dataset.reflection; let prompt='';
-        if(refl==='showing') prompt=`What is God revealing personally? ${passage}`;
-        else if(refl==='obey') prompt=`What action should I take? ${passage}`;
-        else prompt=`Write a short prayer: ${passage}`;
-        studyAI.innerHTML='<span class="muted">Seeking...</span>';
-        const res = await askAI(prompt, 'reflection'); displayAIResponse(studyAI, res);
-      }));
-      
-      const pauseBtn = document.getElementById('listenPauseBtn');
-      if(!state._listenPlayBound){ document.getElementById('listenPlayBtn').addEventListener('click',()=>{
-        const txt = document.getElementById('listenText').value.trim();
-        if(!txt||txt==='Load a passage to listen') return showToast('Load a passage first');
-        if(speechSynthesis.speaking||speechSynthesis.paused) speechSynthesis.cancel();
-        document.getElementById('ttsMode').value==='verse' ? speakVerseByVerse(txt) : speakText(txt);
-      }); state._listenPlayBound=true; }
-      pauseBtn.addEventListener('click',()=>{ if(speechSynthesis.speaking && !speechSynthesis.paused){ pauseTTS(); pauseBtn.textContent='Resume'; } else if(speechSynthesis.paused){ resumeTTS(); pauseBtn.textContent='Pause'; } });
-      document.getElementById('listenStopBtn').addEventListener('click',()=>{ stopTTS(); pauseBtn.textContent='Pause'; });
-      
-      document.getElementById('meditateStart').addEventListener('click',startMeditate);
-      document.getElementById('meditatePause').addEventListener('click',()=>{ stopMeditate(); });
-      document.getElementById('meditateReset').addEventListener('click',()=>{ stopMeditate(); meditateSeconds=(parseInt(document.getElementById('meditateMinutes').value)||5)*60; updateMeditateDisplay(); });
-      document.getElementById('meditateMinutes').addEventListener('input',function(){ if(!meditateRunning){ meditateSeconds=parseInt(this.value)*60; updateMeditateDisplay(); } });
-      
-      document.getElementById('prayerAskAIBtn').addEventListener('click',async ()=>{
-        const struggles = document.getElementById('prayerStruggles').value.trim();
-        const points = document.getElementById('prayerPoints').value.trim();
-        if(!struggles&&!points) return showToast('Write struggles or prayer points');
-        const resp = document.getElementById('prayerAIResponse'); resp.style.display='block'; resp.innerHTML='<span class="muted">Seeking...</span>';
-        const res = await askAI(`Struggles: ${struggles}. Prayer points: ${points}. Provide biblical encouragement.`);
-        displayAIResponse(resp, res);
-        if(points||struggles) saveJourneyEntry({type:'Prayer', text:points||struggles, date:new Date().toLocaleString()});
+        state.session.loading = false;
+        renderSessionFlow();
+        localStorage.setItem('bb_session', JSON.stringify(state.session));
       });
       
-      document.getElementById('journeySearch').addEventListener('input', e => renderJourney(e.target.value));
-      loadStudyNotes(); updateStudyTabUI(); openMeditationPhase('reset');
+      getEl('homeOpenBibleLink').addEventListener('click', (e)=>{ e.preventDefault(); openScreen('read'); });
+      getEl('bibleBook')?.addEventListener('change', populateChapters); populateChapters();
+      getEl('loadPassageBtn')?.addEventListener('click', fetchBiblePassage);
+      document.querySelectorAll('#guidanceActions button').forEach(b=>b.addEventListener('click', ()=>handleGuidanceAction(b.dataset.action)));
+      getEl('readAskAIBtn')?.addEventListener('click', async ()=>{
+        const txt = getEl('readDisplay').innerText; if(txt.includes('Select')) return showToast('Load passage');
+        const panel = getEl('readAIResponse'); panel.classList.remove('hidden'); panel.innerHTML='Loading…';
+        const res = await askAI(`Explain: ${txt}`, 'study');
+        panel.innerHTML = safeHtml(res||'Error') + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden')">✕</button>`;
+      });
+      getEl('readMoreActionsBtn')?.addEventListener('click', ()=> getEl('readMoreActionsMenu').classList.toggle('hidden'));
+      
+      // reflection toggle
+      document.querySelectorAll('.reflection-item').forEach(item=>item.addEventListener('click', function(){
+        const wasActive = this.classList.contains('active');
+        document.querySelectorAll('.reflection-item').forEach(i=>i.classList.remove('active'));
+        const panel = getEl('reflectionOutput');
+        if(wasActive){ panel.classList.add('hidden'); return; }
+        this.classList.add('active');
+        const type = this.dataset.reflection;
+        const prompt = type==='showing'?'What is God showing me': type==='obey'?'What should I obey':'What prayer follows';
+        panel.classList.remove('hidden'); panel.innerHTML='Loading…';
+        askAI(`${prompt} from ${state.currentScripture}`, 'reflection').then(res=>{
+          panel.innerHTML = safeHtml(res||'') + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden')">✕</button>`;
+        });
+      }));
+      
+      getEl('freeInputBtn').addEventListener('click', ()=>{
+        const input = getEl('freeInputText').value.trim(); if(!input) return showToast('Describe situation');
+        const panel = getEl('freeInputOutput'); panel.classList.remove('hidden'); panel.innerHTML='Loading…';
+        askAI(`User situation: ${input}\nGive: 1. Verse 2. Explanation 3. Steps 4. Prayer`, 'guidance').then(res=>{
+          panel.innerHTML = safeHtml(res||'') + `<button class="close-btn" onclick="this.parentElement.classList.add('hidden')">✕</button>`;
+        });
+      });
+      
+      // meditation custom toggle
+      getEl('meditationCustomVerseToggle').addEventListener('click', ()=>{
+        const ta = getEl('meditationCustomVerseInput'); ta.classList.toggle('hidden');
+        if(!ta.classList.contains('hidden')) ta.focus();
+      });
+      getEl('meditationStartBtn').addEventListener('click', startMeditation);
+      getEl('meditationStopBtn').addEventListener('click', stopMeditation);
+      getEl('meditationSaveBtn').addEventListener('click', ()=>{
+        const r = getEl('meditationReflection').value.trim(); if(r) saveJourneyEntry({type:'Meditation', text:r, date:new Date().toLocaleString()});
+        openScreen('home');
+      });
+      getEl('meditationSkipBtn').addEventListener('click', ()=> openScreen('home'));
+      
+      // profile
+      getEl('voiceSpeedSetting').addEventListener('click', ()=>{
+        const speeds = [0.8,1.0,1.2,1.5]; let idx = speeds.indexOf(state.voiceSpeed); idx = (idx+1)%speeds.length;
+        state.voiceSpeed = speeds[idx]; state.ttsRate = state.voiceSpeed;
+        localStorage.setItem('voice_speed', state.voiceSpeed);
+        getEl('voiceSpeedValue').textContent = state.voiceSpeed.toFixed(1)+'x';
+      });
+      getEl('meditationDurationSetting').addEventListener('click', ()=>{
+        const durs = [60,120,300]; let idx = durs.indexOf(state.meditation.duration); idx = (idx+1)%durs.length;
+        state.meditation.duration = durs[idx]; localStorage.setItem('meditation_duration', durs[idx]);
+        getEl('meditationDurationValue').textContent = (durs[idx]/60)+' min';
+      });
+      getEl('saveApiKeyBtn').addEventListener('click', ()=>{
+        const key = getEl('apiKeyInput').value.trim(); if(key){ state.aiConfig.apiKey=key; localStorage.setItem('openrouter_api',key); showToast('API saved'); }
+      });
+      getEl('aiModelSelect').addEventListener('change', e=>{ state.aiConfig.model=e.target.value; localStorage.setItem('ai_model',e.target.value); });
+      
+      // listen
+      getEl('listenPlayBtn').addEventListener('click', ()=> speakText(getEl('listenText').value));
+      getEl('listenStopBtn').addEventListener('click', ()=> speechSynthesis.cancel());
     });
   })();
 </script>
