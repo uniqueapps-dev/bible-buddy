@@ -4,8 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0b1020">
+  <meta name="display" content="standalone">
+  <link rel="manifest" href="manifest.json">
   <title>BibleBuddy · calm companion</title>
   <style>
     :root {
@@ -50,7 +53,7 @@
 
     /* ── LAYOUT ── */
     .container { width: 100%; max-width: var(--max); margin: 0 auto; padding: 16px; flex: 1; overflow-y: auto; }
-    .screen { display: none; height: calc(100vh - 80px); overflow-y: auto; padding-bottom: 88px; }
+    .screen { display: none; min-height: 100dvh; overflow-y: auto; padding-bottom: 88px; }
     .screen.active { display: block; }
 
     /* ── CARDS & COMMON ── */
@@ -137,12 +140,63 @@
     @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+    /* ── IOS-STYLE TOGGLE SWITCH ── */
+    .toggle-switch { position:relative; display:inline-block; width:51px; height:30px; flex-shrink:0; }
+    .toggle-switch input { opacity:0; width:0; height:0; position:absolute; }
+    .toggle-track {
+      position:absolute; inset:0; border-radius:15px; background:rgba(255,255,255,.15);
+      cursor:pointer; transition:background 0.2s;
+    }
+    .toggle-track::after {
+      content:''; position:absolute; top:3px; left:3px;
+      width:24px; height:24px; border-radius:50%; background:#fff;
+      box-shadow:0 1px 4px rgba(0,0,0,.3); transition:transform 0.2s;
+    }
+    .toggle-switch input:checked + .toggle-track { background:var(--ok); }
+    .toggle-switch input:checked + .toggle-track::after { transform:translateX(21px); }
+
+    /* ── SETTINGS CARD ── */
+    .settings-card {
+      background:var(--panel); border:1px solid var(--border); border-radius:var(--radius);
+      overflow:hidden; margin-bottom:16px;
+    }
+    .settings-card-row {
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.05);
+    }
+    .settings-card-row:last-child { border-bottom:none; }
+    .settings-card-row .row-left { display:flex; flex-direction:column; gap:2px; min-width:0; }
+    .settings-card-row .row-title { font-size:1rem; font-weight:500; }
+    .settings-card-row .row-sub { font-size:.85rem; color:var(--muted); }
+    .settings-card-row .row-right { display:flex; align-items:center; gap:8px; flex-shrink:0; }
+    .settings-section-label {
+      font-size:.75rem; font-weight:700; letter-spacing:1.2px; text-transform:uppercase;
+      color:var(--muted); padding:18px 4px 6px; margin:0;
+    }
+    .key-saved-badge {
+      display:inline-block; background:rgba(74,222,128,.15); color:var(--ok);
+      border:1px solid rgba(74,222,128,.3); border-radius:20px;
+      padding:3px 10px; font-size:.8rem; font-weight:600;
+    }
+    .btn-save-key { background:var(--ok); color:#0b1020; border:none; padding:10px 20px; border-radius:12px; font-weight:700; font-size:.95rem; }
+    .btn-show-key { background:var(--panel2); border:1px solid var(--border); padding:10px 16px; border-radius:12px; font-weight:600; font-size:.95rem; }
+    .btn-test { background:var(--panel2); border:1px solid var(--border); width:100%; padding:12px; border-radius:12px; font-weight:600; font-size:.95rem; margin-top:4px; }
+    .btn-danger { background:rgba(255,123,123,.12); color:var(--danger); border:1px solid rgba(255,123,123,.25); padding:10px 18px; border-radius:12px; font-weight:700; font-size:.9rem; }
+    .btn-secondary-sm { background:var(--panel2); border:1px solid var(--border); padding:10px 16px; border-radius:12px; font-weight:600; font-size:.9rem; }
+    .active-badge { background:rgba(74,222,128,.12); color:var(--ok); border:1px solid rgba(74,222,128,.25); border-radius:20px; padding:3px 10px; font-size:.82rem; font-weight:600; }
+
     /* ── VERSE DISPLAY ── */
     .verse {
       font-size: 1.1rem; line-height: 1.65; padding: 20px;
       border-left: 4px solid var(--accent2); background: rgba(255,255,255,.02);
       border-radius: 14px; border: 1px solid var(--border); border-left: 4px solid var(--accent2);
       margin-bottom: 16px;
+    }
+    /* Listen textarea — readable, properly wrapping */
+    .listen-text {
+      width: 100%; min-height: 220px; font-size: 1.05rem; line-height: 1.8;
+      white-space: pre-wrap; word-wrap: break-word; word-break: normal;
+      background: rgba(255,255,255,.03); resize: vertical; letter-spacing: 0.01em;
     }
     .read-collapsed { max-height: 180px; overflow: hidden; position: relative; }
     .read-collapsed::after {
@@ -190,7 +244,7 @@
 
     /* ── SESSION FLOW ── */
     .flow-container { max-width: 640px; margin: 0 auto; padding: 12px 8px 24px; display: flex; flex-direction: column; gap: 24px; }
-    .flow-step-indicator { display: flex; justify-content: space-between; color: var(--muted); font-size: .9rem; }
+    .flow-step-indicator { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: .9rem; padding: 0 4px; }
     .flow-content {
       background: rgba(18,26,51,0.65); border: 1px solid var(--border);
       border-radius: 24px; padding: 24px 20px; backdrop-filter: blur(8px);
@@ -278,6 +332,7 @@
           <div id="homeVerseReference" class="home-verse-ref"></div>
         </div>
         <div id="homeProgressionHint" class="home-progression-hint"></div>
+        <button id="resumeReadingBtn" class="secondary" style="margin-top:10px;display:none;">Continue Reading →</button>
         <button id="homeContinueBtn" class="primary home-continue-btn">Continue</button>
         <button class="home-open-bible-link" data-nav="read">Open Bible →</button>
       </div>
@@ -335,12 +390,12 @@
           </div>
         </div>
 
+        <div id="readAIResponse" class="ai-panel hidden" style="margin-bottom:14px;margin-top:0;"></div>
+
         <div id="readDisplay" class="verse read-collapsed"><span class="muted">Select a book and chapter, then tap Load.</span></div>
         <div style="text-align:right;margin-top:-8px;margin-bottom:14px;">
           <button id="readExpandBtn" class="secondary small">Expand</button>
         </div>
-
-        <div id="readAIResponse" class="ai-panel hidden"></div>
 
         <div class="quick-actions" id="guidanceActions">
           <button data-action="explain">Explain</button>
@@ -353,8 +408,19 @@
           <button id="readMoreActionsBtn" class="secondary small">More</button>
           <div id="readMoreActionsMenu" class="hidden" style="margin-top:12px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
             <button id="bookmarkBtn">Bookmark</button>
-            <button data-nav="listen">Listen</button>
           </div>
+        </div>
+
+        <div class="card" style="margin-top:16px;">
+          <div class="section-title">
+            <h3 style="margin:0;">Listen</h3>
+          </div>
+          <div class="quick-actions">
+            <button class="primary" id="listenPlayBtn">▶ Play</button>
+            <button id="listenPauseBtn">⏸ Pause</button>
+            <button id="listenStopBtn">⏹ Stop</button>
+          </div>
+          <textarea id="listenText" class="verse listen-text" style="margin-top:12px;" readonly>Load a passage above to listen here.</textarea>
         </div>
       </div>
     </section>
@@ -365,8 +431,8 @@
         <div class="card">
           <div class="section-title"><h2 style="margin:0;">Study</h2></div>
           <div class="tabs" id="studyTabs">
-            <button class="active" data-tab="explain">Explain</button>
-            <button data-tab="notes">Notes</button>
+            <button data-tab="explain">Explain</button>
+            <button data-tab="notes" class="active">Notes</button>
             <button data-tab="cross">Cross-refs</button>
             <button data-tab="apply">Application</button>
           </div>
@@ -401,18 +467,6 @@
     </section>
 
     <!-- ════ LISTEN ════ -->
-    <section id="listen" class="screen">
-      <div class="card">
-        <div class="section-title"><h2 style="margin:0;">Listen</h2></div>
-        <div class="quick-actions">
-          <button class="primary" id="listenPlayBtn">▶ Play</button>
-          <button id="listenPauseBtn">⏸ Pause</button>
-          <button id="listenStopBtn">⏹ Stop</button>
-        </div>
-        <textarea id="listenText" class="verse" style="margin-top:20px;background:rgba(255,255,255,.03);" readonly>Load a passage in Read to listen here.</textarea>
-      </div>
-    </section>
-
     <!-- ════ MEDITATION ════ -->
     <section id="meditate" class="screen">
       <div class="meditation-container" id="meditationContainer">
@@ -449,8 +503,8 @@
           <p class="muted">Write one thought (optional)</p>
           <textarea id="meditationReflection" placeholder="What stayed with you…" rows="3"></textarea>
           <div class="meditation-end-actions">
-            <button class="primary" id="meditationSaveBtn">Save & finish</button>
-            <button class="secondary" id="meditationSkipBtn">Skip</button>
+            <button class="primary" id="meditationSaveBtn">Save note & finish</button>
+            <button class="secondary" id="meditationSkipBtn">Done</button>
           </div>
         </div>
 
@@ -488,52 +542,215 @@
 
     <!-- ════ PROFILE ════ -->
     <section id="profile" class="screen">
-      <div class="split">
-        <div class="card">
-          <h2 style="margin:0 0 14px;">Profile</h2>
-          <div class="list">
-            <div class="item" style="display:grid;gap:8px;">
-              <strong>Your name</strong>
-              <input type="text" id="profileNameInput" placeholder="Enter your name">
-              <button id="saveProfileNameBtn" class="secondary">Save</button>
+      <div style="max-width:600px;margin:0 auto;padding:4px 0 32px;">
+
+        <!-- GETTING STARTED -->
+        <p class="settings-section-label">Getting Started</p>
+        <div class="settings-card">
+          <div style="padding:18px 16px;">
+            <div style="font-size:1.05rem;font-weight:600;margin-bottom:8px;">What BibleBuddy does</div>
+            <div style="color:var(--muted);font-size:.93rem;line-height:1.55;margin-bottom:16px;">BibleBuddy helps you read, study, and reflect on Scripture daily through guided sessions, AI-powered explanation, and a personal prayer log.</div>
+            <div style="margin-bottom:14px;">
+              <div style="margin-bottom:6px;"><span style="color:var(--accent2);font-weight:600;">Read</span> — Explore any Bible passage</div>
+              <div style="margin-bottom:6px;"><span style="color:var(--ok);font-weight:600;">Study</span> — Go deeper with AI insight</div>
+              <div style="margin-bottom:6px;"><span style="color:#f59e0b;font-weight:600;">Meditate</span> — Be still and reflect</div>
+              <div><span style="color:#c084fc;font-weight:600;">Prayer</span> — Bring your heart to God</div>
+            </div>
+            <button class="btn-test" id="startGuideBtn" style="margin-top:0;">START GUIDE →</button>
+          </div>
+        </div>
+
+        <!-- API CONFIGURATION -->
+        <p class="settings-section-label">API Configuration</p>
+        <div class="settings-card">
+          <div style="padding:18px 16px;">
+            <div style="font-size:1.05rem;font-weight:600;margin-bottom:4px;">OpenRouter API Key</div>
+            <div style="color:var(--muted);font-size:.85rem;margin-bottom:12px;">Required for AI content generation</div>
+            <input type="password" id="apiKeyInput" placeholder="sk-or-••••••••••••••••••••••" style="width:100%;margin-bottom:10px;padding:12px 14px;border-radius:12px;">
+            <div style="display:flex;gap:10px;margin-bottom:10px;">
+              <button class="btn-save-key" id="saveApiKeyBtn">SAVE KEY</button>
+              <button class="btn-show-key" id="showApiKeyBtn">SHOW</button>
+              <span id="apiKeySavedBadge" class="key-saved-badge hidden">Key saved</span>
+            </div>
+            <div style="color:var(--muted);font-size:.82rem;line-height:1.4;">
+              Get your key at <strong style="color:var(--text);">openrouter.ai</strong>. Free tier available. Stored locally only.
             </div>
           </div>
         </div>
-        <div class="card">
-          <h3 style="margin:0 0 4px;">Settings</h3>
-          <div class="settings-section">
-            <h4 class="section-subtitle">AI</h4>
-            <div class="settings-row">
-              <span>Model</span>
-              <select id="aiModelSelect" style="width:auto;">
-                <option value="openai/gpt-4o-mini">GPT-4o mini</option>
-                <option value="deepseek/deepseek-chat">DeepSeek Chat</option>
-                <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
-              </select>
-            </div>
-            <div class="settings-row">
-              <span>API key</span>
-              <div style="display:flex;gap:6px;align-items:center;">
-                <input type="password" id="apiKeyInput" placeholder="Enter key" style="width:140px;padding:6px 10px;">
-                <button id="saveApiKeyBtn" class="secondary" style="padding:6px 12px;font-size:.85rem;">Save</button>
+
+        <!-- MODEL -->
+        <p class="settings-section-label">Model</p>
+        <div class="settings-card">
+          <div style="padding:18px 16px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <div>
+                <div style="font-size:1.05rem;font-weight:600;">AI Model</div>
+                <div id="modelActiveLabel" style="color:var(--muted);font-size:.85rem;margin-top:2px;">openai/gpt-4o-mini</div>
               </div>
+              <span class="active-badge">Active ✓</span>
             </div>
-          </div>
-          <div class="settings-section">
-            <h4 class="section-subtitle">Preferences</h4>
-            <div class="settings-row clickable" id="voiceSpeedSetting">
-              <span>Voice speed</span><span id="voiceSpeedValue" class="value-accent">1.0×</span>
-            </div>
-            <div class="settings-row clickable" id="meditationDurationSetting">
-              <span>Meditation duration</span><span id="meditationDurationValue" class="value-accent">2 min</span>
-            </div>
-          </div>
-          <div class="settings-section">
-            <h4 class="section-subtitle">Journey</h4>
-            <div class="settings-row"><span>Saved passages</span><span id="savedVersesCount">—</span></div>
-            <div class="settings-row clickable" id="clearJourneyBtn"><span>Clear journey</span><span class="small muted">Remove all</span></div>
+            <select id="modelSelect" style="width:100%;padding:12px 14px;border-radius:12px;margin-bottom:10px;">
+              <option value="openai/gpt-4o-mini">GPT-4o Mini (Fast)</option>
+              <option value="openai/gpt-4o">GPT-4o (Powerful)</option>
+              <option value="deepseek/deepseek-chat">DeepSeek Chat (Free)</option>
+              <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo (Light)</option>
+            </select>
+            <button class="btn-test" id="testConnectionBtn">TEST CONNECTION</button>
           </div>
         </div>
+
+        <!-- YOUR NAME -->
+        <p class="settings-section-label">Your Name</p>
+        <div class="settings-card">
+          <div style="padding:18px 16px;">
+            <div style="font-size:1.05rem;font-weight:600;margin-bottom:4px;">Personalise AI responses</div>
+            <div style="color:var(--muted);font-size:.85rem;margin-bottom:12px;">When set, AI will address you by name</div>
+            <input type="text" id="userNameInput" placeholder="Enter your name" style="width:100%;padding:12px 14px;border-radius:12px;">
+          </div>
+        </div>
+
+        <!-- PREFERENCES -->
+        <p class="settings-section-label">Preferences</p>
+        <div class="settings-card">
+          <div class="settings-card-row">
+            <div class="row-left">
+              <span class="row-title">Completion Sound</span>
+              <span class="row-sub">Soft chime when session ends</span>
+            </div>
+            <div class="row-right">
+              <label class="toggle-switch">
+                <input type="checkbox" id="soundToggleInput" checked>
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left">
+              <span class="row-title">Vibration</span>
+              <span class="row-sub">Gentle pulse on completion</span>
+            </div>
+            <div class="row-right">
+              <label class="toggle-switch">
+                <input type="checkbox" id="vibrationToggleInput" checked>
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-card-row clickable" id="voiceSpeedSetting">
+            <div class="row-left">
+              <span class="row-title">Voice speed</span>
+              <span class="row-sub">Tap to cycle</span>
+            </div>
+            <span id="voiceSpeedValue" class="value-accent">1.0×</span>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left">
+              <span class="row-title">Voice gender</span>
+              <span class="row-sub">For text-to-speech reading</span>
+            </div>
+            <select id="voiceGenderSelect" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;color:var(--text);font-size:.9rem;">
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+            </select>
+          </div>
+          <div class="settings-card-row clickable" id="meditationDurationSetting">
+            <div class="row-left">
+              <span class="row-title">Meditation duration</span>
+              <span class="row-sub">Tap to cycle</span>
+            </div>
+            <span id="meditationDurationValue" class="value-accent">2 min</span>
+          </div>
+        </div>
+
+        <!-- PROGRESSION -->
+        <p class="settings-section-label">Progression</p>
+        <div class="settings-card">
+          <div class="settings-card-row">
+            <div class="row-left">
+              <span class="row-title">Saved passages</span>
+              <span class="row-sub">Scriptures in your journey</span>
+            </div>
+            <span id="savedVersesCount" class="value-accent">—</span>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left">
+              <span class="row-title">Cache</span>
+              <span class="row-sub">Today's AI context cached</span>
+            </div>
+            <button class="btn-secondary-sm" id="clearCacheBtn">CLEAR</button>
+          </div>
+          <div class="settings-card-row clickable" id="clearJourneyBtn">
+            <div class="row-left">
+              <span class="row-title">Clear journey</span>
+              <span class="row-sub">Remove all entries</span>
+            </div>
+            <span class="small muted">→</span>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left">
+              <span class="row-title">Reset progression</span>
+              <span class="row-sub">Clear used themes</span>
+            </div>
+            <button class="btn-secondary-sm" id="resetThemesBtn">RESET</button>
+          </div>
+        </div>
+
+        <!-- ABOUT -->
+        <p class="settings-section-label">About</p>
+        <div class="settings-card">
+          <div class="settings-card-row">
+            <div class="row-left">
+              <span class="row-title">BibleBuddy</span>
+              <span class="row-sub">Your calm Scripture companion</span>
+            </div>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v1.0</span>
+          </div>
+        </div>
+
+        <!-- DEVELOPER -->
+        <p class="settings-section-label">Developer</p>
+        <div class="settings-card">
+          <div style="padding:16px;">
+            <div style="font-size:1rem;font-weight:600;margin-bottom:4px;">Data</div>
+            <div style="color:var(--muted);font-size:.85rem;margin-bottom:14px;">Full reset — clears all local data</div>
+            <button class="btn-danger" id="wipeDataBtn" style="width:100%;">WIPE ALL DATA</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ════ GUIDE ════ -->
+    <section id="guide" class="screen">
+      <div style="max-width:600px;margin:0 auto;padding:4px 0 32px;">
+        <p class="settings-section-label">How to Use</p>
+        <div class="settings-card">
+          <div class="settings-card-row">
+            <div class="row-left"><span class="row-title" style="color:var(--accent2);">Home</span><span class="row-sub">Your daily verse and quick session entry. Tap Continue to begin.</span></div>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left"><span class="row-title" style="color:var(--ok);">Read</span><span class="row-sub">Load any Bible passage. Use Inquire, Explain, Apply, and Pray to explore it.</span></div>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left"><span class="row-title" style="color:var(--accent2);">Study</span><span class="row-sub">Deep dive — explanation, cross-references, application, and personal notes.</span></div>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left"><span class="row-title" style="color:var(--accent2);">Listen</span><span class="row-sub">Hear the passage read aloud. Use Play, Pause, and Stop.</span></div>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left"><span class="row-title" style="color:#f59e0b;">Meditate</span><span class="row-sub">Quiet timer with breath animation. 1, 2, or 5 minutes. Chime signals the end.</span></div>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left"><span class="row-title" style="color:#c084fc;">Prayer</span><span class="row-sub">Write what's on your heart and receive encouragement. Record answered prayers.</span></div>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left"><span class="row-title" style="color:var(--muted);">Journey</span><span class="row-sub">A log of your readings, prayers, notes, and meditations.</span></div>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left"><span class="row-title" style="color:var(--muted);">Profile</span><span class="row-sub">Set your name, API key, model, and system controls.</span></div>
+          </div>
+        </div>
+        <button class="primary" data-nav="profile" style="width:100%;padding:14px;border-radius:60px;margin-top:8px;">← Back to Profile</button>
       </div>
     </section>
 
@@ -544,7 +761,6 @@
       <button class="active" data-nav="home">Home</button>
       <button data-nav="read">Read</button>
       <button data-nav="study">Study</button>
-      <button data-nav="listen">Listen</button>
       <button data-nav="meditate">Meditate</button>
       <button data-nav="prayer">Prayer</button>
       <button data-nav="journey">Journey</button>
@@ -565,12 +781,11 @@
   // ═══════════════════════════════════════════
   const state = {
     screen: 'home',
-    userName: localStorage.getItem('user_name') || 'Friend',
     aiConfig: {
-      apiKey: localStorage.getItem('openrouter_api') || '',
-      model: localStorage.getItem('ai_model') || 'openai/gpt-4o-mini'
+      apiKey: localStorage.getItem('openrouter_api') || ''
     },
     ttsRate: parseFloat(localStorage.getItem('voice_speed')) || 1.0,
+    ttsState: { text: '', index: 0, isPaused: false },
     meditation: {
       duration: parseInt(localStorage.getItem('meditation_duration')) || 120,
       timer: null,
@@ -580,7 +795,16 @@
     },
     session: { step: 0, verse: '', data: null, loading: false },
     currentScripture: '',
-    activeAbortControllers: []
+    nextChapter: null,
+    baseContext: { summary: '', themes: [], meaning: '', insight: '' },
+    activeAbortControllers: [],
+    memory: JSON.parse(localStorage.getItem('bb_memory') || '{"topics":[],"recent":[],"lastUpdated":0}'),
+    settings: {
+      userName: localStorage.getItem('bb_user_name') || '',
+      sound: JSON.parse(localStorage.getItem('bb_sound') || 'true'),
+      vibration: JSON.parse(localStorage.getItem('bb_vibration') || 'true'),
+      model: localStorage.getItem('bb_model') || 'openai/gpt-4o-mini'
+    }
   };
 
   // Bible chapter counts
@@ -612,6 +836,48 @@
   // ═══════════════════════════════════════════
   const $ = id => document.getElementById(id);
 
+  // ── Memory Engine ──
+  function updateMemoryFromText(text) {
+    if (!text) return;
+    const lower = text.toLowerCase();
+    const signals = ['fear','anxiety','worry','confusion','decision','faith','trust','patience','anger','hope','direction'];
+    const found = signals.filter(s => lower.includes(s));
+    if (!found.length) return;
+    state.memory.recent = [...found, ...state.memory.recent].slice(0, 10);
+    state.memory.topics = [...new Set([...state.memory.topics, ...found])].slice(0, 10);
+    state.memory.lastUpdated = Date.now();
+    localStorage.setItem('bb_memory', JSON.stringify(state.memory));
+  }
+
+  // ── Response Cleaner ──
+  function cleanAIResponse(text) {
+    if (!text) return '';
+    let t = text.trim();
+    // Strip common AI opener patterns — repeat up to 2x to catch stacked openers
+    const fillerPattern = /^(sure[,!.]?\s*|of course[,!.]?\s*|absolutely[,!.]?\s*|certainly[,!.]?\s*|great question[,!.]?\s*|that('s| is) a (great|good|wonderful|beautiful|powerful|important)[^.\n]*[.!\n]\s*|this is (a )?(beautiful|wonderful|great|powerful|profound)[^.\n]*[.!\n]\s*|you might find[^.\n]*[.!\n]\s*|it('s| is) important to note[^.\n]*[.!\n]\s*|here is[^.\n]*[.!\n]\s*|here are[^.\n]*[.!\n]\s*|i understand[^.\n]*[.!\n]\s*|sorry (you are|you're)[^.\n]*[.!\n]\s*)/i;
+    t = t.replace(fillerPattern, '').trim();
+    t = t.replace(fillerPattern, '').trim(); // second pass for stacked openers
+    return t;
+  }
+
+  // ── Adaptive Reflection Prompt Generator ──
+  function generateReflectionPrompt(type) {
+    const themes = (state.baseContext?.themes || []).slice(0, 3).join(', ');
+    const memory = (state.memory?.recent || []).slice(0, 1).join('');
+    if (type === 'showing') {
+      return `From this passage${themes ? ' (' + themes + ')' : ''}, what truth might I be overlooking or not fully seeing in my life right now?${memory ? ' Consider also this: ' + memory : ''}`;
+    }
+    if (type === 'obey') {
+      return `Based on this passage${themes ? ' (' + themes + ')' : ''}, where might I be hesitating to act on what I already know is right?${memory ? ' This may connect to: ' + memory : ''}`;
+    }
+    return `Based on this passage${themes ? ' (' + themes + ')' : ''}, what kind of prayer naturally flows from this situation? Keep it personal and honest.${memory ? ' The person has been sitting with: ' + memory : ''}`;
+  }
+
+  function getLoadingText() {
+    const options = ['One moment…', 'Just a moment…', 'Hold on…'];
+    return options[Math.floor(Math.random() * options.length)];
+  }
+
   let toastTimer = null;
   function showToast(msg, dur = 2400) {
     const t = $('appToast');
@@ -624,14 +890,26 @@
   // Convert raw text to safe HTML (no markdown leakage)
   function toHTML(raw) {
     if (!raw) return '<span class="muted">Nothing came through — try again.</span>';
-    // Strip markdown symbols
-    const cleaned = raw.replace(/[#*_`~>]/g, '').replace(/\r/g, '').trim();
+    let cleaned = raw.trim();
+    // Strip markdown symbols and list markers
+    cleaned = cleaned
+      .replace(/[#*_`~>]/g, '')          // headers, bold, italic, code, blockquote
+      .replace(/^\s*\d+\.\s+/gm, '')     // numbered lists (1. 2. etc)
+      .replace(/^\s*[-•]\s+/gm, '')      // bullet dashes and dots
+      .replace(/\r/g, '')
+      .trim();
     const paragraphs = cleaned.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
     return paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
   }
 
   function speechText(raw) {
-    return (raw || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    return (raw || '')
+      .replace(/<[^>]*>/g, ' ')       // strip HTML tags
+      .replace(/\d+/g, '')            // strip verse numbers
+      .replace(/([a-z])([A-Z])/g, '$1 $2')  // split runTogetherWords
+      .replace(/([.,!?;:])([A-Za-z])/g, '$1 $2')  // ensure space after punctuation
+      .replace(/\s{2,}/g, ' ')        // collapse multiple spaces
+      .trim();
   }
 
   function setButtonLoading(btn, loading, loadingText = 'Loading…') {
@@ -650,9 +928,9 @@
   //  AI REQUEST — unified, abort-safe
   // ═══════════════════════════════════════════
   const SYSTEM_PROMPTS = {
-    guidance:   'You are a warm, calm spiritual companion. Speak plainly and personally, like a wise friend. Keep answers focused and honest. No markdown, no headers, no bullet symbols.',
-    study:      'You are a thoughtful Bible study guide. Be clear, grounded, and helpful. Plain text only — no markdown, no bold, no symbols.',
-    reflection: 'You are a gentle spiritual guide helping someone reflect on Scripture. Speak warmly and personally. Plain text only.'
+    guidance: "You are a trusted spiritual friend — not a preacher, not a chatbot. You speak the way a calm, grounded person talks to someone they care about. Never open with 'Certainly', 'Of course', 'Sure', 'Great question', 'Absolutely', 'Here is', 'It's important to note', 'You might find', or any filler phrase. Start directly. Never say 'this verse is expressing' or 'this passage is telling us'. No markdown, no bold text, no bullet points, no headers, no numbered lists. Just natural flowing sentences. Keep it personal, direct, and grounded.",
+    study: "You are a grounded, thoughtful person who knows the Bible well. Explain it the way a calm, knowledgeable friend would — not like a commentary, not like a sermon. Never open with filler phrases like 'Certainly', 'Great question', 'Here is', or 'It's important to note'. Start directly with the substance. No markdown, no bold, no bullet points or numbered lists. Plain sentences only. Be specific, honest, and human.",
+    reflection: "You are sitting quietly with someone reflecting on a Bible passage. Respond the way a wise, settled friend would — not with a lecture or a performance. Speak honestly and personally. Never start with 'Certainly', 'Of course', 'Sure', or similar openers. No markdown, no lists, no headers. Just warm, direct, grounded sentences. Maximum 4 sentences."
   };
 
   async function requestAI(prompt, type = 'guidance', timeoutMs = 18000) {
@@ -660,6 +938,17 @@
       showToast('Add your API key in Profile first');
       return null;
     }
+
+    // Strict no-opener rule
+    const strictRule = `Do NOT open your response with any of these: "Sure", "Of course", "Certainly", "Absolutely", "Great question", "That's a great", "Here is", "It's important to note", "You might find", "This is a beautiful", "This is a wonderful", "I understand", "Sorry you are going through". Start directly with your answer. No preamble.\n\n`;
+
+    // Memory context — max 1 topic, light injection only
+    const memoryContext = state.memory?.recent?.slice(0, 1).length
+      ? `Context: this person has been sitting with ${state.memory.recent[0]}.\n\n`
+      : '';
+
+    prompt = strictRule + memoryContext + prompt;
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     state.activeAbortControllers.push(controller);
@@ -673,20 +962,24 @@
           'HTTP-Referer': location.origin
         },
         body: JSON.stringify({
-          model: state.aiConfig.model,
+          model: state.settings.model,
           messages: [
             { role: 'system', content: SYSTEM_PROMPTS[type] || SYSTEM_PROMPTS.guidance },
             { role: 'user', content: prompt }
           ],
           temperature: 0.72,
-          max_tokens: 600
+          max_tokens: 900
         }),
         signal: controller.signal
       });
       clearTimeout(timeoutId);
       if (!res.ok) throw new Error(`API error ${res.status}`);
       const data = await res.json();
-      return data.choices?.[0]?.message?.content || null;
+      const raw = data.choices?.[0]?.message?.content || null;
+      if (!raw) return null;
+      const cleaned = cleanAIResponse(raw);
+      updateMemoryFromText(cleaned);
+      return cleaned;
     } catch (e) {
       clearTimeout(timeoutId);
       if (e.name !== 'AbortError') showToast('Couldn\'t reach AI — check your connection');
@@ -700,6 +993,97 @@
   function cancelAllAI() {
     state.activeAbortControllers.forEach(c => c.abort());
     state.activeAbortControllers = [];
+  }
+
+  // ═══════════════════════════════════════════
+  //  HYBRID AI — LAYER 1: BASE CONTEXT
+  // ═══════════════════════════════════════════
+  const contextCache = new Map(); // scripture string → parsed context object
+
+  async function fetchBaseContext(scripture) {
+    if (contextCache.has(scripture)) return contextCache.get(scripture);
+
+    const prompt = `You are carefully studying a Bible passage to understand it deeply before helping someone else.
+
+Scripture:
+${scripture}
+
+Write a rich but clear breakdown in this exact structure:
+
+Summary:
+Write a full, flowing explanation of what is happening in this passage.
+Do not shorten. Use complete sentences. Keep it natural and readable.
+
+Key Themes:
+List 4–6 meaningful themes present in the passage.
+Write each on a new line, no symbols.
+
+Spiritual Meaning:
+Explain the deeper spiritual message behind this passage in a thoughtful way.
+Not just what it says, but what it means.
+
+Practical Insight:
+Describe how this passage connects to real life today in a grounded, relatable way.
+
+Important:
+
+- Do not use markdown, symbols, or formatting
+- Do not shorten sentences
+- Do not use bullet characters
+- Keep the tone natural, calm, and human
+`;
+
+    const raw = await requestAI(prompt, 'study', 24000);
+    const ctx = parseBaseContext(raw || '');
+    state.baseContext = ctx;
+    contextCache.set(scripture, ctx);
+    return ctx;
+  }
+
+  function parseBaseContext(text) {
+    const result = { summary: '', themes: [], meaning: '', insight: '' };
+    if (!text) return result;
+
+    let currentMode = '';
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
+    for (const line of lines) {
+      const lower = line.toLowerCase();
+
+      if (lower.startsWith('summary:')) {
+        currentMode = 'summary';
+        result.summary = line.replace(/summary:/i, '').trim();
+      }
+      else if (lower.startsWith('key themes:')) {
+        currentMode = 'themes';
+      }
+      else if (lower.startsWith('spiritual meaning:')) {
+        currentMode = 'meaning';
+        result.meaning = line.replace(/spiritual meaning:/i, '').trim();
+      }
+      else if (lower.startsWith('practical insight:')) {
+        currentMode = 'insight';
+        result.insight = line.replace(/practical insight:/i, '').trim();
+      }
+      else {
+        if (currentMode === 'summary') result.summary += ' ' + line;
+        else if (currentMode === 'themes' && line.length > 1) result.themes.push(line);
+        else if (currentMode === 'meaning') result.meaning += ' ' + line;
+        else if (currentMode === 'insight') result.insight += ' ' + line;
+      }
+    }
+
+    // Trim all string fields
+    result.summary = result.summary.trim();
+    result.meaning = result.meaning.trim();
+    result.insight = result.insight.trim();
+    result.themes = result.themes.map(t => t.trim()).filter(Boolean);
+
+    return result;
+  }
+
+  function nullContext() {
+    return { summary: '', themes: [], meaning: '', insight: '' };
   }
 
   // Build an AI response panel (returns DOM node)
@@ -719,8 +1103,10 @@
   }
 
   function showAIInPanel(panelEl, content) {
+    panelEl.innerHTML = '';  // clear before setting — no lingering content
     panelEl.innerHTML = content;
     panelEl.classList.remove('hidden');
+    panelEl.scrollTop = 0;
     const closeBtn = document.createElement('button');
     closeBtn.className = 'close-btn';
     closeBtn.textContent = '✕';
@@ -740,12 +1126,28 @@
     if (data.length > 100) data.pop();
     localStorage.setItem('journeyData', JSON.stringify(data));
     if (state.screen === 'journey') renderJourney();
+    // Live update saved verses count if Profile is open
+    if (state.screen === 'profile') syncProfileStats();
   }
 
   function updateCurrentScripture(ref, text) {
-    state.currentScripture = `${ref} — ${text}`;
+    let cleanText = (text || '')
+      .replace(/<[^>]*>/g, '')
+      .replace(/([.!?])([A-Z])/g, '$1 $2')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const newRef = `${ref} — ${cleanText}`;
+
+    if (newRef !== state.currentScripture) {
+      contextCache.clear();
+    }
+
+    state.currentScripture = newRef;
+
+    // Listen textarea gets speechText-cleaned version (strips digits for TTS)
     const lt = $('listenText');
-    if (lt) lt.value = speechText(state.currentScripture);
+    if (lt) lt.value = speechText(cleanText);
   }
 
   // ═══════════════════════════════════════════
@@ -760,6 +1162,14 @@
         verse: state.session.verse,
         data: state.session.data
       }));
+    }
+    // Reset study tab to Notes so re-entry never auto-fires AI
+    if (screen === 'study') {
+      document.querySelectorAll('#studyTabs button').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === 'notes');
+      });
+      const notesPanel = $('studyNotesPanel');
+      if (notesPanel) notesPanel.style.display = 'none';
     }
     cancelAllAI();
     document.querySelectorAll('.ai-panel').forEach(p => {
@@ -804,7 +1214,7 @@
     const topbar = $('topbarHeader');
     topbar.style.display = (id === 'home' || id === 'sessionFlow') ? 'none' : 'block';
     // Update topbar title
-    const titles = { read:'Read', study:'Study', listen:'Listen', meditate:'Meditate', prayer:'Prayer', journey:'Journey', profile:'Profile' };
+    const titles = { read:'Read', study:'Study', listen:'Listen', meditate:'Meditate', prayer:'Prayer', journey:'Journey', profile:'Profile', guide:'User Guide' };
     const titleEl = $('topbarTitle');
     if (titleEl && titles[id]) titleEl.textContent = titles[id];
     onEnter(id);
@@ -821,7 +1231,7 @@
     const now = new Date();
     const h = now.getHours();
     const greeting = h < 12 ? 'Morning' : h < 18 ? 'Afternoon' : 'Evening';
-    const name = state.userName || 'Friend';
+    const name = state.settings.userName || 'Friend';
     $('homeGreetingLarge').textContent = `Good ${greeting}, ${name}`;
     $('homeDateDisplay').textContent = now.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
     $('homeSessionLabel').textContent = `${greeting} Session`;
@@ -840,13 +1250,68 @@
         if (s.step > 0 && s.step < 4) { hint = 'Resume where you left off'; }
       } catch {}
     } else {
-      const last = journey.find(e => e.type === 'Scripture');
-      if (last) {
-        const m = last.text.match(/^([1-3]?\s?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/);
-        if (m) hint = `Last read: ${m[1]} ${m[2]}`;
+      // Enhanced progression hint using bb_progress
+      try {
+        const progress = JSON.parse(localStorage.getItem('bb_progress') || 'null');
+        if (progress && progress.currentBook) {
+          const bookOption = Array.from($('bibleBook')?.options || []).find(opt => opt.value === progress.currentBook);
+          const bookName = bookOption ? bookOption.textContent : progress.currentBook;
+          const currentChapter = progress.currentChapter;
+          const completedChaptersForBook = (progress.completedChapters || []).filter(ch => ch.startsWith(progress.currentBook + ':')).length;
+          if (completedChaptersForBook > 0) {
+            hint = `You're in ${bookName} ${currentChapter} • ${completedChaptersForBook} chapter${completedChaptersForBook !== 1 ? 's' : ''} in`;
+          } else {
+            hint = `Continue from ${bookName} ${currentChapter}`;
+          }
+        } else {
+          const lastRead = JSON.parse(localStorage.getItem('bb_last_read') || 'null');
+          if (lastRead && lastRead.book) {
+            const bookName = document.querySelector(`#bibleBook option[value="${lastRead.book}"]`)?.textContent || lastRead.book;
+            hint = `Continue from ${bookName} ${lastRead.chapter}`;
+          } else {
+            const journey2 = JSON.parse(localStorage.getItem('journeyData') || '[]');
+            const last = journey2.find(e => e.type === 'Scripture');
+            if (last) {
+              const m = last.text.match(/^([1-3]?\s?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/);
+              if (m) hint = `Last read: ${m[1]} ${m[2]}`;
+            }
+          }
+        }
+      } catch {
+        // fallback to old logic
+        const lastRead = JSON.parse(localStorage.getItem('bb_last_read') || 'null');
+        if (lastRead && lastRead.book) {
+          const bookName = document.querySelector(`#bibleBook option[value="${lastRead.book}"]`)?.textContent || lastRead.book;
+          hint = `Continue from ${bookName} ${lastRead.chapter}`;
+        } else {
+          const journey3 = JSON.parse(localStorage.getItem('journeyData') || '[]');
+          const last = journey3.find(e => e.type === 'Scripture');
+          if (last) {
+            const m = last.text.match(/^([1-3]?\s?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/);
+            if (m) hint = `Last read: ${m[1]} ${m[2]}`;
+          }
+        }
       }
     }
     $('homeProgressionHint').textContent = hint;
+
+    // FIX 1 — Resume reading button
+    const lastRead = JSON.parse(localStorage.getItem('bb_last_read') || 'null');
+    const resumeBtn = $('resumeReadingBtn');
+    if (lastRead && lastRead.book) {
+      resumeBtn.style.display = 'block';
+      resumeBtn.onclick = () => {
+        $('bibleBook').value = lastRead.book;
+        populateChapters(lastRead.book);
+        $('bibleChapter').value = lastRead.chapter;
+        openScreen('read');
+        setTimeout(() => {
+          loadPassage(lastRead.book, lastRead.chapter);
+        }, 300);
+      };
+    } else {
+      resumeBtn.style.display = 'none';
+    }
   }
 
   function updateStreak() {
@@ -878,22 +1343,33 @@
     ).join('');
   }
 
-  async function loadPassage() {
-    const book = $('bibleBook').value;
-    const chapter = $('bibleChapter').value;
+  async function fetchPassage(book, chapter, version) {
+    try {
+      const res = await fetch(`https://bible-api.com/${book}+${chapter}?translation=${version}`);
+      if (!res.ok) throw new Error('Not found');
+      const data = await res.json();
+      return data;
+    } catch {
+      showToast("Couldn't load passage. Try again.");
+      return null;
+    }
+  }
+
+  async function loadPassage(bookOverride, chapterOverride) {
+    const book = bookOverride || $('bibleBook').value;
+    const chapter = chapterOverride || $('bibleChapter').value;
     const translation = $('translation').value;
     const display = $('readDisplay');
     const btn = $('loadPassageBtn');
     if (!display) return;
 
     setButtonLoading(btn, true, 'Loading…');
-    display.innerHTML = '<span class="muted">Fetching passage…</span>';
+    display.innerHTML = '<span class="muted">Loading…</span>';
     display.classList.remove('read-collapsed');
 
     try {
-      const res = await fetch(`https://bible-api.com/${book}+${chapter}?translation=${translation}`);
-      if (!res.ok) throw new Error('Not found');
-      const data = await res.json();
+      const data = await fetchPassage(book, chapter, translation);
+      if (!data) throw new Error('No data');
       const ref = data.reference;
       let textLines = data.verses.map(v => `<span style="color:var(--accent2);font-size:.8em;margin-right:4px;">${v.verse}</span>${v.text.trim()}`).join('<br>');
       const plainText = data.verses.map(v => v.text.trim()).join(' ');
@@ -901,6 +1377,24 @@
       display.classList.add('read-collapsed');
       $('readExpandBtn').textContent = 'Expand';
       updateCurrentScripture(ref, plainText);
+      updateReflectionLabels().catch(() => {});
+
+      // Patch 8 — store last read and update progression
+      localStorage.setItem('bb_last_read', JSON.stringify({ book, chapter: parseInt(chapter) }));
+      state.nextChapter = parseInt(chapter) + 1;
+      try {
+        const prog = JSON.parse(localStorage.getItem('bb_progress') || '{"currentBook":"","currentChapter":1,"completedChapters":[]}');
+        if (prog.currentBook === book) {
+          const key = `${book}:${chapter}`;
+          if (!prog.completedChapters.includes(key)) prog.completedChapters.push(key);
+        } else {
+          prog.currentBook = book;
+          prog.currentChapter = parseInt(chapter);
+          prog.completedChapters = [`${book}:${chapter}`];
+        }
+        prog.currentChapter = parseInt(chapter);
+        localStorage.setItem('bb_progress', JSON.stringify(prog));
+      } catch {}
 
       // Save to journey (deduplicated)
       const normRef = ref.toLowerCase().replace(/[^\w\s:]/g, '').trim();
@@ -910,7 +1404,7 @@
         localStorage.setItem('bb_last_scripture', normRef);
       }
     } catch {
-      display.innerHTML = '<span class="muted">⚠️ Could not load this passage. Check your connection.</span>';
+      display.innerHTML = '<span class="muted">Couldn\'t load this passage. Check your connection and try again.</span>';
       display.classList.remove('read-collapsed');
     } finally {
       setButtonLoading(btn, false);
@@ -927,11 +1421,14 @@
   }
 
   function syncListenText() {
-    const display = $('readDisplay');
     const lt = $('listenText');
-    if (display && lt) {
-      const raw = display.innerText || '';
-      lt.value = raw.trim() || 'Load a passage in Read to listen here.';
+    if (!lt) return;
+    if (state.currentScripture) {
+      const parts = state.currentScripture.split(' — ');
+      const rawText = parts.length > 1 ? parts.slice(1).join(' — ') : state.currentScripture;
+      lt.value = speechText(rawText);
+    } else {
+      lt.value = 'Load a passage in Read to listen here.';
     }
   }
 
@@ -939,22 +1436,22 @@
   //  SESSION FLOW
   // ═══════════════════════════════════════════
   async function fetchSessionData(verse) {
-    const prompt = `I want to reflect on this verse: "${verse}"
+    const prompt = `Today's verse for my quiet time: "${verse}"
 
-Please give me three things to help with my quiet time:
-1. A simple, warm explanation of what this verse means (2-3 sentences)
-2. Two practical ways I can live this out today
-3. A short personal prayer based on this verse
+Write three short things — speak like a grounded friend, not a preacher:
+1. "explanation" — in 2 or 3 sentences, what does this verse really mean in plain, personal terms?
+2. "application" — give me one or two honest, specific things I can actually do today because of this verse. Not vague — real actions.
+3. "prayer" — write a short prayer that comes naturally from this verse. First person, personal, not formal.
 
-Reply only as a JSON object with keys: "explanation", "application", "prayer". No other text.`;
+Respond only as a raw JSON object with those three keys. No intro, no outro, no markdown fences.`;
 
     const raw = await requestAI(prompt, 'guidance');
     if (!raw) return defaultSessionData();
     try {
       const json = JSON.parse(raw.replace(/```json|```/g, '').trim());
       return {
-        explanation: json.explanation || 'Take a moment to sit with this verse.',
-        application: json.application || 'Look for one way to apply this truth today.',
+        explanation: json.explanation || 'Take a moment to sit quietly with this verse.',
+        application: json.application || 'Look for one honest way to live this truth today.',
         prayer: json.prayer || 'Lord, let this verse take root in me today. Amen.'
       };
     } catch {
@@ -977,40 +1474,68 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
     const content = $('flowContentArea');
     const actions = $('flowActionsArea');
     const indicator = $('flowStepIndicator');
-    const labels = ['Read', 'Understand', 'Apply', 'Pray'];
+    // Labels: step 0 = Read, 1 = Understand, 2 = Apply, 3 = Pray
+    const stepLabels = ['Read', 'Understand', 'Apply', 'Pray'];
 
-    indicator.textContent = step < 4 ? `Step ${step + 1} of 4 · ${labels[step]}` : 'Complete';
+    indicator.innerHTML = step < 4
+      ? `<span>Step ${step + 1} of 4</span><span style="color:var(--accent2);font-weight:600;">${stepLabels[step]}</span>`
+      : '<span style="color:var(--ok);">Complete ✓</span>';
 
     if (step === 0) {
-      content.innerHTML = `<div class="flow-verse">"${verse}"</div>
-        <div class="quick-actions">
+      // READ — show verse, let them read before continuing
+      content.innerHTML = `
+        <p class="muted" style="font-size:.82rem;margin:0 0 10px;letter-spacing:.5px;text-transform:uppercase;">Today's verse</p>
+        <div class="flow-verse">"${verse}"</div>
+        <div class="quick-actions" style="margin-top:4px;">
           <button class="secondary" data-flow-action="listen">🔊 Hear it</button>
           <button class="secondary" data-flow-action="continueReading">Open in Bible →</button>
         </div>`;
-      actions.innerHTML = `<button class="primary" data-flow-action="next">I've read it →</button>`;
+      actions.innerHTML = `<button class="primary" data-flow-action="next" style="padding:14px 32px;border-radius:60px;">I've read it →</button>`;
+
     } else if (step === 1) {
-      content.innerHTML = `<p class="muted" style="font-size:.85rem;margin:0 0 12px;">What it means</p><div style="line-height:1.65;">${toHTML(data.explanation)}</div>`;
-      actions.innerHTML = `
-        <button class="primary" data-flow-action="next">Continue →</button>
-        <button class="secondary" data-flow-action="moreContext">More context</button>`;
-    } else if (step === 2) {
-      content.innerHTML = `<p class="muted" style="font-size:.85rem;margin:0 0 12px;">Living it out</p><div style="line-height:1.65;">${toHTML(data.application)}</div>`;
-      actions.innerHTML = `
-        <button class="primary" data-flow-action="next">Continue →</button>
-        <button class="secondary" data-flow-action="guidance">I need guidance</button>`;
-    } else if (step === 3) {
+      // UNDERSTAND — explanation
       content.innerHTML = `
-        <p class="muted" style="font-size:.85rem;margin:0 0 12px;">A prayer for you</p>
-        <div style="line-height:1.65;margin-bottom:16px;">${toHTML(data.prayer)}</div>
-        <textarea id="flowPrayerEdit" style="min-height:80px;">${data.prayer}</textarea>`;
-      actions.innerHTML = `<button class="primary" data-flow-action="saveFinish">Save & Finish</button>`;
+        <p class="muted" style="font-size:.82rem;margin:0 0 10px;letter-spacing:.5px;text-transform:uppercase;">What it means</p>
+        <div style="line-height:1.7;font-size:1.05rem;">${toHTML(data.explanation)}</div>`;
+      actions.innerHTML = `
+        <button class="primary" data-flow-action="next" style="padding:14px 28px;border-radius:60px;">Continue →</button>
+        <button class="secondary" data-flow-action="moreContext">Go deeper</button>`;
+
+    } else if (step === 2) {
+      // APPLY — application (this is what was shown as "What it means" before — now correctly labelled)
+      content.innerHTML = `
+        <p class="muted" style="font-size:.82rem;margin:0 0 10px;letter-spacing:.5px;text-transform:uppercase;">Living it out today</p>
+        <div style="line-height:1.7;font-size:1.05rem;">${toHTML(data.application)}</div>`;
+      actions.innerHTML = `
+        <button class="primary" data-flow-action="next" style="padding:14px 28px;border-radius:60px;">Continue →</button>
+        <button class="secondary" data-flow-action="guidance">I need guidance</button>`;
+
+    } else if (step === 3) {
+      // PRAY
+      // Strip plain text from prayer for textarea (no HTML)
+      const prayerPlain = (data.prayer || '').replace(/<[^>]*>/g, '').trim();
+      content.innerHTML = `
+        <p class="muted" style="font-size:.82rem;margin:0 0 10px;letter-spacing:.5px;text-transform:uppercase;">A prayer for you</p>
+        <div style="line-height:1.7;font-size:1.05rem;margin-bottom:16px;">${toHTML(data.prayer)}</div>
+        <p class="muted" style="font-size:.85rem;margin:0 0 6px;">Make it your own:</p>
+        <textarea id="flowPrayerEdit" style="min-height:80px;">${prayerPlain}</textarea>`;
+      actions.innerHTML = `
+        <button class="primary" data-flow-action="saveFinish" style="padding:14px 32px;border-radius:60px;">Save & Finish</button>
+        <button class="secondary" data-flow-action="skipFinish" style="padding:14px 24px;border-radius:60px;">Done</button>`;
+
     } else {
+      // COMPLETE
       localStorage.removeItem('bb_session');
       state.session = { step: 0, verse: '', data: null, loading: false };
-      content.innerHTML = `<div class="completed-check">✔️</div>
-        <h3 style="margin:0 0 8px;">Well done</h3>
-        <p class="muted">You spent time with the Word today.</p>`;
-      actions.innerHTML = `<button class="primary" data-flow-action="done">Back to Home</button>`;
+      content.innerHTML = `
+        <div style="text-align:center;padding:28px 8px 8px;">
+          <div style="font-size:3.5rem;margin-bottom:20px;">🕊</div>
+          <h3 style="margin:0 0 10px;font-size:1.3rem;font-weight:600;">You spent time with the Word of God.</h3>
+          <p style="color:var(--muted);font-size:1rem;line-height:1.65;margin:0;font-style:italic;">
+            Carry it with you.
+          </p>
+        </div>`;
+      actions.innerHTML = `<button class="primary" data-flow-action="done" style="padding:14px 40px;border-radius:60px;">Back to Home</button>`;
     }
   }
 
@@ -1035,10 +1560,11 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
   }
 
   function startMeditation() {
+    if (state.meditation.state === 'active') return;
     if (state.meditation.state !== 'idle') return;
     state.meditation.state = 'active';
-    state.meditation.remaining = state.meditation.duration;
     state.meditation.startTime = Date.now();
+    state.meditation.remaining = state.meditation.duration;
 
     $('meditationEntry').classList.add('hidden');
     $('meditationActive').classList.remove('hidden');
@@ -1049,33 +1575,109 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
     updateMeditationDisplay();
     $('meditationBreathIndicator').classList.add('breathing');
 
+    // Failsafe: use absolute end time, not elapsed counter
+    const endTime = Date.now() + (state.meditation.duration * 1000);
+
     if (state.meditation.timer) clearInterval(state.meditation.timer);
     state.meditation.timer = setInterval(() => {
-      if (state.meditation.state !== 'active') return;
-      const elapsed = Math.floor((Date.now() - state.meditation.startTime) / 1000);
-      state.meditation.remaining = Math.max(0, state.meditation.duration - elapsed);
-      updateMeditationDisplay();
-      if (state.meditation.remaining <= 0) {
+      if (state.meditation.state !== 'active') {
+        clearInterval(state.meditation.timer);
+        state.meditation.timer = null;
+        return;
+      }
+      const now = Date.now();
+      if (now >= endTime) {
         clearInterval(state.meditation.timer);
         state.meditation.timer = null;
         finishMeditation();
+        return;
       }
-    }, 250);
+      const remaining = Math.max(0, Math.floor((endTime - now) / 1000));
+      if (remaining !== state.meditation.remaining) {
+        state.meditation.remaining = remaining;
+        updateMeditationDisplay();
+      }
+    }, 1000);
+
+    // Visibility recovery — bind once
+    if (!state._meditationVisibilityBound) {
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && state.meditation.state === 'active') {
+          const now = Date.now();
+          const end = state.meditation.startTime + (state.meditation.duration * 1000);
+          if (now >= end) {
+            finishMeditation();
+          } else {
+            state.meditation.remaining = Math.max(0, Math.floor((end - now) / 1000));
+            updateMeditationDisplay();
+          }
+        }
+      });
+      state._meditationVisibilityBound = true;
+    }
   }
 
   function stopMeditation() {
-    if (state.meditation.timer) { clearInterval(state.meditation.timer); state.meditation.timer = null; }
+    if (state.meditation.timer) {
+      clearInterval(state.meditation.timer);
+      state.meditation.timer = null;
+    }
     state.meditation.state = 'idle';
-    $('meditationBreathIndicator')?.classList.remove('breathing');
+    const breath = $('meditationBreathIndicator');
+    if (breath) breath.classList.remove('breathing');
     initMeditation();
   }
 
+  function playMeditationChime() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // Three gentle bell-like tones
+      const times = [0, 0.6, 1.2];
+      const freqs = [528, 660, 396];
+      times.forEach((t, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.value = freqs[i];
+        gain.gain.setValueAtTime(0, ctx.currentTime + t);
+        gain.gain.linearRampToValueAtTime(0.22, ctx.currentTime + t + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 1.8);
+        osc.start(ctx.currentTime + t);
+        osc.stop(ctx.currentTime + t + 1.9);
+      });
+      setTimeout(() => ctx.close(), 4000);
+    } catch {}
+  }
+
   function finishMeditation() {
-    if (state.meditation.timer) { clearInterval(state.meditation.timer); state.meditation.timer = null; }
+    // Single-entry guard — only active sessions can finish
+    if (state.meditation.state !== 'active') return;
+
+    clearInterval(state.meditation.timer);
+    state.meditation.timer = null;
     state.meditation.state = 'ended';
-    $('meditationActive').classList.add('hidden');
-    $('meditationEnd').classList.remove('hidden');
-    $('meditationReflection').value = '';
+
+    const breath = $('meditationBreathIndicator');
+    if (breath) breath.classList.remove('breathing');
+
+    // Completion feedback — user may have eyes closed
+    try { if (state.settings.vibration && navigator.vibrate) navigator.vibrate(200); } catch(e) {}
+    if (state.settings.sound) playMeditationChime();
+    showToast('Session complete');
+
+    // UI flip after brief delay so audio signal reaches user first
+    setTimeout(() => {
+      const active = $('meditationActive');
+      const end = $('meditationEnd');
+      if (active) active.classList.add('hidden');
+      if (end) {
+        end.classList.remove('hidden');
+        const ref = end.querySelector('#meditationReflection');
+        if (ref) ref.value = '';
+      }
+    }, 300);
   }
 
   function updateMeditationDisplay() {
@@ -1087,8 +1689,26 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
   // ═══════════════════════════════════════════
   //  STUDY HELPERS
   // ═══════════════════════════════════════════
+  async function updateReflectionLabels() {
+    if (!state.currentScripture) return;
+    const ctx = await fetchBaseContext(state.currentScripture).catch(() => nullContext());
+    const hasContext = ctx && (ctx.summary || ctx.themes.length);
+    const items = document.querySelectorAll('.reflection-item');
+    if (!items.length) return;
+    if (hasContext) {
+      items[0].textContent = 'What might I be missing here?';
+      items[1].textContent = 'Where might I need to act?';
+      items[2].textContent = 'What should I say to God from this?';
+    } else {
+      items[0].textContent = 'What is God showing me?';
+      items[1].textContent = 'What should I obey today?';
+      items[2].textContent = 'What prayer follows this passage?';
+    }
+  }
+
   async function refreshStudyPanel() {
-    const activeTab = document.querySelector('#studyTabs .active')?.dataset.tab || 'explain';
+    const activeTab = document.querySelector('#studyTabs .active')?.dataset.tab || 'notes';
+    await updateReflectionLabels();  // <-- PATCH 1
 
     if (activeTab === 'notes') {
       $('studyNotesPanel').style.display = 'block';
@@ -1098,24 +1718,135 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
     }
 
     $('studyNotesPanel').style.display = 'none';
-
+    // Never auto-trigger AI — AI runs only on explicit tab click
     if (!state.currentScripture) {
       $('studyAIResponse').classList.add('hidden');
+    }
+  }
+
+  async function handleStudyTab(tab, panel) {
+    if (!state.currentScripture || !state.currentScripture.trim()) {
+      showToast('Load a passage first');
       return;
     }
 
-    const panel = $('studyAIResponse');
     panel.classList.remove('hidden');
-    panel.innerHTML = '<span class="muted loading-dots">Thinking</span>';
+    panel.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
 
-    const prompts = {
-      explain: `Can you walk me through what this passage is saying in plain terms? Passage: ${state.currentScripture}`,
-      cross:   `What other Bible passages speak to the same theme as this one? Passage: ${state.currentScripture}`,
-      apply:   `What are 2 or 3 honest, practical ways someone could live out this passage today? Passage: ${state.currentScripture}`
-    };
+    const ctx = await fetchBaseContext(state.currentScripture).catch(() => null);
+    const safeCtx = ctx || { summary: '', themes: [], meaning: '', insight: '' };
 
-    const resp = await requestAI(prompts[activeTab] || prompts.explain, 'study');
-    showAIInPanel(panel, toHTML(resp));
+    let prompt = '';
+
+    if (tab === 'explain') {
+      prompt = safeCtx.summary
+        ? `Walk me through this passage:
+
+${state.currentScripture}
+
+What's already known:
+${safeCtx.summary}
+
+Deeper meaning:
+${safeCtx.meaning}
+
+Go deeper — don't just repeat what's above. Expand it, add layers, make connections. Speak like a grounded friend who knows this well.`
+        : `I'm reading ${state.currentScripture} and want to understand what it's really saying. Walk me through it like you would a friend — what's the heart of this passage? Go deep, don't shorten.`;
+    }
+
+    if (tab === 'cross') {
+      prompt = safeCtx.themes.length
+        ? `I've been reading ${state.currentScripture}. The themes running through it are:
+${safeCtx.themes.join('\n')}
+
+Give me 3 to 5 passages from elsewhere in the Bible that speak to the same things. For each one, say what it is and why it connects here — not just what it says, but why it belongs alongside this passage.`
+        : `I've been sitting with ${state.currentScripture}. What other parts of the Bible speak to the same idea? Give me 3 to 5 and explain each connection clearly — why they belong together, not just what they say.`;
+    }
+
+    if (tab === 'apply') {
+      prompt = safeCtx.insight
+        ? `I've been reading this:
+
+${state.currentScripture}
+
+What strikes me about it:
+${safeCtx.insight}
+
+What does this actually change? Be specific — not abstract, not vague. What does someone think, say, or do differently today because of this? Grounded and honest.`
+        : `I've read ${state.currentScripture}. Help me think about what this actually looks like in daily life — not abstract, but real. What are 2 or 3 honest, practical things someone could do differently today because of this? Be specific.`;
+    }
+
+    if (!prompt) {
+      panel.innerHTML = '<span class="muted">Select a tab above.</span>';
+      return;
+    }
+
+    const res = await requestAI(prompt, 'study');
+
+    if (!res) {
+      panel.innerHTML = '<div class="muted">Nothing came through. Tap again.</div>';
+      showToast('Try again');
+      return;
+    }
+
+    showAIInPanel(panel, toHTML(res));
+  }
+
+  async function handleGuidance(action) {
+    const scripture = state.currentScripture;
+
+    // Layer 1 — fetch base context (uses cache if already fetched for this scripture)
+    const ctx = await fetchBaseContext(scripture).catch(() => nullContext());
+
+    let prompt;
+    if (action === 'explain') {
+      if (ctx.summary) {
+        prompt = `Walk me through this passage like you're explaining it to a close friend:
+
+${scripture}
+
+Background:
+${ctx.summary}
+
+Deeper meaning:
+${ctx.meaning}
+
+Go deep. Don't summarize — really help me understand what's going on and why it matters. Speak naturally.`;
+      } else {
+        prompt = `I just read "${scripture}". Can you help me understand what it really means? Talk to me like a friend — what's going on here and why does it matter? Don't shorten it.`;
+      }
+    } else if (action === 'apply') {
+      if (ctx.insight) {
+        prompt = `I've been sitting with this passage:
+
+${scripture}
+
+What I know about it:
+${ctx.themes.join(', ')}
+
+${ctx.insight}
+
+What does this actually look like in daily life? Be honest and specific — not abstract spiritual language. What does someone do differently today because of this?`;
+      } else {
+        prompt = `I've been reading "${scripture}". What would it actually look like to live this out today? Give me real, honest, specific ways I could carry this into my day — not generic advice.`;
+      }
+    } else if (action === 'pray') {
+      if (ctx.meaning) {
+        prompt = `Write a prayer for someone sitting with this passage:
+
+${scripture}
+
+What it means:
+${ctx.meaning}
+
+Write the kind of prayer a real person would actually pray — honest, personal, not formal. No church language. Just someone talking to God from this verse.`;
+      } else {
+        prompt = `I've been reading "${scripture}". Write a short, personal prayer that flows naturally from this verse — the kind of thing someone would actually pray, not a church-sounding one.`;
+      }
+    }
+
+    if (!prompt) return null;
+    return requestAI(prompt, 'guidance');
   }
 
   function loadSavedNotes() {
@@ -1132,7 +1863,7 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
             <strong style="color:var(--accent2);font-size:.9rem;">${r}</strong>
             <div style="margin-top:4px;font-size:.9rem;color:var(--muted);">${txt.substring(0,100)}${txt.length>100?'…':''}</div>
           </div>`).join('')
-      : '<div class="muted small">No notes yet.</div>';
+      : '<div class="muted small">No notes saved yet.</div>';
   }
 
   function saveStudyNote() {
@@ -1192,10 +1923,26 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
       data = data.filter(e => (e.text || '').toLowerCase().includes(f) || (e.type || '').toLowerCase().includes(f));
     }
     if (!data.length) {
-      container.innerHTML = '<div class="muted" style="padding:20px 0;">Your journey entries will appear here.</div>';
+      container.innerHTML = '<div class="muted" style="padding:20px 0;">Nothing here yet. Your readings and reflections will appear as you go.</div>';
       return;
     }
-    container.innerHTML = data.map((e, i) => `
+
+    let html = '';
+
+    // TASK 5 — Saved Scriptures section with clickable load
+    const savedOnly = data.filter(e => e.type === 'Scripture');
+    if (savedOnly.length) {
+      html += `<h3 style="margin:0 0 10px;font-size:1rem;color:var(--accent2);">Saved Scriptures</h3>`;
+      savedOnly.forEach(e => {
+        // Parse "Book Chapter" from text for loadPassage
+        const m = (e.text || '').match(/^([\w\s]+?)\s+(\d+)/);
+        const dataAttrs = m ? `data-journey-load-book="${m[1].trim()}" data-journey-load-chapter="${m[2]}"` : '';
+        html += `<div class="item journey-entry" style="margin-bottom:6px;cursor:pointer;" ${dataAttrs}>${e.text} <span class="muted small">→ load</span></div>`;
+      });
+      html += `<div style="margin:14px 0 10px;border-top:1px solid var(--border);"></div>`;
+    }
+
+    html += data.map((e, i) => `
       <div class="item journey-entry" data-journey-index="${i}" style="margin-bottom:8px;">
         <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px;">
           <strong style="font-size:.9rem;color:var(--accent2);">${e.type || 'Entry'}</strong>
@@ -1210,6 +1957,8 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
           </div>
         </div>
       </div>`).join('');
+
+    container.innerHTML = html;
   }
 
   // ═══════════════════════════════════════════
@@ -1222,24 +1971,88 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
     if (el) el.textContent = scriptures || '—';
   }
 
+  function updateModelLabel() {
+    const label = $('modelActiveLabel');
+    if (label) label.textContent = state.settings.model;
+  }
+
   // ═══════════════════════════════════════════
   //  TTS  (guarded — speechSynthesis absent in some sandboxes)
   // ═══════════════════════════════════════════
   const TTS = typeof speechSynthesis !== 'undefined' ? speechSynthesis : null;
 
-  function speakText(text) {
-    if (!TTS || !text) return;
+  function getBestVoice() {
+    const voices = speechSynthesis.getVoices();
+    if (!voices.length) return null;
+    const gender = localStorage.getItem('voice_gender') || 'female';
+    if (gender === 'male') {
+      return voices.find(v => /male|david|mark|daniel|fred|thomas/i.test(v.name)) ||
+             voices.find(v => v.lang.startsWith('en')) ||
+             voices[0];
+    } else {
+      return voices.find(v => /female|zira|samantha|karen|victoria|moira/i.test(v.name)) ||
+             voices.find(v => /google us english|google uk english female/i.test(v.name)) ||
+             voices.find(v => v.lang.startsWith('en')) ||
+             voices[0];
+    }
+  }
+
+  // Re-query best voice on each speak call (voices load async on Android)
+  if (TTS) TTS.addEventListener('voiceschanged', () => {}); // trigger voice load
+
+  // Patch 3 / Fix 3 — reset pause button label when tab becomes visible and TTS is not speaking
+  document.addEventListener('visibilitychange', () => {
+    const pauseBtn = $('listenPauseBtn');
+    if (!document.hidden && pauseBtn && TTS && !TTS.speaking) {
+      pauseBtn.textContent = '⏸ Pause';
+    }
+  });
+
+  function speakText(text, startIndex = 0) {
+    if (!TTS) return;
     TTS.cancel();
-    const utt = new SpeechSynthesisUtterance(speechText(text));
-    utt.rate = state.ttsRate;
-    TTS.speak(utt);
+    const chunk = text.slice(startIndex);
+    if (!chunk.trim()) return;
+    const utter = new SpeechSynthesisUtterance(chunk);
+    utter.rate = Math.max(0.6, state.ttsRate || 0.92);
+    utter.pitch = 1.05;
+    utter.volume = 1;
+    const voice = getBestVoice();
+    if (voice) utter.voice = voice;
+    utter.onboundary = (e) => {
+      if (e.name === 'word') {
+        state.ttsState.index = startIndex + e.charIndex;
+      }
+    };
+    utter.onend = () => {
+      state.ttsState.index = 0;
+      state.ttsState.isPaused = false;
+      const pauseBtn = $('listenPauseBtn');
+      if (pauseBtn) pauseBtn.textContent = '⏸ Pause';
+    };
+    state.ttsState.text = text;
+    TTS.speak(utter);
   }
 
   // ═══════════════════════════════════════════
   //  GLOBAL EVENT DELEGATION
   // ═══════════════════════════════════════════
-  function handleGlobalClick(e) {
+  async function handleGlobalClick(e) {
     const t = e.target;
+
+    // Journey scripture quick-load
+    if (t.matches('[data-journey-load-book]')) {
+      const book = t.dataset.journeyLoadBook;
+      const chapter = t.dataset.journeyLoadChapter;
+      if (book && chapter) {
+        $('bibleBook').value = book;
+        populateChapters(book);
+        $('bibleChapter').value = chapter;
+        openScreen('read');
+        setTimeout(() => loadPassage(book, chapter), 300);
+      }
+      return;
+    }
 
     // Navigation (buttons and links with data-nav)
     if (t.matches('[data-nav]')) {
@@ -1272,7 +2085,7 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
         } else openScreen('read');
       } else if (action === 'moreContext') {
         const container = $('flowContentArea');
-        container.innerHTML = '<span class="muted loading-dots">Looking deeper</span>';
+        container.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
         requestAI(`Can you give me a bit more background on this verse? ${state.session.verse}`, 'study').then(res => {
           container.innerHTML = toHTML(res || 'No additional context found.');
         });
@@ -1285,6 +2098,10 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
         if (prayer) saveJourneyEntry({ type: 'Prayer', text: prayer, date: new Date().toLocaleString() });
         state.session.step = 4;
         renderSessionFlow();
+      } else if (action === 'skipFinish') {
+        localStorage.removeItem('bb_session');
+        state.session = { step: 0, verse: '', data: null, loading: false };
+        openScreen('home');
       } else if (action === 'done') {
         openScreen('home');
       }
@@ -1306,13 +2123,7 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
       return;
     }
 
-    // Study tabs
-    if (t.matches('#studyTabs button')) {
-      document.querySelectorAll('#studyTabs button').forEach(b => b.classList.remove('active'));
-      t.classList.add('active');
-      refreshStudyPanel();
-      return;
-    }
+    // Study tabs — handled by direct bindings in DOMContentLoaded
 
     // Reflection items
     if (t.closest('.reflection-item')) {
@@ -1321,17 +2132,27 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
       document.querySelectorAll('.reflection-item').forEach(i => i.classList.remove('active'));
       const panel = $('reflectionOutput');
       if (wasActive) { panel.classList.add('hidden'); panel.innerHTML = ''; return; }
+
+      if (!state.currentScripture || !state.currentScripture.trim()) {
+        showToast('Load a passage first');
+        return;
+      }
+
       item.classList.add('active');
       const type = item.dataset.reflection;
-      const questions = {
-        showing: 'What might God be showing me through this passage?',
-        obey:    'What does this passage call me to actually do today?',
-        prayer:  'What prayer rises naturally from this passage?'
-      };
+
       panel.classList.remove('hidden');
-      panel.innerHTML = '<span class="muted loading-dots">Reflecting</span>';
-      const ctx = state.currentScripture || 'the passage';
-      requestAI(`${questions[type]} Context: ${ctx}`, 'reflection').then(res => {
+      panel.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
+      // Guard: ensure baseContext is loaded for better prompts
+      if (state.baseContext.summary === '' && state.baseContext.themes.length === 0) {
+        await fetchBaseContext(state.currentScripture).catch(() => {});
+      }
+      const adaptivePrompt = `Based on this passage:\n\n${state.currentScripture}\n\n${generateReflectionPrompt(type)}\n\nRules:\n- No introductions\n- Be direct and personal\n- 2 to 4 sentences max\n- Sound calm and grounded`;
+      requestAI(adaptivePrompt, 'reflection').then(res => {
+        if (!res) {
+          panel.innerHTML = '<div class="muted">Nothing came through. Tap again.</div>';
+          return;
+        }
         showAIInPanel(panel, toHTML(res));
       });
       return;
@@ -1372,13 +2193,8 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
       if (!state.currentScripture) { showToast('Load a passage first'); return; }
       const panel = $('guidanceOutput');
       panel.classList.remove('hidden');
-      panel.innerHTML = '<span class="muted loading-dots">Thinking</span>';
-      const prompts = {
-        explain: `Can you explain this verse in simple, warm terms? "${state.currentScripture}"`,
-        apply:   `What are two practical, honest ways to apply this verse today? "${state.currentScripture}"`,
-        pray:    `Write a short, personal prayer inspired by this verse: "${state.currentScripture}"`
-      };
-      requestAI(prompts[action], 'guidance').then(res => {
+      panel.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
+      handleGuidance(action).then(res => {
         showAIInPanel(panel, toHTML(res));
       });
       return;
@@ -1441,9 +2257,11 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
     } catch {}
 
     // Restore settings into UI
-    $('aiModelSelect').value = state.aiConfig.model;
+    const aiModelEl = $('modelSelect');
+    if (aiModelEl) aiModelEl.value = state.settings.model || state.aiConfig.model;
     $('apiKeyInput').value = state.aiConfig.apiKey;
-    $('profileNameInput').value = state.userName !== 'Friend' ? state.userName : '';
+    const nameEl = $('userNameInput');
+    if (nameEl) nameEl.value = state.settings.userName || (state.userName !== 'Friend' ? state.userName : '');
     $('voiceSpeedValue').textContent = state.ttsRate.toFixed(1) + '×';
     const savedDur = state.meditation.duration;
     $('meditationDurationValue').textContent = (savedDur / 60) + ' min';
@@ -1453,6 +2271,45 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
 
     // Global delegation
     document.body.addEventListener('click', handleGlobalClick);
+
+    // ── Study tabs — direct execution model ──
+    document.querySelectorAll('#studyTabs button').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        document.querySelectorAll('#studyTabs button')
+          .forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const tab = btn.dataset.tab;
+
+        if (tab === 'notes') {
+          $('studyNotesPanel').style.display = 'block';
+          $('studyAIResponse').classList.add('hidden');
+          loadSavedNotes();
+          return;
+        }
+
+        $('studyNotesPanel').style.display = 'none';
+
+        if (!state.currentScripture) {
+          showToast('Load a passage first');
+          return;
+        }
+
+        // Loading lock — prevent double-fire
+        if (btn.dataset.loading === '1') return;
+        btn.dataset.loading = '1';
+
+        const panel = $('studyAIResponse');
+        panel.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
+        panel.classList.remove('hidden');
+
+        try {
+          await handleStudyTab(tab, panel);
+        } finally {
+          btn.dataset.loading = '0';
+        }
+      });
+    });
 
     // ── Bible ──
     $('bibleBook')?.addEventListener('change', populateChapters);
@@ -1464,10 +2321,10 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
       const panel = $('readAIResponse');
       const btn = $('readAskAIBtn');
       panel.classList.remove('hidden');
-      panel.innerHTML = '<span class="muted loading-dots">Reading this with you</span>';
-      setButtonLoading(btn, true, 'Thinking…');
+      panel.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
+      setButtonLoading(btn, true, 'Reading…');
       const resp = await requestAI(
-        `I'd like to understand this passage better: ${state.currentScripture}`,
+        `I just read ${state.currentScripture}. What's really going on here — historically, spiritually, practically? Walk me through it like a friend who knows this well. Don't rush it.`,
         'study'
       );
       setButtonLoading(btn, false);
@@ -1478,7 +2335,7 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
     $('homeContinueBtn')?.addEventListener('click', async () => {
       if (state.session.loading) return;
 
-      // If there's a saved in-progress session, resume it directly
+      // Resume saved in-progress session
       const saved = localStorage.getItem('bb_session');
       if (saved) {
         try {
@@ -1499,24 +2356,30 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
       state.session.verse = `${today.ref} — ${today.text}`;
       state.session.step = 0;
 
-      // Navigate first so user sees something immediately
       openScreen('sessionFlow');
       $('flowContentArea').innerHTML = '<div class="muted" style="padding:40px;text-align:center;">Preparing your session…</div>';
       $('flowActionsArea').innerHTML = '';
 
+      let failed = false;
       try {
         state.session.data = await fetchSessionData(state.session.verse);
+        if (!state.session.data) {
+          state.session.data = defaultSessionData();
+          failed = true;
+        }
       } catch {
         state.session.data = defaultSessionData();
+        failed = true;
       } finally {
         state.session.loading = false;
-        // Restore button text only if still on home (user may have navigated away)
         const homeBtn = $('homeContinueBtn');
         if (homeBtn && homeBtn.dataset.origText) {
           homeBtn.textContent = homeBtn.dataset.origText;
           homeBtn.disabled = false;
         }
       }
+
+      if (failed) showToast('Session ready — using default content');
 
       renderSessionFlow();
       localStorage.setItem('bb_session', JSON.stringify({
@@ -1531,10 +2394,10 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
       const panel = $('freeInputOutput');
       const btn = $('freeInputBtn');
       panel.classList.remove('hidden');
-      panel.innerHTML = '<span class="muted loading-dots">Thinking with you</span>';
-      setButtonLoading(btn, true, 'Thinking…');
+      panel.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
+      setButtonLoading(btn, true, 'With you…');
       const resp = await requestAI(
-        `Someone is going through this: "${input}"\n\nAs a calm, caring friend who knows the Bible, what would you say to them? Offer a relevant verse, what it means for their situation, one or two honest steps they might take, and a short prayer. Keep it warm and personal.`,
+        `I want to share something that's on my heart: "${input}"\n\nSpeak to me like a wise, caring friend who knows their Bible well. Don't lecture me — just be real with me. Share a verse that actually speaks to this, tell me what it means for my situation, suggest one or two honest steps I could take, and close with a short personal prayer if it fits.`,
         'guidance'
       );
       setButtonLoading(btn, false);
@@ -1556,13 +2419,13 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
       const panel = $('prayerAIResponse');
       const btn = $('prayerAskAIBtn');
       panel.classList.remove('hidden');
-      panel.innerHTML = '<span class="muted loading-dots">Praying with you</span>';
+      panel.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
       setButtonLoading(btn, true, 'Reflecting…');
       const parts = [];
       if (struggles) parts.push(`What I'm struggling with: ${struggles}`);
       if (points) parts.push(`What I'm praying for: ${points}`);
       const resp = await requestAI(
-        `${parts.join('\n\n')}\n\nPlease share a Bible verse that speaks to this, explain gently why it matters here, and write a short personal prayer.`,
+        `${parts.join('\n\n')}\n\nFind one Bible verse that speaks directly to this. Say briefly why it fits. Then write a short, honest prayer — not formal, not church-sounding. The kind of thing someone would actually say to God about this.`,
         'guidance'
       );
       setButtonLoading(btn, false);
@@ -1571,16 +2434,50 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
     $('addAnsweredPrayerBtn')?.addEventListener('click', addAnsweredPrayer);
 
     // ── Listen ──
-    $('listenPlayBtn')?.addEventListener('click', () => speakText($('listenText').value));
+    $('listenPlayBtn')?.addEventListener('click', () => {
+      if (!TTS) return showToast('Speech not available on this device');
+      const text = $('listenText').value.trim();
+      if (!text || text === 'Load a passage above to listen here.' || text === 'Load a passage in Read to listen here.') {
+        return showToast('Load a passage first');
+      }
+      state.ttsState.index = 0;
+      state.ttsState.isPaused = false;
+      const pauseBtn = $('listenPauseBtn');
+      if (pauseBtn) pauseBtn.textContent = '⏸ Pause';
+      setTimeout(() => speakText(text, 0), 100);
+    });
     $('listenPauseBtn')?.addEventListener('click', () => {
       if (!TTS) return;
-      TTS.paused ? TTS.resume() : TTS.pause();
+      if (state.ttsState.isPaused) {
+        speakText(state.ttsState.text, state.ttsState.index);
+        state.ttsState.isPaused = false;
+        const btn = $('listenPauseBtn');
+        if (btn) btn.textContent = '⏸ Pause';
+      } else if (TTS.speaking) {
+        TTS.cancel();
+        state.ttsState.isPaused = true;
+        const btn = $('listenPauseBtn');
+        if (btn) btn.textContent = '▶ Resume';
+      }
     });
-    $('listenStopBtn')?.addEventListener('click', () => TTS?.cancel());
+    $('listenStopBtn')?.addEventListener('click', () => {
+      if (TTS) TTS.cancel();
+      state.ttsState.index = 0;
+      state.ttsState.isPaused = false;
+      const btn = $('listenPauseBtn');
+      if (btn) btn.textContent = '⏸ Pause';
+    });
 
     // ── Meditation ──
     $('meditationStartBtn')?.addEventListener('click', startMeditation);
-    $('meditationStopBtn')?.addEventListener('click', stopMeditation);
+    $('meditationStopBtn')?.addEventListener('click', () => {
+      if (state.meditation.state === 'active') {
+        // Force state to active so finishMeditation guard passes, then call it
+        finishMeditation();
+      } else {
+        stopMeditation();
+      }
+    });
     $('meditationSaveBtn')?.addEventListener('click', () => {
       const reflection = $('meditationReflection').value.trim();
       if (reflection) saveJourneyEntry({ type: 'Meditation', text: reflection, date: new Date().toLocaleString() });
@@ -1598,8 +2495,9 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
 
     // ── Voice speed ──
     $('voiceSpeedSetting')?.addEventListener('click', () => {
-      const speeds = [0.8, 1.0, 1.2, 1.5];
+      const speeds = [0.6, 0.8, 1.0, 1.2, 1.5];
       let idx = speeds.indexOf(state.ttsRate);
+      if (idx === -1) idx = 1; // default to 0.8 position
       idx = (idx + 1) % speeds.length;
       state.ttsRate = speeds[idx];
       localStorage.setItem('voice_speed', state.ttsRate);
@@ -1616,39 +2514,127 @@ Reply only as a JSON object with keys: "explanation", "application", "prayer". N
       $('meditationDurationValue').textContent = (durs[idx] / 60) + ' min';
     });
 
-    // ── API key ──
+    // ── API key — save ──
     $('saveApiKeyBtn')?.addEventListener('click', () => {
       const key = $('apiKeyInput').value.trim();
       if (key) {
         state.aiConfig.apiKey = key;
         localStorage.setItem('openrouter_api', key);
-        showToast('API key saved ✓');
+        const badge = $('apiKeySavedBadge');
+        if (badge) { badge.classList.remove('hidden'); setTimeout(() => badge.classList.add('hidden'), 3000); }
       } else {
         showToast('Enter a key first');
       }
     });
 
-    // ── AI model ──
-    $('aiModelSelect')?.addEventListener('change', e => {
-      state.aiConfig.model = e.target.value;
-      localStorage.setItem('ai_model', e.target.value);
+    // ── API key — show/hide ──
+    $('showApiKeyBtn')?.addEventListener('click', () => {
+      const inp = $('apiKeyInput');
+      const btn = $('showApiKeyBtn');
+      if (!inp) return;
+      inp.type = inp.type === 'password' ? 'text' : 'password';
+      btn.textContent = inp.type === 'password' ? 'SHOW' : 'HIDE';
     });
 
-    // ── Profile name ──
-    $('saveProfileNameBtn')?.addEventListener('click', () => {
-      const name = $('profileNameInput').value.trim();
-      if (name) {
-        state.userName = name;
-        localStorage.setItem('user_name', name);
-        setHome();
-        showToast('Name updated ✓');
-      } else {
-        showToast('Enter a name first');
-      }
+    // ── Test connection ──
+    $('testConnectionBtn')?.addEventListener('click', async () => {
+      if (!state.aiConfig.apiKey) return showToast('Add your API key first');
+      const btn = $('testConnectionBtn');
+      setButtonLoading(btn, true, 'Testing…');
+      const res = await requestAI('Reply only with: OK', 'guidance', 8000);
+      setButtonLoading(btn, false);
+      showToast(res ? '✓ Connection working' : '✗ Check your key or model');
     });
+
+    // ── AI model (settings.model) ──
+    $('modelSelect')?.addEventListener('change', e => {
+      state.settings.model = e.target.value;
+      state.aiConfig.model = e.target.value;
+      localStorage.setItem('bb_model', e.target.value);
+      localStorage.setItem('ai_model', e.target.value);
+      updateModelLabel();
+    });
+
+    // ── User name (live, no save button needed) ──
+    $('userNameInput')?.addEventListener('input', e => {
+      const name = e.target.value.trim();
+      state.settings.userName = name;
+      localStorage.setItem('bb_user_name', name);
+    });
+
+    // ── Sound toggle (checkbox) ──
+    const soundInput = $('soundToggleInput');
+    if (soundInput) {
+      soundInput.checked = state.settings.sound;
+      soundInput.addEventListener('change', () => {
+        state.settings.sound = soundInput.checked;
+        localStorage.setItem('bb_sound', JSON.stringify(soundInput.checked));
+      });
+    }
+
+    // ── Vibration toggle (checkbox) ──
+    const vibrationInput = $('vibrationToggleInput');
+    if (vibrationInput) {
+      vibrationInput.checked = state.settings.vibration;
+      vibrationInput.addEventListener('change', () => {
+        state.settings.vibration = vibrationInput.checked;
+        localStorage.setItem('bb_vibration', JSON.stringify(vibrationInput.checked));
+      });
+    }
+
+    // ── Cache control ──
+    $('clearCacheBtn')?.addEventListener('click', () => {
+      contextCache.clear();
+      localStorage.removeItem('bb_today_cache');
+      showToast('Cache cleared');
+    });
+
+    // ── Reset progression ──
+    $('resetThemesBtn')?.addEventListener('click', () => {
+      localStorage.removeItem('bb_used_themes');
+      showToast('Progression reset');
+    });
+
+    // ── Wipe all data ──
+    $('wipeDataBtn')?.addEventListener('click', () => {
+      if (!confirm('This will erase all data. Continue?')) return;
+      localStorage.clear();
+      location.reload();
+    });
+
+    // ── Voice gender ──
+    const vgSel = $('voiceGenderSelect');
+    if (vgSel) {
+      vgSel.value = localStorage.getItem('voice_gender') || 'female';
+      vgSel.addEventListener('change', e => localStorage.setItem('voice_gender', e.target.value));
+    }
+
+    // ── User guide ──
+    $('startGuideBtn')?.addEventListener('click', () => openScreen('guide'));
 
     // ── Journey search ──
     $('journeySearch')?.addEventListener('input', e => renderJourney(e.target.value));
+
+    // ── Init settings UI ──
+    const uni = $('userNameInput');
+    if (uni) uni.value = state.settings.userName || '';
+
+    const mdlSel = $('modelSelect');
+    if (mdlSel) mdlSel.value = state.settings.model;
+
+    updateModelLabel();
+
+    if (state.aiConfig.apiKey) {
+      const badge = $('apiKeySavedBadge');
+      if (badge) badge.classList.remove('hidden');
+    }
+
+    // ── First-time guide trigger ──
+    const seenGuide = localStorage.getItem('bb_seen_guide');
+    if (!seenGuide) {
+      setTimeout(() => openScreen('guide'), 600);
+      localStorage.setItem('bb_seen_guide', 'true');
+    }
 
     // ── Launch ──
     setHome();
