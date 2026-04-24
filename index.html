@@ -193,11 +193,6 @@
       margin-bottom: 16px;
     }
     /* Listen textarea — readable, properly wrapping */
-    .listen-text {
-      width: 100%; min-height: 220px; font-size: 1.05rem; line-height: 1.8;
-      white-space: pre-wrap; word-wrap: break-word; word-break: normal;
-      background: rgba(255,255,255,.03); resize: vertical; letter-spacing: 0.01em;
-    }
     .read-collapsed { max-height: 180px; overflow: hidden; position: relative; }
     .read-collapsed::after {
       content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 48px;
@@ -279,6 +274,7 @@
     /* ── REFLECTION ── */
     .reflection-item { transition: background 0.15s, border-color 0.15s; }
     .reflection-item.active { border-color: var(--accent2); background: rgba(103,232,249,.08); }
+    #digDeeperToggle.dig-open { border-color: var(--accent); background: rgba(124,156,255,.10); }
 
     /* ── JOURNEY ── */
     .journey-entry { transition: background 0.15s; }
@@ -347,37 +343,37 @@
       </div>
     </section>
 
-    <!-- ════ READ ════ -->
+    <!-- ════ SCRIPTURE ════ -->
     <section id="read" class="screen">
       <div class="card">
         <div class="section-title">
-          <h2 style="margin:0;">Read</h2>
+          <h2 style="margin:0;">Scripture</h2>
           <button class="secondary" id="readAskAIBtn">Inquire</button>
         </div>
         <div style="display:grid;gap:8px;margin-bottom:12px;">
           <select id="bibleBook">
-            <option value="GEN">Genesis</option><option value="EXO">Exodus</option><option value="LEV">Leviticus</option>
-            <option value="NUM">Numbers</option><option value="DEU">Deuteronomy</option><option value="JOS">Joshua</option>
-            <option value="JDG">Judges</option><option value="RUT">Ruth</option><option value="1SA">1 Samuel</option>
-            <option value="2SA">2 Samuel</option><option value="1KI">1 Kings</option><option value="2KI">2 Kings</option>
-            <option value="1CH">1 Chronicles</option><option value="2CH">2 Chronicles</option><option value="EZR">Ezra</option>
-            <option value="NEH">Nehemiah</option><option value="EST">Esther</option><option value="JOB">Job</option>
-            <option value="PSA">Psalms</option><option value="PRO">Proverbs</option><option value="ECC">Ecclesiastes</option>
-            <option value="SNG">Song of Solomon</option><option value="ISA">Isaiah</option><option value="JER">Jeremiah</option>
-            <option value="LAM">Lamentations</option><option value="EZE">Ezekiel</option><option value="DAN">Daniel</option>
-            <option value="HOS">Hosea</option><option value="JOL">Joel</option><option value="AMO">Amos</option>
-            <option value="OBA">Obadiah</option><option value="JON">Jonah</option><option value="MIC">Micah</option>
-            <option value="NAH">Nahum</option><option value="HAB">Habakkuk</option><option value="ZEP">Zephaniah</option>
-            <option value="HAG">Haggai</option><option value="ZEC">Zechariah</option><option value="MAL">Malachi</option>
-            <option value="MAT">Matthew</option><option value="MRK">Mark</option><option value="LUK">Luke</option>
-            <option value="JHN" selected>John</option><option value="ACT">Acts</option><option value="ROM">Romans</option>
-            <option value="1CO">1 Corinthians</option><option value="2CO">2 Corinthians</option><option value="GAL">Galatians</option>
-            <option value="EPH">Ephesians</option><option value="PHP">Philippians</option><option value="COL">Colossians</option>
-            <option value="1TH">1 Thessalonians</option><option value="2TH">2 Thessalonians</option><option value="1TI">1 Timothy</option>
-            <option value="2TI">2 Timothy</option><option value="TIT">Titus</option><option value="PHM">Philemon</option>
-            <option value="HEB">Hebrews</option><option value="JAS">James</option><option value="1PE">1 Peter</option>
-            <option value="2PE">2 Peter</option><option value="1JN">1 John</option><option value="2JN">2 John</option>
-            <option value="3JN">3 John</option><option value="JUD">Jude</option><option value="REV">Revelation</option>
+            <option value="Genesis">Genesis</option><option value="Exodus">Exodus</option><option value="Leviticus">Leviticus</option>
+            <option value="Numbers">Numbers</option><option value="Deuteronomy">Deuteronomy</option><option value="Joshua">Joshua</option>
+            <option value="Judges">Judges</option><option value="Ruth">Ruth</option><option value="1 Samuel">1 Samuel</option>
+            <option value="2 Samuel">2 Samuel</option><option value="1 Kings">1 Kings</option><option value="2 Kings">2 Kings</option>
+            <option value="1 Chronicles">1 Chronicles</option><option value="2 Chronicles">2 Chronicles</option><option value="Ezra">Ezra</option>
+            <option value="Nehemiah">Nehemiah</option><option value="Esther">Esther</option><option value="Job">Job</option>
+            <option value="Psalms">Psalms</option><option value="Proverbs">Proverbs</option><option value="Ecclesiastes">Ecclesiastes</option>
+            <option value="Song of Solomon">Song of Solomon</option><option value="Isaiah">Isaiah</option><option value="Jeremiah">Jeremiah</option>
+            <option value="Lamentations">Lamentations</option><option value="Ezekiel">Ezekiel</option><option value="Daniel">Daniel</option>
+            <option value="Hosea">Hosea</option><option value="Joel">Joel</option><option value="Amos">Amos</option>
+            <option value="Obadiah">Obadiah</option><option value="Jonah">Jonah</option><option value="Micah">Micah</option>
+            <option value="Nahum">Nahum</option><option value="Habakkuk">Habakkuk</option><option value="Zephaniah">Zephaniah</option>
+            <option value="Haggai">Haggai</option><option value="Zechariah">Zechariah</option><option value="Malachi">Malachi</option>
+            <option value="Matthew">Matthew</option><option value="Mark">Mark</option><option value="Luke">Luke</option>
+            <option value="John" selected>John</option><option value="Acts">Acts</option><option value="Romans">Romans</option>
+            <option value="1 Corinthians">1 Corinthians</option><option value="2 Corinthians">2 Corinthians</option><option value="Galatians">Galatians</option>
+            <option value="Ephesians">Ephesians</option><option value="Philippians">Philippians</option><option value="Colossians">Colossians</option>
+            <option value="1 Thessalonians">1 Thessalonians</option><option value="2 Thessalonians">2 Thessalonians</option><option value="1 Timothy">1 Timothy</option>
+            <option value="2 Timothy">2 Timothy</option><option value="Titus">Titus</option><option value="Philemon">Philemon</option>
+            <option value="Hebrews">Hebrews</option><option value="James">James</option><option value="1 Peter">1 Peter</option>
+            <option value="2 Peter">2 Peter</option><option value="1 John">1 John</option><option value="2 John">2 John</option>
+            <option value="3 John">3 John</option><option value="Jude">Jude</option><option value="Revelation">Revelation</option>
           </select>
           <div style="display:flex;gap:8px;">
             <select id="bibleChapter" style="flex:1;"></select>
@@ -411,16 +407,16 @@
           </div>
         </div>
 
-        <div class="card" style="margin-top:16px;">
-          <div class="section-title">
-            <h3 style="margin:0;">Listen</h3>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:.95rem;font-weight:600;color:var(--text);">Listen</span>
+            <span class="muted small">Audio plays from above</span>
           </div>
           <div class="quick-actions">
             <button class="primary" id="listenPlayBtn">▶ Play</button>
             <button id="listenPauseBtn">⏸ Pause</button>
             <button id="listenStopBtn">⏹ Stop</button>
           </div>
-          <textarea id="listenText" class="verse listen-text" style="margin-top:12px;" readonly>Load a passage above to listen here.</textarea>
         </div>
       </div>
     </section>
@@ -453,8 +449,20 @@
             <div class="item reflection-item" data-reflection="showing">What is God showing me?</div>
             <div class="item reflection-item" data-reflection="obey">What should I obey today?</div>
             <div class="item reflection-item" data-reflection="prayer">What prayer follows this passage?</div>
+            <div class="item reflection-item" id="digDeeperToggle" data-reflection="dig-deeper">Dig Deeper</div>
           </div>
           <div id="reflectionOutput" class="ai-panel hidden"></div>
+
+          <!-- Dig Deeper Panel -->
+          <div id="digDeeperPanel" class="hidden" style="margin-top:14px;padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:16px;position:relative;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <span style="font-size:1rem;font-weight:600;color:var(--accent2);">Dig Deeper</span>
+              <button id="digDeeperCloseBtn" style="background:transparent;border:none;padding:4px 8px;font-size:1.1rem;color:var(--muted);cursor:pointer;border-radius:8px;line-height:1;" title="Close">✕</button>
+            </div>
+            <textarea id="digDeeperInput" placeholder="Paste a verse or ask a question about this passage…" style="min-height:90px;margin-bottom:10px;"></textarea>
+            <button id="digDeeperBtn" class="primary" style="width:100%;">Explain This</button>
+            <div id="digDeeperOutput" class="hidden" style="margin-top:12px;padding:14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;line-height:1.65;font-size:.97rem;"></div>
+          </div>
 
           <div style="margin-top:20px;">
             <h3 style="margin:0 0 10px;">Guidance</h3>
@@ -759,7 +767,7 @@
   <nav class="footer-nav">
     <div class="nav-inner">
       <button class="active" data-nav="home">Home</button>
-      <button data-nav="read">Read</button>
+      <button data-nav="read">Scripture</button>
       <button data-nav="study">Study</button>
       <button data-nav="meditate">Meditate</button>
       <button data-nav="prayer">Prayer</button>
@@ -785,7 +793,7 @@
       apiKey: localStorage.getItem('openrouter_api') || ''
     },
     ttsRate: parseFloat(localStorage.getItem('voice_speed')) || 1.0,
-    ttsState: { text: '', index: 0, isPaused: false },
+    ttsState: { text: '', chunks: [], chunkIndex: 0, isPaused: false },
     meditation: {
       duration: parseInt(localStorage.getItem('meditation_duration')) || 120,
       timer: null,
@@ -809,15 +817,20 @@
 
   // Bible chapter counts
   const BIBLE_CHAPTERS = {
-    GEN:50,EXO:40,LEV:27,NUM:36,DEU:34,JOS:24,JDG:21,RUT:4,
-    '1SA':31,'2SA':24,'1KI':22,'2KI':25,'1CH':29,'2CH':36,
-    EZR:10,NEH:13,EST:10,JOB:42,PSA:150,PRO:31,ECC:12,SNG:8,
-    ISA:66,JER:52,LAM:5,EZE:48,DAN:12,HOS:14,JOL:3,AMO:9,OBA:1,
-    JON:4,MIC:7,NAH:3,HAB:3,ZEP:3,HAG:2,ZEC:14,MAL:4,
-    MAT:28,MRK:16,LUK:24,JHN:21,ACT:28,ROM:16,
-    '1CO':16,'2CO':13,GAL:6,EPH:6,PHP:4,COL:4,
-    '1TH':5,'2TH':3,'1TI':6,'2TI':4,TIT:3,PHM:1,
-    HEB:13,JAS:5,'1PE':5,'2PE':3,'1JN':5,'2JN':1,'3JN':1,JUD:1,REV:22
+    'Genesis':50,'Exodus':40,'Leviticus':27,'Numbers':36,'Deuteronomy':34,
+    'Joshua':24,'Judges':21,'Ruth':4,'1 Samuel':31,'2 Samuel':24,
+    '1 Kings':22,'2 Kings':25,'1 Chronicles':29,'2 Chronicles':36,
+    'Ezra':10,'Nehemiah':13,'Esther':10,'Job':42,'Psalms':150,
+    'Proverbs':31,'Ecclesiastes':12,'Song of Solomon':8,'Isaiah':66,
+    'Jeremiah':52,'Lamentations':5,'Ezekiel':48,'Daniel':12,'Hosea':14,
+    'Joel':3,'Amos':9,'Obadiah':1,'Jonah':4,'Micah':7,'Nahum':3,
+    'Habakkuk':3,'Zephaniah':3,'Haggai':2,'Zechariah':14,'Malachi':4,
+    'Matthew':28,'Mark':16,'Luke':24,'John':21,'Acts':28,'Romans':16,
+    '1 Corinthians':16,'2 Corinthians':13,'Galatians':6,'Ephesians':6,
+    'Philippians':4,'Colossians':4,'1 Thessalonians':5,'2 Thessalonians':3,
+    '1 Timothy':6,'2 Timothy':4,'Titus':3,'Philemon':1,'Hebrews':13,
+    'James':5,'1 Peter':5,'2 Peter':3,'1 John':5,'2 John':1,
+    '3 John':1,'Jude':1,'Revelation':22
   };
 
   // Daily verse pool
@@ -912,6 +925,18 @@
       .trim();
   }
 
+  // ── Dig Deeper reset helper ──
+  function resetDigDeeper(clearInput = true) {
+    const panel  = $('digDeeperPanel');
+    const toggle = $('digDeeperToggle');
+    const input  = $('digDeeperInput');
+    const output = $('digDeeperOutput');
+    if (panel)  panel.classList.add('hidden');
+    if (toggle) toggle.classList.remove('dig-open');
+    if (clearInput && input)  input.value = '';
+    if (output) { output.classList.add('hidden'); output.innerHTML = ''; }
+  }
+
   function setButtonLoading(btn, loading, loadingText = 'Loading…') {
     if (!btn) return;
     if (loading) {
@@ -930,7 +955,8 @@
   const SYSTEM_PROMPTS = {
     guidance: "You are a trusted spiritual friend — not a preacher, not a chatbot. You speak the way a calm, grounded person talks to someone they care about. Never open with 'Certainly', 'Of course', 'Sure', 'Great question', 'Absolutely', 'Here is', 'It's important to note', 'You might find', or any filler phrase. Start directly. Never say 'this verse is expressing' or 'this passage is telling us'. No markdown, no bold text, no bullet points, no headers, no numbered lists. Just natural flowing sentences. Keep it personal, direct, and grounded.",
     study: "You are a grounded, thoughtful person who knows the Bible well. Explain it the way a calm, knowledgeable friend would — not like a commentary, not like a sermon. Never open with filler phrases like 'Certainly', 'Great question', 'Here is', or 'It's important to note'. Start directly with the substance. No markdown, no bold, no bullet points or numbered lists. Plain sentences only. Be specific, honest, and human.",
-    reflection: "You are sitting quietly with someone reflecting on a Bible passage. Respond the way a wise, settled friend would — not with a lecture or a performance. Speak honestly and personally. Never start with 'Certainly', 'Of course', 'Sure', or similar openers. No markdown, no lists, no headers. Just warm, direct, grounded sentences. Maximum 4 sentences."
+    reflection: "You are sitting quietly with someone reflecting on a Bible passage. Respond the way a wise, settled friend would — not with a lecture or a performance. Speak honestly and personally. Never start with 'Certainly', 'Of course', 'Sure', or similar openers. No markdown, no lists, no headers. Just warm, direct, grounded sentences. Maximum 4 sentences.",
+    deep_explain: "You explain Scripture clearly and simply. Rules: No greetings. No introductions. No mention of user name. Be clear, structured, and direct. Explain meaning step-by-step if needed. Use simple language. Keep response between 4 and 8 sentences. No emotional or devotional tone. Focus on understanding, not encouragement."
   };
 
   async function requestAI(prompt, type = 'guidance', timeoutMs = 18000) {
@@ -1117,17 +1143,113 @@ Important:
     panelEl.appendChild(closeBtn);
   }
 
-  // ═══════════════════════════════════════════
-  //  JOURNEY / STORAGE HELPERS
-  // ═══════════════════════════════════════════
+  // ── Journey storage key — single source of truth ──
+  const JOURNEY_KEY = 'journeyData';
+
   function saveJourneyEntry(entry) {
-    const data = JSON.parse(localStorage.getItem('journeyData') || '[]');
-    data.unshift(entry);
-    if (data.length > 100) data.pop();
-    localStorage.setItem('journeyData', JSON.stringify(data));
+    try {
+      const data = JSON.parse(localStorage.getItem(JOURNEY_KEY) || '[]');
+      data.unshift(entry);
+      if (data.length > 100) data.pop();
+      localStorage.setItem(JOURNEY_KEY, JSON.stringify(data));
+    } catch(e) { console.error('[Journey] save failed:', e); }
     if (state.screen === 'journey') renderJourney();
-    // Live update saved verses count if Profile is open
     if (state.screen === 'profile') syncProfileStats();
+  }
+
+  // Safe HTML entity encoder — prevents any stored text from breaking innerHTML
+  function safeText(str) {
+    return (str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderJourney(filter = '') {
+    const container = $('journeyList');
+    if (!container) { console.warn('[Journey] journeyList element not found'); return; }
+
+    let data = [];
+    try {
+      const raw = localStorage.getItem(JOURNEY_KEY);
+      console.log('[Journey] raw length:', raw ? raw.length : 'null');
+      data = JSON.parse(raw || '[]');
+      console.log('[Journey] entries:', data.length);
+    } catch(e) {
+      console.error('[Journey] parse error:', e);
+      container.innerHTML = '<div class="muted" style="padding:20px 0;">Journey data could not be read. Try clearing cache in Profile.</div>';
+      return;
+    }
+
+    if (filter) {
+      const f = filter.toLowerCase();
+      data = data.filter(e =>
+        (e.text || '').toLowerCase().includes(f) ||
+        (e.type || '').toLowerCase().includes(f) ||
+        (e.ref  || '').toLowerCase().includes(f)
+      );
+    }
+
+    if (!data.length) {
+      container.innerHTML = '<div class="muted" style="padding:20px 0;">Nothing here yet. Your readings and reflections will appear as you go.</div>';
+      return;
+    }
+
+    // Build HTML safely — each entry in its own try/catch so one bad entry can't blank the whole list
+    const parts = [];
+
+    // ── Saved Scriptures quick-load strip ──
+    const scriptures = data.filter(e => e.type === 'Scripture');
+    if (scriptures.length && !filter) {
+      let strip = `<h3 style="margin:0 0 10px;font-size:1rem;color:var(--accent2);">Saved Scriptures</h3>`;
+      scriptures.forEach(e => {
+        try {
+          const label = safeText(e.text || e.ref || '');
+          const m = (e.text || e.ref || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d+)/);
+          const attrs = m
+            ? `data-journey-load-book="${safeText(m[1].trim())}" data-journey-load-chapter="${safeText(m[2])}"`
+            : '';
+          strip += `<div class="item journey-entry" style="margin-bottom:6px;cursor:pointer;" ${attrs}>${label} <span class="muted small">→ load</span></div>`;
+        } catch {}
+      });
+      strip += `<div style="margin:14px 0 10px;border-top:1px solid var(--border);"></div>`;
+      parts.push(strip);
+    }
+
+    // ── Full entry list ──
+    data.forEach((e, i) => {
+      try {
+        const type    = safeText(e.type || 'Entry');
+        const date    = safeText(e.date || '');
+        const preview = safeText((e.text || e.ref || '').substring(0, 90));
+        const full    = safeText(e.text || e.ref || '');
+        const ellipsis = (e.text || '').length > 90 ? '…' : '';
+        parts.push(`
+          <div class="item journey-entry" data-journey-index="${i}" style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px;">
+              <strong style="font-size:.9rem;color:var(--accent2);">${type}</strong>
+              <span class="small muted">${date}</span>
+            </div>
+            <div class="journey-preview">${preview}${ellipsis}</div>
+            <div class="journey-full hidden" style="margin-top:8px;line-height:1.6;">
+              ${full}
+              <div style="margin-top:10px;display:flex;gap:8px;">
+                <button data-edit="${i}" class="secondary small">Edit</button>
+                <button data-delete="${i}" style="background:transparent;border:1px solid var(--danger);color:var(--danger);padding:6px 12px;border-radius:8px;font-size:.85rem;">Delete</button>
+              </div>
+            </div>
+          </div>`);
+      } catch(err) {
+        console.warn('[Journey] skipped entry', i, err);
+      }
+    });
+
+    // Use requestAnimationFrame to ensure the DOM is painted before injecting
+    requestAnimationFrame(() => {
+      container.innerHTML = parts.join('');
+      console.log('[Journey] rendered', parts.length, 'parts into DOM');
+    });
   }
 
   function updateCurrentScripture(ref, text) {
@@ -1144,17 +1266,13 @@ Important:
     }
 
     state.currentScripture = newRef;
-
-    // Listen textarea gets speechText-cleaned version (strips digits for TTS)
-    const lt = $('listenText');
-    if (lt) lt.value = speechText(cleanText);
   }
 
   // ═══════════════════════════════════════════
   //  SCREEN LIFECYCLE
   // ═══════════════════════════════════════════
   function cleanupOnLeave(screen) {
-    if (TTS) TTS.cancel();
+    if (TTS) { _ttsGen++; TTS.cancel(); }
     if (screen === 'meditate' && state.meditation.state === 'active') stopMeditation();
     if (screen === 'sessionFlow' && state.session.step > 0 && state.session.step < 4) {
       localStorage.setItem('bb_session', JSON.stringify({
@@ -1170,6 +1288,8 @@ Important:
       });
       const notesPanel = $('studyNotesPanel');
       if (notesPanel) notesPanel.style.display = 'none';
+      // Collapse Dig Deeper panel
+      resetDigDeeper();
     }
     cancelAllAI();
     document.querySelectorAll('.ai-panel').forEach(p => {
@@ -1190,8 +1310,7 @@ Important:
   function onEnter(screen) {
     if (screen === 'home') { setHome(); updateStreak(); }
     else if (screen === 'sessionFlow') renderSessionFlow();
-    else if (screen === 'read') syncReadDefault();
-    else if (screen === 'listen') syncListenText();
+    else if (screen === 'read') { syncReadDefault(); }
     else if (screen === 'journey') renderJourney();
     else if (screen === 'meditate') initMeditation();
     else if (screen === 'study') refreshStudyPanel();
@@ -1200,7 +1319,8 @@ Important:
   }
 
   function openScreen(id) {
-    if (state.screen === id) return;
+    // Journey always re-renders even if already active (data may have changed)
+    if (state.screen === id && id !== 'journey') return;
     cleanupOnLeave(state.screen);
     state.screen = id;
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -1214,7 +1334,7 @@ Important:
     const topbar = $('topbarHeader');
     topbar.style.display = (id === 'home' || id === 'sessionFlow') ? 'none' : 'block';
     // Update topbar title
-    const titles = { read:'Read', study:'Study', listen:'Listen', meditate:'Meditate', prayer:'Prayer', journey:'Journey', profile:'Profile', guide:'User Guide' };
+    const titles = { read:'Scripture', study:'Study', meditate:'Meditate', prayer:'Prayer', journey:'Journey', profile:'Profile', guide:'User Guide' };
     const titleEl = $('topbarTitle');
     if (titleEl && titles[id]) titleEl.textContent = titles[id];
     onEnter(id);
@@ -1241,7 +1361,7 @@ Important:
     $('homeVerseReference').textContent = today.ref;
     updateCurrentScripture(today.ref, today.text);
 
-    const journey = JSON.parse(localStorage.getItem('journeyData') || '[]');
+    const journey = JSON.parse(localStorage.getItem(JOURNEY_KEY) || '[]');
     let hint = 'Begin your time in the Word';
     const savedSession = localStorage.getItem('bb_session');
     if (savedSession) {
@@ -1269,7 +1389,7 @@ Important:
             const bookName = document.querySelector(`#bibleBook option[value="${lastRead.book}"]`)?.textContent || lastRead.book;
             hint = `Continue from ${bookName} ${lastRead.chapter}`;
           } else {
-            const journey2 = JSON.parse(localStorage.getItem('journeyData') || '[]');
+            const journey2 = JSON.parse(localStorage.getItem(JOURNEY_KEY) || '[]');
             const last = journey2.find(e => e.type === 'Scripture');
             if (last) {
               const m = last.text.match(/^([1-3]?\s?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/);
@@ -1284,7 +1404,7 @@ Important:
           const bookName = document.querySelector(`#bibleBook option[value="${lastRead.book}"]`)?.textContent || lastRead.book;
           hint = `Continue from ${bookName} ${lastRead.chapter}`;
         } else {
-          const journey3 = JSON.parse(localStorage.getItem('journeyData') || '[]');
+          const journey3 = JSON.parse(localStorage.getItem(JOURNEY_KEY) || '[]');
           const last = journey3.find(e => e.type === 'Scripture');
           if (last) {
             const m = last.text.match(/^([1-3]?\s?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/);
@@ -1343,22 +1463,200 @@ Important:
     ).join('');
   }
 
-  async function fetchPassage(book, chapter, version) {
-    try {
-      const res = await fetch(`https://bible-api.com/${book}+${chapter}?translation=${version}`);
-      if (!res.ok) throw new Error('Not found');
-      const data = await res.json();
-      return data;
-    } catch {
-      showToast("Couldn't load passage. Try again.");
-      return null;
+  // ── Scripture fetch helpers ──
+
+  // Normalise book name for different API formats
+  function bookForApi(book, style) {
+    // style: 'space' (default) | 'plus' | 'dot'
+    if (style === 'plus')  return encodeURIComponent(book).replace(/%20/g, '+');
+    if (style === 'dot')   return book.replace(/ /g, '.');
+    return encodeURIComponent(book); // space encoded
+  }
+
+  // Parse a response from bible-api.com shape → {reference, verses:[{verse,text}]}
+  function parseBibleApiCom(data, book, chapter) {
+    if (!data || !data.verses || !data.verses.length) return null;
+    return {
+      reference: data.reference || `${book} ${chapter}`,
+      verses: data.verses.map(v => ({ verse: v.verse, text: (v.text || '').trim() }))
+    };
+  }
+
+  // Parse a response from api.esv.org shape
+  function parseEsv(data, book, chapter) {
+    if (!data || !data.passages || !data.passages.length) return null;
+    // ESV returns a single string; split into pseudo-verses
+    const raw = data.passages[0] || '';
+    const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+    const verses = [];
+    let vNum = 1;
+    for (const line of lines) {
+      const m = line.match(/^\[(\d+)\]\s*(.+)/);
+      if (m) { verses.push({ verse: parseInt(m[1]), text: m[2].trim() }); }
+      else if (line && !line.startsWith('(') && !line.match(/^[A-Z\s]+$/)) {
+        verses.push({ verse: vNum++, text: line });
+      }
     }
+    return verses.length
+      ? { reference: `${book} ${chapter} (ESV)`, verses }
+      : null;
+  }
+
+  // Build a structured passage object from AI-generated text
+  function parseAiPassage(raw, book, chapter) {
+    if (!raw) return null;
+    const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+    const verses = [];
+    for (const line of lines) {
+      // Match "1 In the beginning..." or "[1] In the beginning..."
+      const m = line.match(/^\[?(\d+)\]?\s+(.+)/);
+      if (m) {
+        verses.push({ verse: parseInt(m[1]), text: m[2].trim() });
+      }
+    }
+    if (!verses.length) {
+      // Treat whole response as one block if no verse numbers found
+      verses.push({ verse: 1, text: raw.trim() });
+    }
+    return { reference: `${book} ${chapter} (KJV)`, verses };
+  }
+
+  async function fetchPassage(book, chapter, version) {
+    const TIMEOUT = 9000;
+    const signal = () => AbortSignal.timeout(TIMEOUT);
+    const enc = bookForApi(book, 'space');
+    const encPlus = bookForApi(book, 'plus');
+
+    // ── Attempt 1: bible-api.com with requested translation ──
+    try {
+      const url = `https://bible-api.com/${enc}%20${chapter}?translation=${version}`;
+      console.log('[BibleFetch] Attempt 1:', url);
+      const res = await fetch(url, { signal: signal() });
+      console.log('[BibleFetch] Attempt 1 status:', res.status);
+      if (res.ok) {
+        const data = await res.json();
+        const parsed = parseBibleApiCom(data, book, chapter);
+        if (parsed) { console.log('[BibleFetch] Attempt 1 success'); return parsed; }
+      }
+    } catch(e) { console.warn('[BibleFetch] Attempt 1 failed:', e.message); }
+
+    // ── Attempt 2: bible-api.com KJV fallback (no translation param) ──
+    try {
+      const url = `https://bible-api.com/${enc}%20${chapter}`;
+      console.log('[BibleFetch] Attempt 2:', url);
+      const res = await fetch(url, { signal: signal() });
+      console.log('[BibleFetch] Attempt 2 status:', res.status);
+      if (res.ok) {
+        const data = await res.json();
+        const parsed = parseBibleApiCom(data, book, chapter);
+        if (parsed) { console.log('[BibleFetch] Attempt 2 success'); return parsed; }
+      }
+    } catch(e) { console.warn('[BibleFetch] Attempt 2 failed:', e.message); }
+
+    // ── Attempt 3: labs.bible.org (NET, no key needed, CORS open) ──
+    try {
+      const url = `https://labs.bible.org/api/?passage=${encPlus}+${chapter}&type=json&formatting=plain`;
+      console.log('[BibleFetch] Attempt 3 (labs.bible.org):', url);
+      const res = await fetch(url, { signal: signal() });
+      console.log('[BibleFetch] Attempt 3 status:', res.status);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length) {
+          const verses = data.map(v => ({
+            verse: parseInt(v.verse),
+            text: (v.text || '').replace(/<[^>]+>/g, '').trim()
+          })).filter(v => v.text);
+          if (verses.length) {
+            console.log('[BibleFetch] Attempt 3 success');
+            return { reference: `${book} ${chapter} (NET)`, verses };
+          }
+        }
+      }
+    } catch(e) { console.warn('[BibleFetch] Attempt 3 failed:', e.message); }
+
+    // ── Attempt 4: getbible.net (public, no key) ──
+    try {
+      const bookSlug = book.toLowerCase().replace(/\s+/g, '-').replace(/^(\d+)-/, '$1');
+      const url = `https://getbible.net/v2/kjv/${chapter}.json`;
+      console.log('[BibleFetch] Attempt 4 (getbible.net):', url);
+      const res = await fetch(url, { signal: signal() });
+      console.log('[BibleFetch] Attempt 4 status:', res.status);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.verses) {
+          // getbible returns {verses: {1: {verse:1,text:"..."}, ...}}
+          const vArr = Object.values(data.verses).map(v => ({
+            verse: v.verse,
+            text: (v.text || '').trim()
+          })).filter(v => v.text);
+          if (vArr.length) {
+            console.log('[BibleFetch] Attempt 4 success');
+            return { reference: `${book} ${chapter} (KJV)`, verses: vArr };
+          }
+        }
+      }
+    } catch(e) { console.warn('[BibleFetch] Attempt 4 failed:', e.message); }
+
+    // ── Attempt 5: AI fallback (uses already-working OpenRouter key) ──
+    if (state.aiConfig.apiKey) {
+      console.log('[BibleFetch] Attempt 5: AI fallback');
+      try {
+        const prompt = `Write out ${book} chapter ${chapter} from the King James Bible.
+Format each verse exactly like this — verse number, then a space, then the text:
+1 In the beginning God created the heaven and the earth.
+2 And the earth was without form, and void...
+
+Rules:
+- Every verse on its own line
+- Start each line with just the verse number and a space
+- No headers, no labels, no extra text
+- KJV wording exactly
+- All verses in the chapter`;
+
+        const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${state.aiConfig.apiKey}`,
+            'HTTP-Referer': location.origin
+          },
+          body: JSON.stringify({
+            model: state.settings.model,
+            messages: [
+              { role: 'system', content: 'You are a precise Bible transcription tool. Output only verse-numbered scripture lines, nothing else.' },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0,
+            max_tokens: 2000
+          }),
+          signal: signal()
+        });
+        if (res.ok) {
+          const json = await res.json();
+          const raw = json.choices?.[0]?.message?.content || '';
+          const parsed = parseAiPassage(raw, book, chapter);
+          if (parsed) {
+            console.log('[BibleFetch] Attempt 5 (AI) success');
+            return parsed;
+          }
+        }
+      } catch(e) { console.warn('[BibleFetch] Attempt 5 (AI) failed:', e.message); }
+    }
+
+    console.error('[BibleFetch] All attempts failed for:', book, chapter);
+    return null;
   }
 
   async function loadPassage(bookOverride, chapterOverride) {
-    const book = bookOverride || $('bibleBook').value;
-    const chapter = chapterOverride || $('bibleChapter').value;
+    const book    = (typeof bookOverride    === 'string' && bookOverride.trim())    ? bookOverride.trim()    : $('bibleBook').value;
+    const chapter = (typeof chapterOverride === 'string' && chapterOverride.trim()) ? chapterOverride.trim() : (typeof chapterOverride === 'number' ? String(chapterOverride) : $('bibleChapter').value);
     const translation = $('translation').value;
+
+    if (!book || !chapter) {
+      showToast('Please select a book and chapter');
+      return;
+    }
+    console.log('[BibleFetch] Loading:', book, chapter, translation);
     const display = $('readDisplay');
     const btn = $('loadPassageBtn');
     if (!display) return;
@@ -1378,6 +1676,7 @@ Important:
       $('readExpandBtn').textContent = 'Expand';
       updateCurrentScripture(ref, plainText);
       updateReflectionLabels().catch(() => {});
+      resetDigDeeper(); // collapse Dig Deeper when a new passage is loaded
 
       // Patch 8 — store last read and update progression
       localStorage.setItem('bb_last_read', JSON.stringify({ book, chapter: parseInt(chapter) }));
@@ -1396,15 +1695,22 @@ Important:
         localStorage.setItem('bb_progress', JSON.stringify(prog));
       } catch {}
 
-      // Save to journey (deduplicated)
+      // Save to journey (deduplicated by ref)
       const normRef = ref.toLowerCase().replace(/[^\w\s:]/g, '').trim();
       const lastRef = localStorage.getItem('bb_last_scripture');
       if (lastRef !== normRef) {
-        saveJourneyEntry({ type: 'Scripture', text: ref, date: new Date().toLocaleString() });
+        saveJourneyEntry({
+          type: 'Scripture',
+          ref: `${book} ${chapter}`,
+          text: ref,
+          passage: plainText.slice(0, 200),
+          date: new Date().toLocaleString(),
+          time: new Date().toISOString()
+        });
         localStorage.setItem('bb_last_scripture', normRef);
       }
     } catch {
-      display.innerHTML = '<span class="muted">Couldn\'t load this passage. Check your connection and try again.</span>';
+      display.innerHTML = '<span class="muted">Unable to load scripture right now. You can still tap <strong>Inquire</strong>, or use <strong>Explain / Apply / Pray</strong> after pasting a verse manually.</span>';
       display.classList.remove('read-collapsed');
     } finally {
       setButtonLoading(btn, false);
@@ -1417,18 +1723,6 @@ Important:
       const today = getTodaysVerse();
       display.innerHTML = `<strong style="color:var(--accent2);display:block;margin-bottom:8px;">${today.ref}</strong>${today.text}`;
       updateCurrentScripture(today.ref, today.text);
-    }
-  }
-
-  function syncListenText() {
-    const lt = $('listenText');
-    if (!lt) return;
-    if (state.currentScripture) {
-      const parts = state.currentScripture.split(' — ');
-      const rawText = parts.length > 1 ? parts.slice(1).join(' — ') : state.currentScripture;
-      lt.value = speechText(rawText);
-    } else {
-      lt.value = 'Load a passage in Read to listen here.';
     }
   }
 
@@ -1914,61 +2208,16 @@ Write the kind of prayer a real person would actually pray — honest, personal,
   // ═══════════════════════════════════════════
   //  JOURNEY
   // ═══════════════════════════════════════════
-  function renderJourney(filter = '') {
-    const container = $('journeyList');
-    if (!container) return;
-    let data = JSON.parse(localStorage.getItem('journeyData') || '[]');
-    if (filter) {
-      const f = filter.toLowerCase();
-      data = data.filter(e => (e.text || '').toLowerCase().includes(f) || (e.type || '').toLowerCase().includes(f));
-    }
-    if (!data.length) {
-      container.innerHTML = '<div class="muted" style="padding:20px 0;">Nothing here yet. Your readings and reflections will appear as you go.</div>';
-      return;
-    }
-
-    let html = '';
-
-    // TASK 5 — Saved Scriptures section with clickable load
-    const savedOnly = data.filter(e => e.type === 'Scripture');
-    if (savedOnly.length) {
-      html += `<h3 style="margin:0 0 10px;font-size:1rem;color:var(--accent2);">Saved Scriptures</h3>`;
-      savedOnly.forEach(e => {
-        // Parse "Book Chapter" from text for loadPassage
-        const m = (e.text || '').match(/^([\w\s]+?)\s+(\d+)/);
-        const dataAttrs = m ? `data-journey-load-book="${m[1].trim()}" data-journey-load-chapter="${m[2]}"` : '';
-        html += `<div class="item journey-entry" style="margin-bottom:6px;cursor:pointer;" ${dataAttrs}>${e.text} <span class="muted small">→ load</span></div>`;
-      });
-      html += `<div style="margin:14px 0 10px;border-top:1px solid var(--border);"></div>`;
-    }
-
-    html += data.map((e, i) => `
-      <div class="item journey-entry" data-journey-index="${i}" style="margin-bottom:8px;">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px;">
-          <strong style="font-size:.9rem;color:var(--accent2);">${e.type || 'Entry'}</strong>
-          <span class="small muted">${e.date || ''}</span>
-        </div>
-        <div class="journey-preview">${(e.text || '').substring(0, 90)}${e.text && e.text.length > 90 ? '…' : ''}</div>
-        <div class="journey-full hidden" style="margin-top:8px;line-height:1.6;">
-          ${e.text || ''}
-          <div style="margin-top:10px;display:flex;gap:8px;">
-            <button data-edit="${i}" class="secondary small">Edit</button>
-            <button data-delete="${i}" style="background:transparent;border:1px solid var(--danger);color:var(--danger);padding:6px 12px;border-radius:8px;font-size:.85rem;">Delete</button>
-          </div>
-        </div>
-      </div>`).join('');
-
-    container.innerHTML = html;
-  }
-
   // ═══════════════════════════════════════════
   //  PROFILE / STATS
   // ═══════════════════════════════════════════
   function syncProfileStats() {
-    const journey = JSON.parse(localStorage.getItem('journeyData') || '[]');
-    const scriptures = journey.filter(e => e.type === 'Scripture').length;
-    const el = $('savedVersesCount');
-    if (el) el.textContent = scriptures || '—';
+    try {
+      const journey = JSON.parse(localStorage.getItem(JOURNEY_KEY) || '[]');
+      const scriptures = journey.filter(e => e.type === 'Scripture').length;
+      const el = $('savedVersesCount');
+      if (el) el.textContent = scriptures || '—';
+    } catch {}
   }
 
   function updateModelLabel() {
@@ -2008,30 +2257,61 @@ Write the kind of prayer a real person would actually pray — honest, personal,
     }
   });
 
-  function speakText(text, startIndex = 0) {
-    if (!TTS) return;
-    TTS.cancel();
-    const chunk = text.slice(startIndex);
-    if (!chunk.trim()) return;
-    const utter = new SpeechSynthesisUtterance(chunk);
-    utter.rate = Math.max(0.6, state.ttsRate || 0.92);
+  // ── Chunk-based TTS ──
+  // Generation counter — incremented on every new speakText/stop so stale onend callbacks self-discard
+  let _ttsGen = 0;
+
+  function splitIntoChunks(text) {
+    // Split on sentence boundaries — period, exclamation, question followed by space or end
+    return text.match(/[^.!?]+[.!?]+[\s]*/g)?.map(s => s.trim()).filter(Boolean) || [text];
+  }
+
+  function speakChunks(chunks, fromIndex, gen) {
+    // Discard if a newer session has started (stop/new-play invalidates old callbacks)
+    if (gen !== _ttsGen) return;
+
+    if (!TTS || fromIndex >= chunks.length) {
+      // Natural end of passage
+      state.ttsState.chunkIndex = 0;
+      state.ttsState.isPaused = false;
+      const pauseBtn = $('listenPauseBtn');
+      if (pauseBtn) pauseBtn.textContent = '⏸ Pause';
+      return;
+    }
+
+    // Always keep index current so pause captures the right position
+    state.ttsState.chunkIndex = fromIndex;
+
+    const utter = new SpeechSynthesisUtterance(chunks[fromIndex]);
+    utter.rate  = Math.max(0.6, state.ttsRate || 0.92);
     utter.pitch = 1.05;
     utter.volume = 1;
     const voice = getBestVoice();
     if (voice) utter.voice = voice;
-    utter.onboundary = (e) => {
-      if (e.name === 'word') {
-        state.ttsState.index = startIndex + e.charIndex;
-      }
-    };
+
     utter.onend = () => {
-      state.ttsState.index = 0;
-      state.ttsState.isPaused = false;
-      const pauseBtn = $('listenPauseBtn');
-      if (pauseBtn) pauseBtn.textContent = '⏸ Pause';
+      // Only advance if: same generation, not paused, not stopped
+      if (gen !== _ttsGen) return;
+      if (state.ttsState.isPaused) return;
+      speakChunks(chunks, fromIndex + 1, gen);
     };
-    state.ttsState.text = text;
+
     TTS.speak(utter);
+  }
+
+  function speakText(text, startChunk = 0) {
+    if (!TTS || !text) return;
+    // Invalidate any existing onend callbacks before cancelling
+    _ttsGen++;
+    const gen = _ttsGen;
+    TTS.cancel();
+    const chunks = splitIntoChunks(text);
+    state.ttsState.text       = text;
+    state.ttsState.chunks     = chunks;
+    state.ttsState.chunkIndex = startChunk;
+    state.ttsState.isPaused   = false;
+    // Small delay — Android TTS needs cancel() to fully flush before speak()
+    setTimeout(() => speakChunks(chunks, startChunk, gen), 120);
   }
 
   // ═══════════════════════════════════════════
@@ -2125,6 +2405,26 @@ Write the kind of prayer a real person would actually pray — honest, personal,
 
     // Study tabs — handled by direct bindings in DOMContentLoaded
 
+    // Dig Deeper — close button
+    if (t.id === 'digDeeperCloseBtn') {
+      resetDigDeeper();
+      return;
+    }
+
+    // Dig Deeper — toggle open/close via the list item
+    if (t.closest('#digDeeperToggle')) {
+      const panel  = $('digDeeperPanel');
+      const toggle = $('digDeeperToggle');
+      const isOpen = !panel.classList.contains('hidden');
+      if (isOpen) {
+        resetDigDeeper();
+      } else {
+        panel.classList.remove('hidden');
+        toggle.classList.add('dig-open');
+      }
+      return;
+    }
+
     // Reflection items
     if (t.closest('.reflection-item')) {
       const item = t.closest('.reflection-item');
@@ -2165,19 +2465,19 @@ Write the kind of prayer a real person would actually pray — honest, personal,
       const full = wrapper.querySelector('.journey-full');
       if (t.matches('[data-edit]')) {
         const idx = parseInt(t.dataset.edit);
-        const data = JSON.parse(localStorage.getItem('journeyData') || '[]');
+        const data = JSON.parse(localStorage.getItem(JOURNEY_KEY) || '[]');
         const updated = prompt('Edit entry:', data[idx].text);
         if (updated !== null && updated.trim()) {
           data[idx].text = updated.trim();
-          localStorage.setItem('journeyData', JSON.stringify(data));
+          localStorage.setItem(JOURNEY_KEY, JSON.stringify(data));
           renderJourney($('journeySearch').value);
         }
       } else if (t.matches('[data-delete]')) {
         const idx = parseInt(t.dataset.delete);
         if (!confirm('Delete this entry?')) return;
-        const data = JSON.parse(localStorage.getItem('journeyData') || '[]');
+        const data = JSON.parse(localStorage.getItem(JOURNEY_KEY) || '[]');
         data.splice(idx, 1);
-        localStorage.setItem('journeyData', JSON.stringify(data));
+        localStorage.setItem(JOURNEY_KEY, JSON.stringify(data));
         renderJourney($('journeySearch').value);
       } else if (preview && full) {
         preview.classList.toggle('hidden');
@@ -2235,7 +2535,7 @@ Write the kind of prayer a real person would actually pray — honest, personal,
     // Clear journey
     if (t.id === 'clearJourneyBtn') {
       if (!confirm('Clear your entire journey? This cannot be undone.')) return;
-      localStorage.removeItem('journeyData');
+      localStorage.removeItem(JOURNEY_KEY);
       showToast('Journey cleared');
       syncProfileStats();
       return;
@@ -2313,7 +2613,13 @@ Write the kind of prayer a real person would actually pray — honest, personal,
 
     // ── Bible ──
     $('bibleBook')?.addEventListener('change', populateChapters);
-    $('loadPassageBtn')?.addEventListener('click', loadPassage);
+    $('loadPassageBtn')?.addEventListener('click', () => {
+      const book    = $('bibleBook').value;
+      const chapter = $('bibleChapter').value;
+      const version = $('translation').value;
+      console.log('[BibleFetch] Load button clicked:', book, chapter, version);
+      loadPassage(book, chapter, version);
+    });
 
     // ── Read: AI Inquire ──
     $('readAskAIBtn')?.addEventListener('click', async () => {
@@ -2411,6 +2717,43 @@ Write the kind of prayer a real person would actually pray — honest, personal,
       saveStudyNote();
     });
 
+    // ── Dig Deeper ──
+    $('digDeeperBtn')?.addEventListener('click', async () => {
+      const input = $('digDeeperInput').value.trim();
+      if (!input) { showToast('Enter a question or verse'); return; }
+      const btn    = $('digDeeperBtn');
+      const output = $('digDeeperOutput');
+      setButtonLoading(btn, true, 'Explaining…');
+      output.classList.remove('hidden');
+      output.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
+      let prompt = `Explain this clearly:\n\n${input}\n\nRules:\n- Be simple\n- Be clear\n- No introductions`;
+      if (state.currentScripture) {
+        prompt += `\n\nHere is the passage for context:\n${state.currentScripture}`;
+      }
+      const res = await requestAI(prompt, 'deep_explain');
+      setButtonLoading(btn, false);
+      if (!res) {
+        output.innerHTML = '<span class="muted">Nothing came through — try again.</span>';
+        return;
+      }
+      output.innerHTML = toHTML(res);
+      // Auto-collapse the input area after a successful response
+      // keeping the output visible so the user can read it, then collapse after 4s
+      $('digDeeperInput').value = '';
+      setTimeout(() => {
+        const panel  = $('digDeeperPanel');
+        const toggle = $('digDeeperToggle');
+        // Only auto-collapse if panel is still open (user may have closed it already)
+        if (panel && !panel.classList.contains('hidden')) {
+          panel.classList.add('hidden');
+          if (toggle) toggle.classList.remove('dig-open');
+          // Clear output after collapsing so it opens clean next time
+          if (output) { output.classList.add('hidden'); output.innerHTML = ''; }
+          showToast('Dig Deeper closed — tap again to reopen');
+        }
+      }, 4000);
+    });
+
     // ── Prayer ──
     $('prayerAskAIBtn')?.addEventListener('click', async () => {
       const struggles = $('prayerStruggles').value.trim();
@@ -2433,37 +2776,49 @@ Write the kind of prayer a real person would actually pray — honest, personal,
     });
     $('addAnsweredPrayerBtn')?.addEventListener('click', addAnsweredPrayer);
 
-    // ── Listen ──
+    // ── Scripture Listen ──
     $('listenPlayBtn')?.addEventListener('click', () => {
       if (!TTS) return showToast('Speech not available on this device');
-      const text = $('listenText').value.trim();
-      if (!text || text === 'Load a passage above to listen here.' || text === 'Load a passage in Read to listen here.') {
-        return showToast('Load a passage first');
-      }
-      state.ttsState.index = 0;
+      if (!state.currentScripture) return showToast('Load a passage first');
+      const parts = state.currentScripture.split(' — ');
+      const text = speechText(parts.length > 1 ? parts.slice(1).join(' — ') : state.currentScripture);
+      if (!text.trim()) return showToast('No passage loaded');
       state.ttsState.isPaused = false;
       const pauseBtn = $('listenPauseBtn');
       if (pauseBtn) pauseBtn.textContent = '⏸ Pause';
-      setTimeout(() => speakText(text, 0), 100);
+      speakText(text, 0);
     });
     $('listenPauseBtn')?.addEventListener('click', () => {
       if (!TTS) return;
       if (state.ttsState.isPaused) {
-        speakText(state.ttsState.text, state.ttsState.index);
+        // ── RESUME from exact stored index ──
         state.ttsState.isPaused = false;
         const btn = $('listenPauseBtn');
         if (btn) btn.textContent = '⏸ Pause';
-      } else if (TTS.speaking) {
+        // Start a new generation so the resumed chain owns its callbacks
+        _ttsGen++;
+        const gen = _ttsGen;
+        const { chunks, chunkIndex } = state.ttsState;
         TTS.cancel();
-        state.ttsState.isPaused = true;
+        setTimeout(() => speakChunks(chunks, chunkIndex, gen), 120);
+      } else if (TTS.speaking) {
+        // ── PAUSE — capture index THEN cancel to win the onend race ──
+        const savedIndex = state.ttsState.chunkIndex;
+        state.ttsState.isPaused = true;   // set BEFORE cancel so onend guard fires first
+        _ttsGen++;                         // invalidate the current chain's onend
+        TTS.cancel();
+        state.ttsState.chunkIndex = savedIndex; // restore after cancel (cancel resets nothing here but be safe)
         const btn = $('listenPauseBtn');
         if (btn) btn.textContent = '▶ Resume';
       }
     });
     $('listenStopBtn')?.addEventListener('click', () => {
-      if (TTS) TTS.cancel();
-      state.ttsState.index = 0;
-      state.ttsState.isPaused = false;
+      if (TTS) {
+        _ttsGen++;          // invalidate any in-flight onend callbacks
+        TTS.cancel();
+      }
+      state.ttsState.chunkIndex = 0;
+      state.ttsState.isPaused   = false;
       const btn = $('listenPauseBtn');
       if (btn) btn.textContent = '⏸ Pause';
     });
