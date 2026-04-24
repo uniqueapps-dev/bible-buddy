@@ -8,6 +8,10 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0b1020">
   <meta name="display" content="standalone">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <!-- BUILD v9.7 | 2026-04-24 | Dig Deeper: manual close only -->
   <link rel="manifest" href="manifest.json">
   <title>BibleBuddy · calm companion</title>
   <style>
@@ -711,7 +715,7 @@
               <span class="row-title">BibleBuddy</span>
               <span class="row-sub">Your calm Scripture companion</span>
             </div>
-            <span class="small muted" style="font-size:.8rem;font-weight:600;">v1.0</span>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v9.7</span>
           </div>
         </div>
 
@@ -2737,21 +2741,7 @@ Write the kind of prayer a real person would actually pray — honest, personal,
         return;
       }
       output.innerHTML = toHTML(res);
-      // Auto-collapse the input area after a successful response
-      // keeping the output visible so the user can read it, then collapse after 4s
-      $('digDeeperInput').value = '';
-      setTimeout(() => {
-        const panel  = $('digDeeperPanel');
-        const toggle = $('digDeeperToggle');
-        // Only auto-collapse if panel is still open (user may have closed it already)
-        if (panel && !panel.classList.contains('hidden')) {
-          panel.classList.add('hidden');
-          if (toggle) toggle.classList.remove('dig-open');
-          // Clear output after collapsing so it opens clean next time
-          if (output) { output.classList.add('hidden'); output.innerHTML = ''; }
-          showToast('Dig Deeper closed — tap again to reopen');
-        }
-      }, 4000);
+      // Panel stays open — user closes manually with ✕ or by tapping "Dig Deeper" again
     });
 
     // ── Prayer ──
