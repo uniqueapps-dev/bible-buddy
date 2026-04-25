@@ -11,7 +11,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <!-- BUILD v10.7 | 2026-04-25 | Scroll restore, Prayer style, Journey UI, Typography, Insight Engine, Journey Calendar, Calendar Enhancements -->
+  <!-- BUILD v10.9 | 2026-04-25 | Scroll restore, Prayer style, Journey UI, Typography, Insight Engine, Journey Calendar, Calendar Enhancements, Behavior Layer, Calendar-only Journey -->
   <link rel="manifest" href="manifest.json">
   <title>BibleBuddy · calm companion</title>
   <style>
@@ -571,20 +571,16 @@
         <div id="calDayView" style="margin-top:12px;display:none;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
             <div id="calDayLabel" style="font-size:.9rem;font-weight:600;color:var(--accent2);"></div>
-            <button id="calDayCloseBtn" style="background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;padding:2px 6px;">✕ Show all</button>
+            <button id="calDayCloseBtn" style="background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;padding:2px 6px;">✕ Close</button>
           </div>
           <div id="calDayList"></div>
         </div>
       </div>
 
-      <!-- JOURNEY LIST -->
-      <div class="card">
-        <div class="section-title">
-          <h2 style="margin:0;">Journey</h2>
-          <input id="journeySearch" placeholder="Search…" style="width:auto;max-width:160px;padding:6px 10px;font-size:.9rem;">
-        </div>
-        <div id="journeyList"></div>
-      </div>
+      <!-- journeyList kept hidden — renderJourney() still writes here; handlers intact -->
+      <div id="journeyList" style="display:none;"></div>
+      <!-- journeySearch kept hidden — existing search listener won't error -->
+      <input id="journeySearch" style="display:none;" aria-hidden="true">
     </section>
 
     <!-- ════ PROFILE ════ -->
@@ -764,7 +760,7 @@
               <span class="row-title">BibleBuddy</span>
               <span class="row-sub">Your calm Scripture companion</span>
             </div>
-            <span class="small muted" style="font-size:.8rem;font-weight:600;">v10.7</span>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v10.9</span>
           </div>
         </div>
 
@@ -1332,7 +1328,7 @@ Important:
       if (data.length > 100) data.pop();
       localStorage.setItem(JOURNEY_KEY, JSON.stringify(data));
     } catch(e) { console.error('[Journey] save failed:', e); }
-    if (state.screen === 'journey') renderJourney();
+    if (state.screen === 'journey') { buildCalendar(calYear, calMonth); if (calActiveDayKey) showDayEntries(calActiveDayKey); }
     if (state.screen === 'profile') syncProfileStats();
   }
 
@@ -1560,6 +1556,19 @@ Important:
   let calActiveDayKey = null; // tracks selected day
 
   // ── CALENDAR ENHANCEMENT: Streak calculator from actual journey entries ──
+  // ── BEHAVIOR LAYER: Weekly identity line ──
+  function getWeeklyIdentity(entries) {
+    const last7 = entries.filter(e => {
+      const t = new Date(e.timestamp || e.date);
+      const diff = (Date.now() - t.getTime()) / (1000 * 60 * 60 * 24);
+      return diff <= 7;
+    });
+    if (last7.length >= 10) return "🔥 You\'re showing up strong this week";
+    if (last7.length >= 5)  return "👍 You\'re building consistency";
+    if (last7.length >= 2)  return "🌱 You\'re getting started";
+    return null;
+  }
+
   function calculateStreak(entries) {
     if (!entries || !entries.length) return 0;
     const days = new Set(
@@ -1652,6 +1661,9 @@ Important:
         hasData   ? 'font-weight:600;' : 'color:var(--muted);'
       ].join(';');
 
+      // ADD 4: Mark today for scrollIntoView
+      if (isToday) dayEl.setAttribute('data-today', 'true');
+
       // Dot indicator for entry count
       if (hasData && count > 1) {
         const dot = document.createElement('div');
@@ -1666,31 +1678,44 @@ Important:
           showDayEntries(calActiveDayKey);
         } else {
           hideDayView();
-          renderJourney();
         }
       });
 
       grid.appendChild(dayEl);
     }
+
+    // ADD 4: Scroll today into view (current month only)
+    const nowYear  = new Date().getFullYear();
+    const nowMonth = new Date().getMonth();
+    if (year === nowYear && month === nowMonth) {
+      const todayCell = grid.querySelector('[data-today="true"]');
+      if (todayCell) todayCell.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
   }
 
-  // TASK 3: Day drill-down — renders into inline calDayList (not journeyList)
+  // Day control panel — full edit/delete/load within calendar view
   function showDayEntries(dayKey) {
     const dayView  = $('calDayView');
     const dayLabel = $('calDayLabel');
     const dayList  = $('calDayList');
     if (!dayView || !dayLabel || !dayList) return;
 
-    const journey  = JSON.parse(localStorage.getItem('journeyData') || '[]');
-    const filtered = journey.filter(e => {
-      const t = new Date(e.timestamp || e.date);
-      return t.toDateString() === dayKey;
+    const journey = JSON.parse(localStorage.getItem('journeyData') || '[]');
+
+    // Preserve real indices so data-edit / data-delete handlers work on correct items
+    const filtered = journey
+      .map((e, i) => ({ ...e, _index: i }))
+      .filter(e => {
+        const t = new Date(e.timestamp || e.date);
+        return t.toDateString() === dayKey;
+      });
+
+    dayLabel.textContent = new Date(dayKey).toLocaleDateString('default', {
+      weekday: 'long', month: 'long', day: 'numeric'
     });
+    dayView.style.display = 'block';
 
-    dayLabel.textContent = new Date(dayKey).toLocaleDateString('default', { weekday:'long', month:'long', day:'numeric' });
-    dayView.style.display = '';
-
-    // FIX 6: Empty day CTA
+    // Empty state with CTA
     if (!filtered.length) {
       dayList.innerHTML = `
         <div class="muted" style="font-size:.88rem;padding:4px 0;">No activity recorded for this day.</div>
@@ -1698,33 +1723,59 @@ Important:
       return;
     }
 
-    // FIX 4: Scripture entries get quick-load markup; all others get standard card
+    // Render entries — wrapped in data-journey-index so existing edit/delete handlers fire
     dayList.innerHTML = filtered.map(e => {
-      const time = e.timestamp ? new Date(e.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
-      const preview = (e.text || '').slice(0, 120) + ((e.text || '').length > 120 ? '…' : '');
+      const idx     = e._index;
+      const time    = e.timestamp ? new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+      const preview = (e.text || '').slice(0, 160) + ((e.text || '').length > 160 ? '…' : '');
+      const isScripture = e.type === 'Scripture' && e.book && e.chapter;
 
-      if (e.type === 'Scripture' && e.book && e.chapter) {
-        return `
-          <div style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;"
-               data-journey-load-book="${e.book}" data-journey-load-chapter="${e.chapter}">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-              <span style="font-size:.8rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.04em;">📖 ${e.book} ${e.chapter}</span>
-              <span style="font-size:.75rem;color:var(--muted);">${time}</span>
-            </div>
-            <div style="font-size:.88rem;color:var(--text);line-height:1.5;">${preview || '<span class="muted">Tap to reload passage</span>'}</div>
-            <div style="font-size:.75rem;color:var(--muted);margin-top:3px;">Tap to open →</div>
-          </div>`;
-      }
+      const loadBtn = isScripture
+        ? `<button data-journey-load-book="${e.book}" data-journey-load-chapter="${e.chapter}"
+              style="margin-top:6px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;
+                     padding:5px 10px;color:var(--accent2);font-size:.8rem;cursor:pointer;">
+             📖 Open ${e.book} ${e.chapter}
+           </button>`
+        : '';
+
+      const typeLabel = isScripture
+        ? `📖 ${e.book} ${e.chapter}`
+        : (e.type || 'Entry');
 
       return `
-        <div style="padding:10px 0;border-bottom:1px solid var(--border);">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
-            <span style="font-size:.8rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.04em;">${e.type || 'Entry'}</span>
-            <span style="font-size:.75rem;color:var(--muted);">${time}</span>
+        <div class="item journey-entry" data-journey-index="${idx}"
+             style="margin-bottom:8px;padding:10px 12px;border-radius:10px;background:var(--panel2);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <span style="font-size:.8rem;font-weight:700;color:var(--accent2);
+                         text-transform:uppercase;letter-spacing:.04em;">${typeLabel}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:.75rem;color:var(--muted);">${time}</span>
+              <button data-edit="${idx}"
+                style="background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;padding:2px 4px;">✏️</button>
+              <button data-delete="${idx}"
+                style="background:none;border:none;color:var(--danger,#f87171);font-size:.85rem;cursor:pointer;padding:2px 4px;">🗑</button>
+            </div>
           </div>
-          <div style="font-size:.88rem;color:var(--text);line-height:1.5;">${preview || '<span class="muted">No content</span>'}</div>
+          <div style="font-size:.88rem;color:var(--text);line-height:1.5;">
+            ${preview || '<span class="muted">No content</span>'}
+          </div>
+          ${loadBtn}
         </div>`;
     }).join('');
+
+    // ADD 3: Micro-feedback summary
+    const count = filtered.length;
+    let summary = '';
+    if (count >= 5)      summary = '✨ Strong day';
+    else if (count >= 3) summary = '👍 Active day';
+    else if (count >= 1) summary = '🌱 You showed up';
+    if (summary) {
+      const el = document.createElement('div');
+      el.className = 'muted small';
+      el.style.cssText = 'margin-top:8px;font-size:.8rem;text-align:right;letter-spacing:.02em;';
+      el.textContent = summary;
+      dayList.appendChild(el);
+    }
   }
 
   function hideDayView() {
@@ -1746,7 +1797,6 @@ Important:
         calActiveDayKey = null;
         hideDayView();
         buildCalendar(calYear, calMonth);
-        renderJourney();
       };
     }
     if (next && !next._calBound) {
@@ -1757,7 +1807,6 @@ Important:
         calActiveDayKey = null;
         hideDayView();
         buildCalendar(calYear, calMonth);
-        renderJourney();
       };
     }
     if (close && !close._calBound) {
@@ -1766,7 +1815,7 @@ Important:
         hideDayView();
         calActiveDayKey = null;
         buildCalendar(calYear, calMonth);
-        renderJourney();
+        // No renderJourney() — list is hidden; calendar is the view
       };
     }
   }
@@ -1775,7 +1824,7 @@ Important:
     if (screen === 'home') { setHome(); updateStreak(); }
     else if (screen === 'sessionFlow') renderSessionFlow();
     else if (screen === 'read') { syncReadDefault(); }
-    else if (screen === 'journey') { buildCalendar(calYear, calMonth); initCalendarListeners(); renderJourney(); }
+    else if (screen === 'journey') { buildCalendar(calYear, calMonth); initCalendarListeners(); }
     else if (screen === 'meditate') initMeditation();
     else if (screen === 'study') refreshStudyPanel();
     else if (screen === 'prayer') renderAnsweredPrayers();
@@ -1887,28 +1936,57 @@ Important:
     }
     $('homeProgressionHint').textContent = hint;
 
-    // FIX 2 + FIX 5: Journey-based streak and today nudge
+    // BEHAVIOR LAYER: Streak, nudges, identity, come-back hook
     try {
       const journeyAll = JSON.parse(localStorage.getItem('journeyData') || '[]');
 
-      // FIX 2 — Streak from actual journey entries
+      // Streak badge from actual journey entries
       const journeyStreak = calculateStreak(journeyAll);
       const streakMini = $('homeStreakMini');
       if (streakMini && journeyStreak > 0) {
         streakMini.textContent = `🔥 ${journeyStreak} day streak`;
       }
 
-      // FIX 5 — Today nudge: only overrides hint if no activity today AND no saved session
-      const todayKey = new Date().toDateString();
-      const hasToday = journeyAll.some(e => {
-        const t = new Date(e.timestamp || e.date);
-        return t.toDateString() === todayKey;
-      });
-      if (!hasToday && !localStorage.getItem('bb_session')) {
-        $('homeProgressionHint').textContent = "You haven't spent time today";
+      const todayKey   = new Date().toDateString();
+      const hasToday   = journeyAll.some(e => new Date(e.timestamp || e.date).toDateString() === todayKey);
+
+      // ADD 5 — Come-back hook: fires first if absent 2+ days (highest priority override)
+      const lastEntry = journeyAll[0];
+      if (lastEntry) {
+        const lastDate = new Date(lastEntry.timestamp || lastEntry.date);
+        const diffDays = Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays >= 2) {
+          $('homeProgressionHint').textContent = "It\'s been a few days — come back gently";
+          return; // skip lower-priority nudges
+        }
       }
+
+      // ADD 1 — Streak loss warning: had yesterday, missing today
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const hadYesterday = journeyAll.some(e =>
+        new Date(e.timestamp || e.date).toDateString() === yesterday.toDateString()
+      );
+      if (hadYesterday && !hasToday && journeyStreak > 0) {
+        $('homeProgressionHint').textContent += " • Don\'t break your streak";
+      }
+
+      // ADD 2 — Weekly identity line (appended, not replacing)
+      const identity = getWeeklyIdentity(journeyAll);
+      if (identity) {
+        const current = $('homeProgressionHint').textContent;
+        $('homeProgressionHint').textContent = current
+          ? current + " • " + identity
+          : identity;
+      }
+
+      // Today nudge — only if no activity and no identity line already set
+      if (!hasToday && !localStorage.getItem('bb_session') && !identity) {
+        $('homeProgressionHint').textContent = "You haven\'t spent time today";
+      }
+
     } catch (e) {
-      console.warn('Home nudge failed', e);
+      console.warn('Home behavior layer failed', e);
     }
 
     // FIX 1 — Resume reading button
@@ -3060,7 +3138,12 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
         if (updated !== null && updated.trim()) {
           data[idx].text = updated.trim();
           localStorage.setItem(JOURNEY_KEY, JSON.stringify(data));
-          renderJourney($('journeySearch').value);
+          // Re-render day panel if open; otherwise rebuild calendar
+          if (calActiveDayKey) {
+            showDayEntries(calActiveDayKey);
+          } else {
+            buildCalendar(calYear, calMonth);
+          }
         }
       } else if (t.matches('[data-delete]')) {
         const idx = parseInt(t.dataset.delete);
@@ -3068,7 +3151,11 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
         const data = JSON.parse(localStorage.getItem(JOURNEY_KEY) || '[]');
         data.splice(idx, 1);
         localStorage.setItem(JOURNEY_KEY, JSON.stringify(data));
-        renderJourney($('journeySearch').value);
+        if (calActiveDayKey) {
+          showDayEntries(calActiveDayKey);
+        } else {
+          buildCalendar(calYear, calMonth);
+        }
       } else if (preview && full) {
         preview.classList.toggle('hidden');
         full.classList.toggle('hidden');
@@ -3591,7 +3678,7 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
     $('startGuideBtn')?.addEventListener('click', () => openScreen('guide'));
 
     // ── Journey search ──
-    $('journeySearch')?.addEventListener('input', e => renderJourney(e.target.value));
+    // journeySearch listener removed — calendar-only view
 
     // ── Init settings UI ──
     const uni = $('userNameInput');
