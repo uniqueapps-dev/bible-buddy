@@ -11,7 +11,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <!-- BUILD v10.6 | 2026-04-25 | Scroll restore, Prayer style, Journey UI, Typography, Insight Engine, Journey Calendar -->
+  <!-- BUILD v10.7 | 2026-04-25 | Scroll restore, Prayer style, Journey UI, Typography, Insight Engine, Journey Calendar, Calendar Enhancements -->
   <link rel="manifest" href="manifest.json">
   <title>BibleBuddy · calm companion</title>
   <style>
@@ -764,7 +764,7 @@
               <span class="row-title">BibleBuddy</span>
               <span class="row-sub">Your calm Scripture companion</span>
             </div>
-            <span class="small muted" style="font-size:.8rem;font-weight:600;">v10.6</span>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v10.7</span>
           </div>
         </div>
 
@@ -1559,6 +1559,26 @@ Important:
   let calMonth = new Date().getMonth();
   let calActiveDayKey = null; // tracks selected day
 
+  // ── CALENDAR ENHANCEMENT: Streak calculator from actual journey entries ──
+  function calculateStreak(entries) {
+    if (!entries || !entries.length) return 0;
+    const days = new Set(
+      entries.map(e => new Date(e.timestamp || e.date).toDateString())
+    );
+    let streak = 0;
+    const current = new Date();
+    while (true) {
+      const key = current.toDateString();
+      if (days.has(key)) {
+        streak++;
+        current.setDate(current.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
   function buildCalendar(year, month) {
     const grid  = $('calendarGrid');
     const label = $('calMonthLabel');
@@ -1607,9 +1627,17 @@ Important:
       dayEl.textContent = d;
 
       let bg = 'rgba(255,255,255,.03)';
-      if (isActive)    bg = 'rgba(124,156,255,.5)';
-      else if (hasData) bg = 'rgba(124,156,255,.22)';
-      if (isToday && !isActive) bg = 'rgba(255,255,255,.09)';
+      if (isActive) {
+        bg = 'rgba(124,156,255,.55)';
+      } else if (count > 0) {
+        // FIX 3: Heat intensity — depth reflects activity volume
+        const opacityMap = { 1: 0.15, 2: 0.25, 3: 0.35, 4: 0.45, 5: 0.55 };
+        const intensity = Math.min(count, 5);
+        bg = `rgba(124,156,255,${opacityMap[intensity]})`;
+      }
+      if (isToday && !isActive) bg = bg === 'rgba(255,255,255,.03)'
+        ? 'rgba(255,255,255,.09)'
+        : bg; // today gets a floor if no entries
 
       dayEl.style.cssText = [
         'padding:8px 2px',
@@ -1662,14 +1690,32 @@ Important:
     dayLabel.textContent = new Date(dayKey).toLocaleDateString('default', { weekday:'long', month:'long', day:'numeric' });
     dayView.style.display = '';
 
+    // FIX 6: Empty day CTA
     if (!filtered.length) {
-      dayList.innerHTML = '<div class="muted" style="font-size:.88rem;padding:4px 0;">No activity recorded for this day.</div>';
+      dayList.innerHTML = `
+        <div class="muted" style="font-size:.88rem;padding:4px 0;">No activity recorded for this day.</div>
+        <button class="primary" data-nav="read" style="margin-top:10px;width:100%;padding:12px;border-radius:60px;">Start Reading</button>`;
       return;
     }
 
+    // FIX 4: Scripture entries get quick-load markup; all others get standard card
     dayList.innerHTML = filtered.map(e => {
       const time = e.timestamp ? new Date(e.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
       const preview = (e.text || '').slice(0, 120) + ((e.text || '').length > 120 ? '…' : '');
+
+      if (e.type === 'Scripture' && e.book && e.chapter) {
+        return `
+          <div style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;"
+               data-journey-load-book="${e.book}" data-journey-load-chapter="${e.chapter}">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+              <span style="font-size:.8rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.04em;">📖 ${e.book} ${e.chapter}</span>
+              <span style="font-size:.75rem;color:var(--muted);">${time}</span>
+            </div>
+            <div style="font-size:.88rem;color:var(--text);line-height:1.5;">${preview || '<span class="muted">Tap to reload passage</span>'}</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:3px;">Tap to open →</div>
+          </div>`;
+      }
+
       return `
         <div style="padding:10px 0;border-bottom:1px solid var(--border);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
@@ -1840,6 +1886,30 @@ Important:
       }
     }
     $('homeProgressionHint').textContent = hint;
+
+    // FIX 2 + FIX 5: Journey-based streak and today nudge
+    try {
+      const journeyAll = JSON.parse(localStorage.getItem('journeyData') || '[]');
+
+      // FIX 2 — Streak from actual journey entries
+      const journeyStreak = calculateStreak(journeyAll);
+      const streakMini = $('homeStreakMini');
+      if (streakMini && journeyStreak > 0) {
+        streakMini.textContent = `🔥 ${journeyStreak} day streak`;
+      }
+
+      // FIX 5 — Today nudge: only overrides hint if no activity today AND no saved session
+      const todayKey = new Date().toDateString();
+      const hasToday = journeyAll.some(e => {
+        const t = new Date(e.timestamp || e.date);
+        return t.toDateString() === todayKey;
+      });
+      if (!hasToday && !localStorage.getItem('bb_session')) {
+        $('homeProgressionHint').textContent = "You haven't spent time today";
+      }
+    } catch (e) {
+      console.warn('Home nudge failed', e);
+    }
 
     // FIX 1 — Resume reading button
     const lastRead = JSON.parse(localStorage.getItem('bb_last_read') || 'null');
