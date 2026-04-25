@@ -11,7 +11,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <!-- BUILD v10.9 | 2026-04-25 | Scroll restore, Prayer style, Journey UI, Typography, Insight Engine, Journey Calendar, Calendar Enhancements, Behavior Layer, Calendar-only Journey -->
+  <!-- BUILD v10.11 | 2026-04-25 | Robust TTS, manifest fallback, stable timer, error resilience -->
   <link rel="manifest" href="manifest.json">
   <title>BibleBuddy · calm companion</title>
   <style>
@@ -760,7 +760,7 @@
               <span class="row-title">BibleBuddy</span>
               <span class="row-sub">Your calm Scripture companion</span>
             </div>
-            <span class="small muted" style="font-size:.8rem;font-weight:600;">v10.9</span>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v10.11</span>
           </div>
         </div>
 
@@ -855,11 +855,11 @@
     nextChapter: null,
     baseContext: { summary: '', themes: [], meaning: '', insight: '' },
     activeAbortControllers: [],
-    memory: JSON.parse(localStorage.getItem('bb_memory') || '{"topics":[],"recent":[],"lastUpdated":0}'),
+    memory: (() => { try { return JSON.parse(localStorage.getItem('bb_memory') || '{"topics":[],"recent":[],"lastUpdated":0}'); } catch(e) { return { topics: [], recent: [], lastUpdated: 0 }; } })(),
     settings: {
       userName: localStorage.getItem('bb_user_name') || '',
-      sound: JSON.parse(localStorage.getItem('bb_sound') || 'true'),
-      vibration: JSON.parse(localStorage.getItem('bb_vibration') || 'true'),
+      sound: (() => { try { return JSON.parse(localStorage.getItem('bb_sound') || 'true'); } catch { return true; } })(),
+      vibration: (() => { try { return JSON.parse(localStorage.getItem('bb_vibration') || 'true'); } catch { return true; } })(),
       model: localStorage.getItem('bb_model') || 'openai/gpt-4o-mini'
     }
   };
@@ -971,7 +971,6 @@
     const theme = getPrimaryTheme(counts);
     if (!theme) return null;
 
-    // FIX 1: Variation pools per theme
     const map = {
       fear: [
         "Lately, fear and uncertainty have been surfacing. This may be a season of learning trust.",
@@ -1000,51 +999,20 @@
       ]
     };
 
-    // FIX 2: Randomize from pool
-    const options = map[theme] || [`You\'ve been engaging with themes around ${theme}.`];
-    let insight = options[Math.floor(Math.random() * options.length)];
-
-    // FIX 3: Intensity prefix
+    let insight = (map[theme] || [`You've been engaging with themes around ${theme}.`])[Math.floor(Math.random() * (map[theme]?.length || 1))];
     const intensity = counts[theme] || 0;
-    if (intensity >= 4) {
-      insight = "This theme keeps coming up strongly. " + insight;
-    }
-
-    // FIX 4: Persist last insight for stability
+    if (intensity >= 4) insight = "This theme keeps coming up strongly. " + insight;
     localStorage.setItem('bb_last_insight', insight);
     return insight;
-  }
-
-  // ── PHASE 3: legacy stubs kept for memory engine compatibility ──
-  function detectPrimaryTheme(memory) {
-    if (!memory || !memory.topics || !memory.topics.length) return null;
-    const counts = {};
-    memory.topics.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-    return sorted[0]?.[0] || null;
-  }
-
-  function generateInsight(theme) {
-    if (!theme) return null;
-    const map = {
-      fear:'You\'ve been reflecting on fear recently.',anxiety:'Your reflections show a concern about anxiety.',
-      purpose:'You\'ve been thinking deeply about purpose.',faith:'Faith has been a recurring theme in your journey.',
-      patience:'Patience keeps coming up in your reflections.',worry:'Worry has surfaced in several of your recent reflections.',
-      confusion:'You\'ve been sitting with some confusion lately.',decision:'You\'ve been wrestling with an important decision.',
-      trust:'Trust has been a thread running through your reflections.',anger:'You\'ve been processing some difficult emotions recently.',
-      hope:'Hope has been on your heart in recent reflections.',direction:'You\'ve been seeking direction in your journey.'
-    };
-    return map[theme] || `You've been engaging with themes around ${theme}.`;
   }
 
   // ── Response Cleaner ──
   function cleanAIResponse(text) {
     if (!text) return '';
     let t = text.trim();
-    // Strip common AI opener patterns — repeat up to 2x to catch stacked openers
     const fillerPattern = /^(sure[,!.]?\s*|of course[,!.]?\s*|absolutely[,!.]?\s*|certainly[,!.]?\s*|great question[,!.]?\s*|that('s| is) a (great|good|wonderful|beautiful|powerful|important)[^.\n]*[.!\n]\s*|this is (a )?(beautiful|wonderful|great|powerful|profound)[^.\n]*[.!\n]\s*|you might find[^.\n]*[.!\n]\s*|it('s| is) important to note[^.\n]*[.!\n]\s*|here is[^.\n]*[.!\n]\s*|here are[^.\n]*[.!\n]\s*|i understand[^.\n]*[.!\n]\s*|sorry (you are|you're)[^.\n]*[.!\n]\s*)/i;
     t = t.replace(fillerPattern, '').trim();
-    t = t.replace(fillerPattern, '').trim(); // second pass for stacked openers
+    t = t.replace(fillerPattern, '').trim();
     return t;
   }
 
@@ -1079,11 +1047,10 @@
   function toHTML(raw) {
     if (!raw) return '<span class="muted">Nothing came through — try again.</span>';
     let cleaned = raw.trim();
-    // Strip markdown symbols and list markers
     cleaned = cleaned
-      .replace(/[#*_`~>]/g, '')          // headers, bold, italic, code, blockquote
-      .replace(/^\s*\d+\.\s+/gm, '')     // numbered lists (1. 2. etc)
-      .replace(/^\s*[-•]\s+/gm, '')      // bullet dashes and dots
+      .replace(/[#*_`~>]/g, '')
+      .replace(/^\s*\d+\.\s+/gm, '')
+      .replace(/^\s*[-•]\s+/gm, '')
       .replace(/\r/g, '')
       .trim();
     const paragraphs = cleaned.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
@@ -1092,11 +1059,11 @@
 
   function speechText(raw) {
     return (raw || '')
-      .replace(/<[^>]*>/g, ' ')       // strip HTML tags
-      .replace(/\d+/g, '')            // strip verse numbers
-      .replace(/([a-z])([A-Z])/g, '$1 $2')  // split runTogetherWords
-      .replace(/([.,!?;:])([A-Za-z])/g, '$1 $2')  // ensure space after punctuation
-      .replace(/\s{2,}/g, ' ')        // collapse multiple spaces
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\d+/g, '')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/([.,!?;:])([A-Za-z])/g, '$1 $2')
+      .replace(/\s{2,}/g, ' ')
       .trim();
   }
 
@@ -1140,10 +1107,7 @@
       return null;
     }
 
-    // Strict no-opener rule
     const strictRule = `Do NOT open your response with any of these: "Sure", "Of course", "Certainly", "Absolutely", "Great question", "That's a great", "Here is", "It's important to note", "You might find", "This is a beautiful", "This is a wonderful", "I understand", "Sorry you are going through". Start directly with your answer. No preamble.\n\n`;
-
-    // Memory context — max 1 topic, light injection only
     const memoryContext = state.memory?.recent?.slice(0, 1).length
       ? `Context: this person has been sitting with ${state.memory.recent[0]}.\n\n`
       : '';
@@ -1199,7 +1163,7 @@
   // ═══════════════════════════════════════════
   //  HYBRID AI — LAYER 1: BASE CONTEXT
   // ═══════════════════════════════════════════
-  const contextCache = new Map(); // scripture string → parsed context object
+  const contextCache = new Map();
 
   async function fetchBaseContext(scripture) {
     if (contextCache.has(scripture)) return contextCache.get(scripture);
@@ -1274,7 +1238,6 @@ Important:
       }
     }
 
-    // Trim all string fields
     result.summary = result.summary.trim();
     result.meaning = result.meaning.trim();
     result.insight = result.insight.trim();
@@ -1304,7 +1267,7 @@ Important:
   }
 
   function showAIInPanel(panelEl, content) {
-    panelEl.innerHTML = '';  // clear before setting — no lingering content
+    panelEl.innerHTML = '';
     panelEl.innerHTML = content;
     panelEl.classList.remove('hidden');
     panelEl.scrollTop = 0;
@@ -1371,7 +1334,7 @@ Important:
     if (entry.type === 'Meditation') return 'You spent time in meditation';
     if (entry.type === 'Study')      return 'You explored this deeper';
     if (entry.type === 'Bookmark')   return 'You bookmarked a passage';
-    return null; // ignore noise
+    return null;
   }
 
   // ── JOURNEY INTELLIGENCE — Task 3+4+5: renderJourney with story view ──
@@ -1382,16 +1345,13 @@ Important:
     let data = [];
     try {
       const raw = localStorage.getItem(JOURNEY_KEY);
-      console.log('[Journey] raw length:', raw ? raw.length : 'null');
       data = JSON.parse(raw || '[]');
-      console.log('[Journey] entries:', data.length);
     } catch(e) {
       console.error('[Journey] parse error:', e);
       container.innerHTML = '<div class="muted" style="padding:20px 0;">Journey data could not be read. Try clearing cache in Profile.</div>';
       return;
     }
 
-    // Task 4: filter BEFORE grouping so search works correctly
     if (filter) {
       const f = filter.toLowerCase();
       data = data.filter(e =>
@@ -1401,7 +1361,6 @@ Important:
       );
     }
 
-    // Task 5: empty state
     if (!data.length) {
       container.innerHTML = filter
         ? '<div class="muted" style="padding:20px 0;">No entries match your search.</div>'
@@ -1411,7 +1370,6 @@ Important:
 
     const parts = [];
 
-    // ── Saved Scriptures quick-load strip (preserved — needed for tap-to-load) ──
     const scriptures = data.filter(e => e.type === 'Scripture');
     if (scriptures.length && !filter) {
       let strip = `<h3 style="margin:0 0 10px;font-size:1rem;color:var(--accent2);">Saved Scriptures</h3>`;
@@ -1429,7 +1387,6 @@ Important:
       parts.push(strip);
     }
 
-    // ── Task 3: Story view — grouped by date ──
     const grouped = groupByDate(data);
     const today = new Date().toDateString();
     const dates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
@@ -1448,7 +1405,6 @@ Important:
 
     if (storyHTML.trim()) parts.push(storyHTML);
 
-    // ── Full entry log (preserved — edit/delete handlers depend on data-journey-index) ──
     const logParts = [];
     data.forEach((e, i) => {
       try {
@@ -1486,7 +1442,6 @@ Important:
 
     requestAnimationFrame(() => {
       container.innerHTML = parts.join('');
-      console.log('[Journey] rendered story + log, entries:', data.length);
     });
   }
 
@@ -1510,7 +1465,7 @@ Important:
   //  SCREEN LIFECYCLE
   // ═══════════════════════════════════════════
   function cleanupOnLeave(screen) {
-    if (TTS) { _ttsGen++; TTS.cancel(); }
+    if (window.speechSynthesis) { _ttsGen++; window.speechSynthesis.cancel(); }
     if (screen === 'meditate' && state.meditation.state === 'active') stopMeditation();
     if (screen === 'sessionFlow' && state.session.step > 0 && state.session.step < 4) {
       localStorage.setItem('bb_session', JSON.stringify({
@@ -1519,14 +1474,12 @@ Important:
         data: state.session.data
       }));
     }
-    // Reset study tab to Notes so re-entry never auto-fires AI
     if (screen === 'study') {
       document.querySelectorAll('#studyTabs button').forEach(b => {
         b.classList.toggle('active', b.dataset.tab === 'notes');
       });
       const notesPanel = $('studyNotesPanel');
       if (notesPanel) notesPanel.style.display = 'none';
-      // Collapse Dig Deeper panel
       resetDigDeeper();
     }
     cancelAllAI();
@@ -1543,7 +1496,6 @@ Important:
     }
     const mm = $('readMoreActionsMenu');
     if (mm) mm.classList.add('hidden');
-    // ── FLOW ENGINE — Task 5: Hide guide card on screen leave ──
     $('flowGuideCard')?.classList.add('hidden');
   }
 
@@ -1553,10 +1505,8 @@ Important:
 
   let calYear  = new Date().getFullYear();
   let calMonth = new Date().getMonth();
-  let calActiveDayKey = null; // tracks selected day
+  let calActiveDayKey = null;
 
-  // ── CALENDAR ENHANCEMENT: Streak calculator from actual journey entries ──
-  // ── BEHAVIOR LAYER: Weekly identity line ──
   function getWeeklyIdentity(entries) {
     const last7 = entries.filter(e => {
       const t = new Date(e.timestamp || e.date);
@@ -1601,7 +1551,6 @@ Important:
 
     label.textContent = monthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-    // TASK 6: Day-of-week header row
     ['S','M','T','W','T','F','S'].forEach(d => {
       const el = document.createElement('div');
       el.textContent = d;
@@ -1609,12 +1558,12 @@ Important:
       grid.appendChild(el);
     });
 
-    // Empty slots before first day
     for (let i = 0; i < firstDay; i++) {
       grid.appendChild(document.createElement('div'));
     }
 
-    const journey = JSON.parse(localStorage.getItem('journeyData') || '[]');
+    let journey = [];
+    try { journey = JSON.parse(localStorage.getItem('journeyData') || '[]'); } catch(e) {}
     const today   = new Date().toDateString();
 
     for (let d = 1; d <= daysInMonth; d++) {
@@ -1639,14 +1588,13 @@ Important:
       if (isActive) {
         bg = 'rgba(124,156,255,.55)';
       } else if (count > 0) {
-        // FIX 3: Heat intensity — depth reflects activity volume
         const opacityMap = { 1: 0.15, 2: 0.25, 3: 0.35, 4: 0.45, 5: 0.55 };
         const intensity = Math.min(count, 5);
         bg = `rgba(124,156,255,${opacityMap[intensity]})`;
       }
       if (isToday && !isActive) bg = bg === 'rgba(255,255,255,.03)'
         ? 'rgba(255,255,255,.09)'
-        : bg; // today gets a floor if no entries
+        : bg;
 
       dayEl.style.cssText = [
         'padding:8px 2px',
@@ -1661,10 +1609,8 @@ Important:
         hasData   ? 'font-weight:600;' : 'color:var(--muted);'
       ].join(';');
 
-      // ADD 4: Mark today for scrollIntoView
       if (isToday) dayEl.setAttribute('data-today', 'true');
 
-      // Dot indicator for entry count
       if (hasData && count > 1) {
         const dot = document.createElement('div');
         dot.style.cssText = 'width:4px;height:4px;border-radius:50%;background:rgba(124,156,255,.9);margin:2px auto 0;';
@@ -1673,7 +1619,7 @@ Important:
 
       dayEl.addEventListener('click', () => {
         calActiveDayKey = (calActiveDayKey === dayKey) ? null : dayKey;
-        buildCalendar(calYear, calMonth); // re-render to update highlight
+        buildCalendar(calYear, calMonth);
         if (calActiveDayKey) {
           showDayEntries(calActiveDayKey);
         } else {
@@ -1684,7 +1630,6 @@ Important:
       grid.appendChild(dayEl);
     }
 
-    // ADD 4: Scroll today into view (current month only)
     const nowYear  = new Date().getFullYear();
     const nowMonth = new Date().getMonth();
     if (year === nowYear && month === nowMonth) {
@@ -1693,16 +1638,15 @@ Important:
     }
   }
 
-  // Day control panel — full edit/delete/load within calendar view
   function showDayEntries(dayKey) {
     const dayView  = $('calDayView');
     const dayLabel = $('calDayLabel');
     const dayList  = $('calDayList');
     if (!dayView || !dayLabel || !dayList) return;
 
-    const journey = JSON.parse(localStorage.getItem('journeyData') || '[]');
+    let journey = [];
+    try { journey = JSON.parse(localStorage.getItem('journeyData') || '[]'); } catch(e) {}
 
-    // Preserve real indices so data-edit / data-delete handlers work on correct items
     const filtered = journey
       .map((e, i) => ({ ...e, _index: i }))
       .filter(e => {
@@ -1715,7 +1659,6 @@ Important:
     });
     dayView.style.display = 'block';
 
-    // Empty state with CTA
     if (!filtered.length) {
       dayList.innerHTML = `
         <div class="muted" style="font-size:.88rem;padding:4px 0;">No activity recorded for this day.</div>
@@ -1723,7 +1666,6 @@ Important:
       return;
     }
 
-    // Render entries — wrapped in data-journey-index so existing edit/delete handlers fire
     dayList.innerHTML = filtered.map(e => {
       const idx     = e._index;
       const time    = e.timestamp ? new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
@@ -1763,7 +1705,6 @@ Important:
         </div>`;
     }).join('');
 
-    // ADD 3: Micro-feedback summary
     const count = filtered.length;
     let summary = '';
     if (count >= 5)      summary = '✨ Strong day';
@@ -1815,7 +1756,6 @@ Important:
         hideDayView();
         calActiveDayKey = null;
         buildCalendar(calYear, calMonth);
-        // No renderJourney() — list is hidden; calendar is the view
       };
     }
   }
@@ -1832,7 +1772,6 @@ Important:
   }
 
   function openScreen(id) {
-    // Journey always re-renders even if already active (data may have changed)
     if (state.screen === id && id !== 'journey') return;
     cleanupOnLeave(state.screen);
     state.screen = id;
@@ -1840,7 +1779,6 @@ Important:
     const target = $(id);
     if (target) {
       target.classList.add('active');
-      // Restore saved scroll position for this screen, or default to top
       try {
         const positions = JSON.parse(localStorage.getItem('bb_scroll_positions') || '{}');
         const mc = document.getElementById('mainContainer');
@@ -1854,7 +1792,6 @@ Important:
     document.querySelectorAll(`[data-nav="${id}"]`).forEach(b => b.classList.add('active'));
     const topbar = $('topbarHeader');
     topbar.style.display = (id === 'home' || id === 'sessionFlow') ? 'none' : 'block';
-    // Update topbar title
     const titles = { read:'Scripture', study:'Study', meditate:'Meditate', prayer:'Prayer', journey:'Journey', profile:'Profile', guide:'User Guide' };
     const titleEl = $('topbarTitle');
     if (titleEl && titles[id]) titleEl.textContent = titles[id];
@@ -1891,7 +1828,6 @@ Important:
         if (s.step > 0 && s.step < 4) { hint = 'Resume where you left off'; }
       } catch {}
     } else {
-      // Enhanced progression hint using bb_progress
       try {
         const progress = JSON.parse(localStorage.getItem('bb_progress') || 'null');
         if (progress && progress.currentBook) {
@@ -1919,7 +1855,6 @@ Important:
           }
         }
       } catch {
-        // fallback to old logic
         const lastRead = JSON.parse(localStorage.getItem('bb_last_read') || 'null');
         if (lastRead && lastRead.book) {
           const bookName = document.querySelector(`#bibleBook option[value="${lastRead.book}"]`)?.textContent || lastRead.book;
@@ -1936,11 +1871,9 @@ Important:
     }
     $('homeProgressionHint').textContent = hint;
 
-    // BEHAVIOR LAYER: Streak, nudges, identity, come-back hook
     try {
       const journeyAll = JSON.parse(localStorage.getItem('journeyData') || '[]');
 
-      // Streak badge from actual journey entries
       const journeyStreak = calculateStreak(journeyAll);
       const streakMini = $('homeStreakMini');
       if (streakMini && journeyStreak > 0) {
@@ -1950,18 +1883,16 @@ Important:
       const todayKey   = new Date().toDateString();
       const hasToday   = journeyAll.some(e => new Date(e.timestamp || e.date).toDateString() === todayKey);
 
-      // ADD 5 — Come-back hook: fires first if absent 2+ days (highest priority override)
       const lastEntry = journeyAll[0];
       if (lastEntry) {
         const lastDate = new Date(lastEntry.timestamp || lastEntry.date);
         const diffDays = Math.floor((Date.now() - lastDate.getTime()) / (1000 * 60 * 60 * 24));
         if (diffDays >= 2) {
           $('homeProgressionHint').textContent = "It\'s been a few days — come back gently";
-          return; // skip lower-priority nudges
+          return;
         }
       }
 
-      // ADD 1 — Streak loss warning: had yesterday, missing today
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const hadYesterday = journeyAll.some(e =>
@@ -1971,7 +1902,6 @@ Important:
         $('homeProgressionHint').textContent += " • Don\'t break your streak";
       }
 
-      // ADD 2 — Weekly identity line (appended, not replacing)
       const identity = getWeeklyIdentity(journeyAll);
       if (identity) {
         const current = $('homeProgressionHint').textContent;
@@ -1980,7 +1910,6 @@ Important:
           : identity;
       }
 
-      // Today nudge — only if no activity and no identity line already set
       if (!hasToday && !localStorage.getItem('bb_session') && !identity) {
         $('homeProgressionHint').textContent = "You haven\'t spent time today";
       }
@@ -1989,14 +1918,13 @@ Important:
       console.warn('Home behavior layer failed', e);
     }
 
-    // FIX 1 — Resume reading button
     const lastRead = JSON.parse(localStorage.getItem('bb_last_read') || 'null');
     const resumeBtn = $('resumeReadingBtn');
     if (lastRead && lastRead.book) {
       resumeBtn.style.display = 'block';
       resumeBtn.onclick = () => {
         $('bibleBook').value = lastRead.book;
-        populateChapters(lastRead.book);
+        populateChapters();
         $('bibleChapter').value = lastRead.chapter;
         openScreen('read');
         setTimeout(() => {
@@ -2007,7 +1935,6 @@ Important:
       resumeBtn.style.display = 'none';
     }
 
-    // ── INSIGHT ENGINE: Show insight card from journey entries ──
     try {
       const journeyData = JSON.parse(localStorage.getItem('journeyData') || '[]');
       const lastInsight = localStorage.getItem('bb_last_insight');
@@ -2056,17 +1983,12 @@ Important:
     ).join('');
   }
 
-  // ── Scripture fetch helpers ──
-
-  // Normalise book name for different API formats
   function bookForApi(book, style) {
-    // style: 'space' (default) | 'plus' | 'dot'
     if (style === 'plus')  return encodeURIComponent(book).replace(/%20/g, '+');
     if (style === 'dot')   return book.replace(/ /g, '.');
-    return encodeURIComponent(book); // space encoded
+    return encodeURIComponent(book);
   }
 
-  // Parse a response from bible-api.com shape → {reference, verses:[{verse,text}]}
   function parseBibleApiCom(data, book, chapter) {
     if (!data || !data.verses || !data.verses.length) return null;
     return {
@@ -2075,10 +1997,8 @@ Important:
     };
   }
 
-  // Parse a response from api.esv.org shape
   function parseEsv(data, book, chapter) {
     if (!data || !data.passages || !data.passages.length) return null;
-    // ESV returns a single string; split into pseudo-verses
     const raw = data.passages[0] || '';
     const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
     const verses = [];
@@ -2095,20 +2015,17 @@ Important:
       : null;
   }
 
-  // Build a structured passage object from AI-generated text
   function parseAiPassage(raw, book, chapter) {
     if (!raw) return null;
     const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
     const verses = [];
     for (const line of lines) {
-      // Match "1 In the beginning..." or "[1] In the beginning..."
       const m = line.match(/^\[?(\d+)\]?\s+(.+)/);
       if (m) {
         verses.push({ verse: parseInt(m[1]), text: m[2].trim() });
       }
     }
     if (!verses.length) {
-      // Treat whole response as one block if no verse numbers found
       verses.push({ verse: 1, text: raw.trim() });
     }
     return { reference: `${book} ${chapter} (KJV)`, verses };
@@ -2120,38 +2037,29 @@ Important:
     const enc = bookForApi(book, 'space');
     const encPlus = bookForApi(book, 'plus');
 
-    // ── Attempt 1: bible-api.com with requested translation ──
     try {
       const url = `https://bible-api.com/${enc}%20${chapter}?translation=${version}`;
-      console.log('[BibleFetch] Attempt 1:', url);
       const res = await fetch(url, { signal: signal() });
-      console.log('[BibleFetch] Attempt 1 status:', res.status);
       if (res.ok) {
         const data = await res.json();
         const parsed = parseBibleApiCom(data, book, chapter);
-        if (parsed) { console.log('[BibleFetch] Attempt 1 success'); return parsed; }
+        if (parsed) return parsed;
       }
-    } catch(e) { console.warn('[BibleFetch] Attempt 1 failed:', e.message); }
+    } catch(e) {}
 
-    // ── Attempt 2: bible-api.com KJV fallback (no translation param) ──
     try {
       const url = `https://bible-api.com/${enc}%20${chapter}`;
-      console.log('[BibleFetch] Attempt 2:', url);
       const res = await fetch(url, { signal: signal() });
-      console.log('[BibleFetch] Attempt 2 status:', res.status);
       if (res.ok) {
         const data = await res.json();
         const parsed = parseBibleApiCom(data, book, chapter);
-        if (parsed) { console.log('[BibleFetch] Attempt 2 success'); return parsed; }
+        if (parsed) return parsed;
       }
-    } catch(e) { console.warn('[BibleFetch] Attempt 2 failed:', e.message); }
+    } catch(e) {}
 
-    // ── Attempt 3: labs.bible.org (NET, no key needed, CORS open) ──
     try {
       const url = `https://labs.bible.org/api/?passage=${encPlus}+${chapter}&type=json&formatting=plain`;
-      console.log('[BibleFetch] Attempt 3 (labs.bible.org):', url);
       const res = await fetch(url, { signal: signal() });
-      console.log('[BibleFetch] Attempt 3 status:', res.status);
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length) {
@@ -2160,39 +2068,30 @@ Important:
             text: (v.text || '').replace(/<[^>]+>/g, '').trim()
           })).filter(v => v.text);
           if (verses.length) {
-            console.log('[BibleFetch] Attempt 3 success');
             return { reference: `${book} ${chapter} (NET)`, verses };
           }
         }
       }
-    } catch(e) { console.warn('[BibleFetch] Attempt 3 failed:', e.message); }
+    } catch(e) {}
 
-    // ── Attempt 4: getbible.net (public, no key) ──
     try {
-      const bookSlug = book.toLowerCase().replace(/\s+/g, '-').replace(/^(\d+)-/, '$1');
       const url = `https://getbible.net/v2/kjv/${chapter}.json`;
-      console.log('[BibleFetch] Attempt 4 (getbible.net):', url);
       const res = await fetch(url, { signal: signal() });
-      console.log('[BibleFetch] Attempt 4 status:', res.status);
       if (res.ok) {
         const data = await res.json();
         if (data && data.verses) {
-          // getbible returns {verses: {1: {verse:1,text:"..."}, ...}}
           const vArr = Object.values(data.verses).map(v => ({
             verse: v.verse,
             text: (v.text || '').trim()
           })).filter(v => v.text);
           if (vArr.length) {
-            console.log('[BibleFetch] Attempt 4 success');
             return { reference: `${book} ${chapter} (KJV)`, verses: vArr };
           }
         }
       }
-    } catch(e) { console.warn('[BibleFetch] Attempt 4 failed:', e.message); }
+    } catch(e) {}
 
-    // ── Attempt 5: AI fallback (uses already-working OpenRouter key) ──
     if (state.aiConfig.apiKey) {
-      console.log('[BibleFetch] Attempt 5: AI fallback');
       try {
         const prompt = `Write out ${book} chapter ${chapter} from the King James Bible.
 Format each verse exactly like this — verse number, then a space, then the text:
@@ -2228,28 +2127,24 @@ Rules:
           const json = await res.json();
           const raw = json.choices?.[0]?.message?.content || '';
           const parsed = parseAiPassage(raw, book, chapter);
-          if (parsed) {
-            console.log('[BibleFetch] Attempt 5 (AI) success');
-            return parsed;
-          }
+          if (parsed) return parsed;
         }
-      } catch(e) { console.warn('[BibleFetch] Attempt 5 (AI) failed:', e.message); }
+      } catch(e) {}
     }
 
-    console.error('[BibleFetch] All attempts failed for:', book, chapter);
     return null;
   }
 
-  async function loadPassage(bookOverride, chapterOverride) {
+  async function loadPassage(bookOverride, chapterOverride, translationOverride) {
     const book    = (typeof bookOverride    === 'string' && bookOverride.trim())    ? bookOverride.trim()    : $('bibleBook').value;
     const chapter = (typeof chapterOverride === 'string' && chapterOverride.trim()) ? chapterOverride.trim() : (typeof chapterOverride === 'number' ? String(chapterOverride) : $('bibleChapter').value);
-    const translation = $('translation').value;
+    let translation = translationOverride;
+    if (!translation) translation = $('translation').value;
 
     if (!book || !chapter) {
       showToast('Please select a book and chapter');
       return;
     }
-    console.log('[BibleFetch] Loading:', book, chapter, translation);
     const display = $('readDisplay');
     const btn = $('loadPassageBtn');
     if (!display) return;
@@ -2269,9 +2164,8 @@ Rules:
       $('readExpandBtn').textContent = 'Expand';
       updateCurrentScripture(ref, plainText);
       updateReflectionLabels().catch(() => {});
-      resetDigDeeper(); // collapse Dig Deeper when a new passage is loaded
+      resetDigDeeper();
 
-      // Patch 8 — store last read and update progression
       localStorage.setItem('bb_last_read', JSON.stringify({ book, chapter: parseInt(chapter) }));
       state.nextChapter = parseInt(chapter) + 1;
       try {
@@ -2288,7 +2182,6 @@ Rules:
         localStorage.setItem('bb_progress', JSON.stringify(prog));
       } catch {}
 
-      // Save to journey (deduplicated by ref)
       const normRef = ref.toLowerCase().replace(/[^\w\s:]/g, '').trim();
       const lastRef = localStorage.getItem('bb_last_scripture');
       if (lastRef !== normRef) {
@@ -2303,19 +2196,15 @@ Rules:
         localStorage.setItem('bb_last_scripture', normRef);
       }
 
-      // ── CONTINUITY ENGINE — Task 3: Save session after successful load ──
       const version = $('translation')?.value || 'kjv';
       saveReadSession({ book, chapter, version, lastAction: 'read' });
 
-      // ── FLOW ENGINE — Task 2: Show guide card after load (rAF, render-safe) ──
       requestAnimationFrame(() => {
         const card = $('flowGuideCard');
         if (card) card.classList.remove('hidden');
       });
 
     } catch {
-      // ── CONTINUITY ENGINE — Task 8: Failsafe — do NOT overwrite session on failure ──
-      // ── FLOW ENGINE — Task 5: Hide guide card on failed load ──
       $('flowGuideCard')?.classList.add('hidden');
       display.innerHTML = '<span class="muted">Unable to load scripture right now. You can still tap <strong>Inquire</strong>, or use <strong>Explain / Apply / Pray</strong> after pasting a verse manually.</span>';
       display.classList.remove('read-collapsed');
@@ -2375,7 +2264,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
     const content = $('flowContentArea');
     const actions = $('flowActionsArea');
     const indicator = $('flowStepIndicator');
-    // Labels: step 0 = Read, 1 = Understand, 2 = Apply, 3 = Pray
     const stepLabels = ['Read', 'Understand', 'Apply', 'Pray'];
 
     indicator.innerHTML = step < 4
@@ -2383,7 +2271,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
       : '<span style="color:var(--ok);">Complete ✓</span>';
 
     if (step === 0) {
-      // READ — show verse, let them read before continuing
       content.innerHTML = `
         <p class="muted" style="font-size:.82rem;margin:0 0 10px;letter-spacing:.5px;text-transform:uppercase;">Today's verse</p>
         <div class="flow-verse">"${verse}"</div>
@@ -2394,7 +2281,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
       actions.innerHTML = `<button class="primary" data-flow-action="next" style="padding:14px 32px;border-radius:60px;">I've read it →</button>`;
 
     } else if (step === 1) {
-      // UNDERSTAND — explanation
       content.innerHTML = `
         <p class="muted" style="font-size:.82rem;margin:0 0 10px;letter-spacing:.5px;text-transform:uppercase;">What it means</p>
         <div style="line-height:1.7;font-size:1.05rem;">${toHTML(data.explanation)}</div>`;
@@ -2403,7 +2289,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
         <button class="secondary" data-flow-action="moreContext">Go deeper</button>`;
 
     } else if (step === 2) {
-      // APPLY — application (this is what was shown as "What it means" before — now correctly labelled)
       content.innerHTML = `
         <p class="muted" style="font-size:.82rem;margin:0 0 10px;letter-spacing:.5px;text-transform:uppercase;">Living it out today</p>
         <div style="line-height:1.7;font-size:1.05rem;">${toHTML(data.application)}</div>`;
@@ -2412,8 +2297,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
         <button class="secondary" data-flow-action="guidance">I need guidance</button>`;
 
     } else if (step === 3) {
-      // PRAY
-      // Strip plain text from prayer for textarea (no HTML)
       const prayerPlain = (data.prayer || '').replace(/<[^>]*>/g, '').trim();
       content.innerHTML = `
         <p class="muted" style="font-size:.82rem;margin:0 0 10px;letter-spacing:.5px;text-transform:uppercase;">A prayer for you</p>
@@ -2425,7 +2308,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
         <button class="secondary" data-flow-action="skipFinish" style="padding:14px 24px;border-radius:60px;">Done</button>`;
 
     } else {
-      // COMPLETE
       localStorage.removeItem('bb_session');
       state.session = { step: 0, verse: '', data: null, loading: false };
       content.innerHTML = `
@@ -2454,7 +2336,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
     const dur = state.meditation.duration;
     const label = dur < 120 ? '1-minute' : dur < 300 ? '2-minute' : '5-minute';
     $('meditationStartBtn').textContent = `Start ${label} quiet time`;
-    // Sync active button
     document.querySelectorAll('#meditationDurationOptions button').forEach(b => {
       b.classList.toggle('active', parseInt(b.dataset.duration) === dur);
     });
@@ -2476,7 +2357,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
     updateMeditationDisplay();
     $('meditationBreathIndicator').classList.add('breathing');
 
-    // Failsafe: use absolute end time, not elapsed counter
     const endTime = Date.now() + (state.meditation.duration * 1000);
 
     if (state.meditation.timer) clearInterval(state.meditation.timer);
@@ -2500,7 +2380,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
       }
     }, 1000);
 
-    // Visibility recovery — bind once
     if (!state._meditationVisibilityBound) {
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden && state.meditation.state === 'active') {
@@ -2532,7 +2411,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
   function playMeditationChime() {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      // Three gentle bell-like tones
       const times = [0, 0.6, 1.2];
       const freqs = [528, 660, 396];
       times.forEach((t, i) => {
@@ -2553,7 +2431,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
   }
 
   function finishMeditation() {
-    // Single-entry guard — only active sessions can finish
     if (state.meditation.state !== 'active') return;
 
     clearInterval(state.meditation.timer);
@@ -2563,12 +2440,10 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
     const breath = $('meditationBreathIndicator');
     if (breath) breath.classList.remove('breathing');
 
-    // Completion feedback — user may have eyes closed
     try { if (state.settings.vibration && navigator.vibrate) navigator.vibrate(200); } catch(e) {}
     if (state.settings.sound) playMeditationChime();
     showToast('Session complete');
 
-    // UI flip after brief delay so audio signal reaches user first
     setTimeout(() => {
       const active = $('meditationActive');
       const end = $('meditationEnd');
@@ -2609,7 +2484,7 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
 
   async function refreshStudyPanel() {
     const activeTab = document.querySelector('#studyTabs .active')?.dataset.tab || 'notes';
-    await updateReflectionLabels();  // <-- PATCH 1
+    await updateReflectionLabels();
 
     if (activeTab === 'notes') {
       $('studyNotesPanel').style.display = 'block';
@@ -2619,7 +2494,6 @@ Respond only as a raw JSON object with those three keys. No intro, no outro, no 
     }
 
     $('studyNotesPanel').style.display = 'none';
-    // Never auto-trigger AI — AI runs only on explicit tab click
     if (!state.currentScripture) {
       $('studyAIResponse').classList.add('hidden');
     }
@@ -2695,8 +2569,6 @@ What does this actually change? Be specific — not abstract, not vague. What do
 
   async function handleGuidance(action) {
     const scripture = state.currentScripture;
-
-    // Layer 1 — fetch base context (uses cache if already fetched for this scripture)
     const ctx = await fetchBaseContext(scripture).catch(() => nullContext());
 
     let prompt;
@@ -2756,7 +2628,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
 
   function loadSavedNotes() {
     const notes = JSON.parse(localStorage.getItem('study_notes') || '{}');
-    // Use full reference as key (more stable)
     const ref = extractRef(state.currentScripture);
     $('studyNotesArea').value = ref ? (notes[ref] || '') : '';
 
@@ -2784,7 +2655,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
 
   function extractRef(scripture) {
     if (!scripture) return '';
-    // Extract everything before " — " or first number sequence that looks like a verse
     const parts = scripture.split(' — ');
     return parts[0].trim();
   }
@@ -2817,25 +2687,19 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
   }
 
   // ═══════════════════════════════════════════
-  //  JOURNEY
-  // ═══════════════════════════════════════════
-  // ═══════════════════════════════════════════
   //  PROFILE / STATS
   // ═══════════════════════════════════════════
   function syncProfileStats() {
     try {
       const journey = JSON.parse(localStorage.getItem(JOURNEY_KEY) || '[]');
 
-      // Saved passages count
       const scriptures = journey.filter(e => e.type === 'Scripture').length;
       const el = $('savedVersesCount');
       if (el) el.textContent = scriptures || '—';
 
-      // Total entry count
       const entryEl = $('journeyEntryCount');
       if (entryEl) entryEl.textContent = journey.length || '—';
 
-      // Current season — insight theme from Insight Engine
       const themeRow = $('insightThemeRow');
       const themeVal = $('insightThemeValue');
       if (themeRow && themeVal && journey.length >= 3) {
@@ -2871,7 +2735,8 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
   const TTS = typeof speechSynthesis !== 'undefined' ? speechSynthesis : null;
 
   function getBestVoice() {
-    const voices = speechSynthesis.getVoices();
+    if (!TTS) return null;
+    const voices = TTS.getVoices();
     if (!voices.length) return null;
     const gender = localStorage.getItem('voice_gender') || 'female';
     if (gender === 'male') {
@@ -2886,32 +2751,15 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
     }
   }
 
-  // Re-query best voice on each speak call (voices load async on Android)
-  if (TTS) TTS.addEventListener('voiceschanged', () => {}); // trigger voice load
-
-  // Patch 3 / Fix 3 — reset pause button label when tab becomes visible and TTS is not speaking
-  document.addEventListener('visibilitychange', () => {
-    const pauseBtn = $('listenPauseBtn');
-    if (!document.hidden && pauseBtn && TTS && !TTS.speaking) {
-      pauseBtn.textContent = '⏸ Pause';
-    }
-  });
-
-  // ── Chunk-based TTS ──
-  // Generation counter — incremented on every new speakText/stop so stale onend callbacks self-discard
   let _ttsGen = 0;
 
   function splitIntoChunks(text) {
-    // Split on sentence boundaries — period, exclamation, question followed by space or end
     return text.match(/[^.!?]+[.!?]+[\s]*/g)?.map(s => s.trim()).filter(Boolean) || [text];
   }
 
   function speakChunks(chunks, fromIndex, gen) {
-    // Discard if a newer session has started (stop/new-play invalidates old callbacks)
     if (gen !== _ttsGen) return;
-
     if (!TTS || fromIndex >= chunks.length) {
-      // Natural end of passage
       state.ttsState.chunkIndex = 0;
       state.ttsState.isPaused = false;
       const pauseBtn = $('listenPauseBtn');
@@ -2919,7 +2767,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       return;
     }
 
-    // Always keep index current so pause captures the right position
     state.ttsState.chunkIndex = fromIndex;
 
     const utter = new SpeechSynthesisUtterance(chunks[fromIndex]);
@@ -2930,18 +2777,21 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
     if (voice) utter.voice = voice;
 
     utter.onend = () => {
-      // Only advance if: same generation, not paused, not stopped
       if (gen !== _ttsGen) return;
       if (state.ttsState.isPaused) return;
       speakChunks(chunks, fromIndex + 1, gen);
     };
-
+    // Error handler — continue silently
+    utter.onerror = () => {
+      if (gen !== _ttsGen) return;
+      if (state.ttsState.isPaused) return;
+      speakChunks(chunks, fromIndex + 1, gen);
+    };
     TTS.speak(utter);
   }
 
   function speakText(text, startChunk = 0) {
     if (!TTS || !text) return;
-    // Invalidate any existing onend callbacks before cancelling
     _ttsGen++;
     const gen = _ttsGen;
     TTS.cancel();
@@ -2950,7 +2800,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
     state.ttsState.chunks     = chunks;
     state.ttsState.chunkIndex = startChunk;
     state.ttsState.isPaused   = false;
-    // Small delay — Android TTS needs cancel() to fully flush before speak()
     setTimeout(() => speakChunks(chunks, startChunk, gen), 120);
   }
 
@@ -2960,13 +2809,12 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
   async function handleGlobalClick(e) {
     const t = e.target;
 
-    // Journey scripture quick-load
     if (t.matches('[data-journey-load-book]')) {
       const book = t.dataset.journeyLoadBook;
       const chapter = t.dataset.journeyLoadChapter;
       if (book && chapter) {
         $('bibleBook').value = book;
-        populateChapters(book);
+        populateChapters();
         $('bibleChapter').value = chapter;
         openScreen('read');
         setTimeout(() => loadPassage(book, chapter), 300);
@@ -2974,14 +2822,12 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       return;
     }
 
-    // Navigation (buttons and links with data-nav)
     if (t.matches('[data-nav]')) {
       e.preventDefault();
       openScreen(t.dataset.nav);
       return;
     }
 
-    // Session flow actions
     if (t.matches('[data-flow-action]')) {
       const action = t.dataset.flowAction;
       if (action === 'next') {
@@ -3024,25 +2870,15 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
         openScreen('home');
       } else if (action === 'done') {
         openScreen('home');
-      // ── FLOW ENGINE — Tasks 3+4: Guide card actions ──
       } else if (action === 'reflect') {
         const card = document.getElementById('flowGuideCard');
         if (card) card.classList.add('hidden');
         saveReadSession({ lastAction: 'reflect' });
-
-        // Navigate to study screen first, THEN trigger reflection item
-        // after openScreen() finishes clearing panels/active states
         openScreen('study');
         setTimeout(() => {
           const item = document.querySelector('.reflection-item');
-          if (item) {
-            item.click();
-          } else {
-            console.warn('[Flow] No reflection item found after screen switch');
-            if (typeof handleGuidance === 'function') {
-              handleGuidance('explain');
-            }
-          }
+          if (item) item.click();
+          else if (typeof handleGuidance === 'function') handleGuidance('explain');
         }, 50);
       } else if (action === 'apply') {
         $('flowGuideCard')?.classList.add('hidden');
@@ -3056,7 +2892,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       return;
     }
 
-    // Meditation duration picker
     if (t.matches('#meditationDurationOptions button')) {
       const dur = parseInt(t.dataset.duration);
       state.meditation.duration = dur;
@@ -3071,15 +2906,11 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       return;
     }
 
-    // Study tabs — handled by direct bindings in DOMContentLoaded
-
-    // Dig Deeper — close button
     if (t.id === 'digDeeperCloseBtn') {
       resetDigDeeper();
       return;
     }
 
-    // Dig Deeper — toggle open/close via the list item
     if (t.closest('#digDeeperToggle')) {
       const panel  = $('digDeeperPanel');
       const toggle = $('digDeeperToggle');
@@ -3093,7 +2924,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       return;
     }
 
-    // Reflection items
     if (t.closest('.reflection-item')) {
       const item = t.closest('.reflection-item');
       const wasActive = item.classList.contains('active');
@@ -3111,7 +2941,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
 
       panel.classList.remove('hidden');
       panel.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
-      // Guard: ensure baseContext is loaded for better prompts
       if (state.baseContext.summary === '' && state.baseContext.themes.length === 0) {
         await fetchBaseContext(state.currentScripture).catch(() => {});
       }
@@ -3126,7 +2955,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       return;
     }
 
-    // Journey expand / edit / delete
     if (t.closest('[data-journey-index]')) {
       const wrapper = t.closest('[data-journey-index]');
       const preview = wrapper.querySelector('.journey-preview');
@@ -3138,7 +2966,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
         if (updated !== null && updated.trim()) {
           data[idx].text = updated.trim();
           localStorage.setItem(JOURNEY_KEY, JSON.stringify(data));
-          // Re-render day panel if open; otherwise rebuild calendar
           if (calActiveDayKey) {
             showDayEntries(calActiveDayKey);
           } else {
@@ -3163,12 +2990,10 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       return;
     }
 
-    // Guidance quick actions
     if (t.closest('#guidanceActions')) {
       const action = t.dataset.action;
       if (!action) return;
       if (!state.currentScripture) { showToast('Load a passage first'); return; }
-      // ── CONTINUITY ENGINE — Task 7: Track last action ──
       const actionMap = { explain: 'explain', apply: 'apply', pray: 'pray' };
       if (actionMap[action]) saveReadSession({ lastAction: actionMap[action] });
       const panel = $('guidanceOutput');
@@ -3180,7 +3005,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       return;
     }
 
-    // Read expand/collapse
     if (t.id === 'readExpandBtn') {
       const rd = $('readDisplay');
       rd.classList.toggle('read-collapsed');
@@ -3188,13 +3012,11 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       return;
     }
 
-    // More actions menu
     if (t.id === 'readMoreActionsBtn') {
       $('readMoreActionsMenu').classList.toggle('hidden');
       return;
     }
 
-    // Bookmark
     if (t.id === 'bookmarkBtn') {
       if (!state.currentScripture) return showToast('Load a passage first');
       saveJourneyEntry({ type: 'Bookmark', text: state.currentScripture, date: new Date().toLocaleString() });
@@ -3202,7 +3024,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       return;
     }
 
-    // Answered prayer delete
     if (t.matches('[data-del-prayer]')) {
       const idx = parseInt(t.dataset.delPrayer);
       const prayers = JSON.parse(localStorage.getItem('answered_prayers') || '[]');
@@ -3211,27 +3032,21 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       renderAnsweredPrayers();
       return;
     }
-
-    // Clear journey
-    if (t.id === 'clearJourneyBtn') {
-      if (!confirm('Clear your entire journey? This cannot be undone.')) return;
-      localStorage.removeItem(JOURNEY_KEY);
-      showToast('Journey cleared');
-      syncProfileStats();
-      return;
-    }
   }
 
-  // ── CONTINUITY ENGINE — Task 4: Track scroll position per screen ──
-  // #mainContainer is the true scrolling element (overflow-y:auto, flex:1)
-  const _scrollContainer = document.getElementById('mainContainer');
-  if (_scrollContainer) {
-    _scrollContainer.addEventListener('scroll', () => {
-      const activeScreen = document.querySelector('.screen.active');
-      if (!activeScreen || !activeScreen.id) return;
-      const positions = JSON.parse(localStorage.getItem('bb_scroll_positions') || '{}');
-      positions[activeScreen.id] = _scrollContainer.scrollTop;
-      localStorage.setItem('bb_scroll_positions', JSON.stringify(positions));
+  // ── CONTINUITY ENGINE — Track scroll position per screen (debounced) ──
+  let scrollDebounce;
+  const scrollContainer = document.getElementById('mainContainer');
+  if (scrollContainer) {
+    scrollContainer.addEventListener('scroll', () => {
+      if (scrollDebounce) clearTimeout(scrollDebounce);
+      scrollDebounce = setTimeout(() => {
+        const activeScreen = document.querySelector('.screen.active');
+        if (!activeScreen || !activeScreen.id) return;
+        const positions = JSON.parse(localStorage.getItem('bb_scroll_positions') || '{}');
+        positions[activeScreen.id] = scrollContainer.scrollTop;
+        localStorage.setItem('bb_scroll_positions', JSON.stringify(positions));
+      }, 100);
     }, { passive: true });
   }
 
@@ -3243,7 +3058,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       const saved = JSON.parse(raw);
       state.readSession = saved;
       if (saved.book && saved.chapter) {
-        // Sync the dropdowns to the saved values
         const bookSel = $('bibleBook');
         if (bookSel && Array.from(bookSel.options).some(o => o.value === saved.book)) {
           bookSel.value = saved.book;
@@ -3317,7 +3131,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
           return;
         }
 
-        // Loading lock — prevent double-fire
         if (btn.dataset.loading === '1') return;
         btn.dataset.loading = '1';
 
@@ -3339,7 +3152,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       const book    = $('bibleBook').value;
       const chapter = $('bibleChapter').value;
       const version = $('translation').value;
-      console.log('[BibleFetch] Load button clicked:', book, chapter, version);
       loadPassage(book, chapter, version);
     });
 
@@ -3363,7 +3175,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
     $('homeContinueBtn')?.addEventListener('click', async () => {
       if (state.session.loading) return;
 
-      // Resume saved in-progress session
       const saved = localStorage.getItem('bb_session');
       if (saved) {
         try {
@@ -3408,7 +3219,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       }
 
       if (failed) showToast('Session ready — using default content');
-
       renderSessionFlow();
       localStorage.setItem('bb_session', JSON.stringify({
         step: 0, verse: state.session.verse, data: state.session.data
@@ -3448,7 +3258,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       setButtonLoading(btn, true, 'Explaining…');
       output.classList.remove('hidden');
       output.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
-      // ── CONTINUITY ENGINE — Task 7: Track Dig Deeper ──
       saveReadSession({ lastAction: 'deep' });
       let prompt = `Explain this clearly:\n\n${input}\n\nRules:\n- Be simple\n- Be clear\n- No introductions`;
       if (state.currentScripture) {
@@ -3461,7 +3270,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
         return;
       }
       output.innerHTML = toHTML(res);
-      // Panel stays open — user closes manually with ✕ or by tapping "Dig Deeper" again
     });
 
     // ── Prayer ──
@@ -3501,30 +3309,27 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
     $('listenPauseBtn')?.addEventListener('click', () => {
       if (!TTS) return;
       if (state.ttsState.isPaused) {
-        // ── RESUME from exact stored index ──
         state.ttsState.isPaused = false;
         const btn = $('listenPauseBtn');
         if (btn) btn.textContent = '⏸ Pause';
-        // Start a new generation so the resumed chain owns its callbacks
         _ttsGen++;
         const gen = _ttsGen;
         const { chunks, chunkIndex } = state.ttsState;
         TTS.cancel();
         setTimeout(() => speakChunks(chunks, chunkIndex, gen), 120);
       } else if (TTS.speaking) {
-        // ── PAUSE — capture index THEN cancel to win the onend race ──
         const savedIndex = state.ttsState.chunkIndex;
-        state.ttsState.isPaused = true;   // set BEFORE cancel so onend guard fires first
-        _ttsGen++;                         // invalidate the current chain's onend
+        state.ttsState.isPaused = true;
+        _ttsGen++;
         TTS.cancel();
-        state.ttsState.chunkIndex = savedIndex; // restore after cancel (cancel resets nothing here but be safe)
+        state.ttsState.chunkIndex = savedIndex;
         const btn = $('listenPauseBtn');
         if (btn) btn.textContent = '▶ Resume';
       }
     });
     $('listenStopBtn')?.addEventListener('click', () => {
       if (TTS) {
-        _ttsGen++;          // invalidate any in-flight onend callbacks
+        _ttsGen++;
         TTS.cancel();
       }
       state.ttsState.chunkIndex = 0;
@@ -3537,7 +3342,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
     $('meditationStartBtn')?.addEventListener('click', startMeditation);
     $('meditationStopBtn')?.addEventListener('click', () => {
       if (state.meditation.state === 'active') {
-        // Force state to active so finishMeditation guard passes, then call it
         finishMeditation();
       } else {
         stopMeditation();
@@ -3562,7 +3366,7 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
     $('voiceSpeedSetting')?.addEventListener('click', () => {
       const speeds = [0.6, 0.8, 1.0, 1.2, 1.5];
       let idx = speeds.indexOf(state.ttsRate);
-      if (idx === -1) idx = 1; // default to 0.8 position
+      if (idx === -1) idx = 1;
       idx = (idx + 1) % speeds.length;
       state.ttsRate = speeds[idx];
       localStorage.setItem('voice_speed', state.ttsRate);
@@ -3676,9 +3480,6 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
 
     // ── User guide ──
     $('startGuideBtn')?.addEventListener('click', () => openScreen('guide'));
-
-    // ── Journey search ──
-    // journeySearch listener removed — calendar-only view
 
     // ── Init settings UI ──
     const uni = $('userNameInput');
