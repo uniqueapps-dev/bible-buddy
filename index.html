@@ -11,7 +11,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <!-- BUILD v11.2 | 2026-04-25 | Scroll restore, Prayer style, Journey UI, Typography, Insight Engine, Journey Calendar, Calendar Enhancements, Behavior Layer, Calendar-only Journey, Day View UI, GitHub Pages layout fix -->
+  <!-- BUILD v11.3 | 2026-04-25 | Scroll restore, Prayer style, Journey UI, Typography, Insight Engine, Journey Calendar, Calendar Enhancements, Behavior Layer, Calendar-only Journey, Day View UI, Layout stabilisation -->
   <link rel="manifest" href="manifest.json">
   <title>BibleBuddy · calm companion</title>
   <style>
@@ -41,7 +41,7 @@
       color: var(--text);
     }
 
-    .app { height: 100svh; display: flex; flex-direction: column; }
+    .app { min-height: 100svh; height: 100svh; display: flex; flex-direction: column; }
 
     /* ── TOPBAR ── */
     .topbar {
@@ -57,9 +57,9 @@
     .topbar-title { font-weight: 600; letter-spacing: 0.3px; color: var(--accent2); font-size: 1.1rem; }
 
     /* ── LAYOUT ── */
-    .container { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-    .screen { display: none; overflow-y: auto; padding-bottom: 88px; }
-    .screen.active { display: block; flex: 1; padding: 16px; }
+    .container { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0; flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; }
+    .screen { display: none; }
+    .screen.active { display: flex; flex-direction: column; flex: 1; padding: 16px 16px 100px; overflow-y: auto; }
 
     /* ── CARDS & COMMON ── */
     .card {
@@ -761,7 +761,7 @@
               <span class="row-title">BibleBuddy</span>
               <span class="row-sub">Your calm Scripture companion</span>
             </div>
-            <span class="small muted" style="font-size:.8rem;font-weight:600;">v11.2</span>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v11.3</span>
           </div>
         </div>
 
