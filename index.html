@@ -11,7 +11,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <!-- BUILD v9.7 | 2026-04-24 | Dig Deeper: manual close only -->
+  <!-- BUILD v10.7 | 2026-04-25 | Scroll restore, Prayer style, Journey UI, Typography, Insight Engine, Journey Calendar, Calendar Enhancements -->
   <link rel="manifest" href="manifest.json">
   <title>BibleBuddy · calm companion</title>
   <style>
@@ -132,7 +132,7 @@
       border-radius: 16px; max-height: 320px; overflow-y: auto;
       animation: fadeUp 0.2s ease;
     }
-    .ai-panel p { margin: 0 0 10px; line-height: 1.65; }
+    .ai-panel p { margin: 0 0 10px; line-height: 1.65; font-family: "Georgia", "Times New Roman", serif; font-size: 1.02rem; letter-spacing: 0.2px; }
     .ai-panel p:last-child { margin-bottom: 0; }
     .ai-panel .close-btn {
       position: absolute; top: 8px; right: 8px;
@@ -333,6 +333,10 @@
         </div>
         <div id="homeProgressionHint" class="home-progression-hint"></div>
         <button id="resumeReadingBtn" class="secondary" style="margin-top:10px;display:none;">Continue Reading →</button>
+        <div id="insightCard" class="card hidden" style="margin-top:12px;width:100%;text-align:left;">
+          <div class="muted" style="font-size:.82rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;">🧠 Insight</div>
+          <div id="insightText" style="font-size:.97rem;line-height:1.55;color:var(--text);"></div>
+        </div>
         <button id="homeContinueBtn" class="primary home-continue-btn">Continue</button>
         <button class="home-open-bible-link" data-nav="read">Open Bible →</button>
       </div>
@@ -403,6 +407,16 @@
         <!-- More actions menu (drops below the row when open) -->
         <div id="readMoreActionsMenu" class="hidden" style="margin-bottom:12px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
           <button id="bookmarkBtn">Bookmark</button>
+        </div>
+
+        <!-- Flow Guide Card (shown after passage loads) -->
+        <div id="flowGuideCard" class="card hidden" style="margin-top:12px;padding:14px;">
+          <div class="muted small" style="margin-bottom:8px;">💡 What would you like to do with this?</div>
+          <div class="quick-actions">
+            <button data-flow-action="reflect">Reflect</button>
+            <button data-flow-action="apply">Apply</button>
+            <button data-flow-action="pray">Pray</button>
+          </div>
         </div>
 
         <!-- Row 2: Explain · Apply · Pray -->
@@ -545,6 +559,25 @@
 
     <!-- ════ JOURNEY ════ -->
     <section id="journey" class="screen">
+
+      <!-- CALENDAR VIEW -->
+      <div id="journeyCalendar" class="card" style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <button id="calPrevBtn" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:1rem;cursor:pointer;">←</button>
+          <div id="calMonthLabel" style="font-weight:600;font-size:1rem;"></div>
+          <button id="calNextBtn" style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:6px 12px;color:var(--text);font-size:1rem;cursor:pointer;">→</button>
+        </div>
+        <div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;"></div>
+        <div id="calDayView" style="margin-top:12px;display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div id="calDayLabel" style="font-size:.9rem;font-weight:600;color:var(--accent2);"></div>
+            <button id="calDayCloseBtn" style="background:none;border:none;color:var(--muted);font-size:.85rem;cursor:pointer;padding:2px 6px;">✕ Show all</button>
+          </div>
+          <div id="calDayList"></div>
+        </div>
+      </div>
+
+      <!-- JOURNEY LIST -->
       <div class="card">
         <div class="section-title">
           <h2 style="margin:0;">Journey</h2>
@@ -688,6 +721,20 @@
           </div>
           <div class="settings-card-row">
             <div class="row-left">
+              <span class="row-title">Journey entries</span>
+              <span class="row-sub">Total reflections, prayers &amp; notes</span>
+            </div>
+            <span id="journeyEntryCount" class="value-accent">—</span>
+          </div>
+          <div class="settings-card-row" id="insightThemeRow" style="display:none;">
+            <div class="row-left">
+              <span class="row-title">Current season</span>
+              <span class="row-sub">Theme emerging from your journey</span>
+            </div>
+            <span id="insightThemeValue" class="value-accent" style="font-size:.85rem;">—</span>
+          </div>
+          <div class="settings-card-row">
+            <div class="row-left">
               <span class="row-title">Cache</span>
               <span class="row-sub">Today's AI context cached</span>
             </div>
@@ -717,7 +764,7 @@
               <span class="row-title">BibleBuddy</span>
               <span class="row-sub">Your calm Scripture companion</span>
             </div>
-            <span class="small muted" style="font-size:.8rem;font-weight:600;">v9.7</span>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v10.7</span>
           </div>
         </div>
 
@@ -740,7 +787,7 @@
         <p class="settings-section-label">How to Use</p>
         <div class="settings-card">
           <div class="settings-card-row">
-            <div class="row-left"><span class="row-title" style="color:var(--accent2);">Home</span><span class="row-sub">Your daily verse and quick session entry. Tap Continue to begin.</span></div>
+            <div class="row-left"><span class="row-title" style="color:var(--accent2);">Home</span><span class="row-sub">Your daily verse and quick session entry. Tap Continue to begin. An Insight card appears once you have 3+ journey entries.</span></div>
           </div>
           <div class="settings-card-row">
             <div class="row-left"><span class="row-title" style="color:var(--ok);">Read</span><span class="row-sub">Load any Bible passage. Use Inquire, Explain, Apply, and Pray to explore it.</span></div>
@@ -821,6 +868,30 @@
     }
   };
 
+  // ── CONTINUITY ENGINE — Session State (Task 1) ──
+  state.readSession = {
+    book: null,
+    chapter: null,
+    version: null,
+    scrollPosition: 0,
+    lastAction: null,
+    timestamp: Date.now()
+  };
+
+  // ── CONTINUITY ENGINE — Save Session (Task 2) ──
+  function saveReadSession(update) {
+    state.readSession = {
+      ...state.readSession,
+      ...update,
+      timestamp: Date.now()
+    };
+    try {
+      localStorage.setItem('bb_read_session', JSON.stringify(state.readSession));
+    } catch(e) {
+      console.warn('[ReadSession] save failed', e);
+    }
+  }
+
   // Bible chapter counts
   const BIBLE_CHAPTERS = {
     'Genesis':50,'Exodus':40,'Leviticus':27,'Numbers':36,'Deuteronomy':34,
@@ -866,6 +937,108 @@
     state.memory.topics = [...new Set([...state.memory.topics, ...found])].slice(0, 10);
     state.memory.lastUpdated = Date.now();
     localStorage.setItem('bb_memory', JSON.stringify(state.memory));
+  }
+
+  // ══════════════════════════════════════════════
+  //  INSIGHT ENGINE (additive — read-only on data)
+  // ══════════════════════════════════════════════
+
+  function extractThemes(entries) {
+    const keywords = {
+      fear:     ['fear', 'afraid', 'anxious', 'worry'],
+      faith:    ['faith', 'trust', 'believe'],
+      patience: ['wait', 'patience', 'delay'],
+      purpose:  ['purpose', 'calling', 'direction'],
+      strength: ['strength', 'weak', 'tired']
+    };
+    const counts = {};
+    entries.forEach(e => {
+      const text = (e.text || '').toLowerCase();
+      Object.keys(keywords).forEach(key => {
+        if (keywords[key].some(word => text.includes(word))) {
+          counts[key] = (counts[key] || 0) + 1;
+        }
+      });
+    });
+    return counts;
+  }
+
+  function getPrimaryTheme(counts) {
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    return sorted[0]?.[0] || null;
+  }
+
+  function generateInsightFromEntries(entries) {
+    if (!entries || entries.length < 3) return null;
+    const recent = entries.slice(0, 10);
+    const counts = extractThemes(recent);
+    const theme = getPrimaryTheme(counts);
+    if (!theme) return null;
+
+    // FIX 1: Variation pools per theme
+    const map = {
+      fear: [
+        "Lately, fear and uncertainty have been surfacing. This may be a season of learning trust.",
+        "Fear seems to be returning in your reflections. You may be invited into deeper trust.",
+        "There\'s a quiet tension around fear right now. This could be a moment to lean into faith."
+      ],
+      faith: [
+        "Faith has been a strong thread in your journey recently.",
+        "You\'ve been leaning into trust lately. Something in you is strengthening.",
+        "Trust keeps showing up in your reflections. Growth is happening quietly."
+      ],
+      patience: [
+        "Patience keeps appearing. This may be a season of waiting and growth.",
+        "You seem to be in a time that requires patience.",
+        "Waiting is a recurring theme. Something is unfolding in its time."
+      ],
+      purpose: [
+        "You\'ve been thinking about direction and purpose.",
+        "Questions around meaning are surfacing.",
+        "There\'s a pull toward something deeper in your reflections."
+      ],
+      strength: [
+        "You\'ve been engaging with weakness and strength.",
+        "There\'s a tension between limitation and strength right now.",
+        "You\'ve been facing your limits. Strength may be forming quietly."
+      ]
+    };
+
+    // FIX 2: Randomize from pool
+    const options = map[theme] || [`You\'ve been engaging with themes around ${theme}.`];
+    let insight = options[Math.floor(Math.random() * options.length)];
+
+    // FIX 3: Intensity prefix
+    const intensity = counts[theme] || 0;
+    if (intensity >= 4) {
+      insight = "This theme keeps coming up strongly. " + insight;
+    }
+
+    // FIX 4: Persist last insight for stability
+    localStorage.setItem('bb_last_insight', insight);
+    return insight;
+  }
+
+  // ── PHASE 3: legacy stubs kept for memory engine compatibility ──
+  function detectPrimaryTheme(memory) {
+    if (!memory || !memory.topics || !memory.topics.length) return null;
+    const counts = {};
+    memory.topics.forEach(t => { counts[t] = (counts[t] || 0) + 1; });
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    return sorted[0]?.[0] || null;
+  }
+
+  function generateInsight(theme) {
+    if (!theme) return null;
+    const map = {
+      fear:'You\'ve been reflecting on fear recently.',anxiety:'Your reflections show a concern about anxiety.',
+      purpose:'You\'ve been thinking deeply about purpose.',faith:'Faith has been a recurring theme in your journey.',
+      patience:'Patience keeps coming up in your reflections.',worry:'Worry has surfaced in several of your recent reflections.',
+      confusion:'You\'ve been sitting with some confusion lately.',decision:'You\'ve been wrestling with an important decision.',
+      trust:'Trust has been a thread running through your reflections.',anger:'You\'ve been processing some difficult emotions recently.',
+      hope:'Hope has been on your heart in recent reflections.',direction:'You\'ve been seeking direction in your journey.'
+    };
+    return map[theme] || `You've been engaging with themes around ${theme}.`;
   }
 
   // ── Response Cleaner ──
@@ -1172,6 +1345,40 @@ Important:
       .replace(/"/g, '&quot;');
   }
 
+  // ── JOURNEY INTELLIGENCE — Task 1: Group entries by date ──
+  function groupByDate(entries) {
+    const groups = {};
+    entries.forEach(entry => {
+      let date;
+      try {
+        date = new Date(entry.timestamp || entry.date).toDateString();
+        if (date === 'Invalid Date') throw new Error();
+      } catch {
+        date = entry.date || 'Earlier';
+      }
+      if (!groups[date]) groups[date] = [];
+      groups[date].push(entry);
+    });
+    return groups;
+  }
+
+  // ── JOURNEY INTELLIGENCE — Task 2: Humanize each entry into a readable sentence ──
+  function humanizeEntry(entry) {
+    const text = entry.text || '';
+    if (entry.type === 'Scripture') {
+      const match = text.match(/^([1-3]?\s?[A-Za-z]+(?:\s[A-Za-z]+)*)\s+(\d+)/);
+      if (match) return `You read ${match[1]} ${match[2]}`;
+      return 'You read a passage';
+    }
+    if (entry.type === 'Prayer')     return 'You prayed about something important';
+    if (entry.type === 'Reflection') return 'You reflected on this passage';
+    if (entry.type === 'Meditation') return 'You spent time in meditation';
+    if (entry.type === 'Study')      return 'You explored this deeper';
+    if (entry.type === 'Bookmark')   return 'You bookmarked a passage';
+    return null; // ignore noise
+  }
+
+  // ── JOURNEY INTELLIGENCE — Task 3+4+5: renderJourney with story view ──
   function renderJourney(filter = '') {
     const container = $('journeyList');
     if (!container) { console.warn('[Journey] journeyList element not found'); return; }
@@ -1188,6 +1395,7 @@ Important:
       return;
     }
 
+    // Task 4: filter BEFORE grouping so search works correctly
     if (filter) {
       const f = filter.toLowerCase();
       data = data.filter(e =>
@@ -1197,15 +1405,17 @@ Important:
       );
     }
 
+    // Task 5: empty state
     if (!data.length) {
-      container.innerHTML = '<div class="muted" style="padding:20px 0;">Nothing here yet. Your readings and reflections will appear as you go.</div>';
+      container.innerHTML = filter
+        ? '<div class="muted" style="padding:20px 0;">No entries match your search.</div>'
+        : '<p class="muted" style="padding:20px 0;">Your journey will appear here as you engage with Scripture</p>';
       return;
     }
 
-    // Build HTML safely — each entry in its own try/catch so one bad entry can't blank the whole list
     const parts = [];
 
-    // ── Saved Scriptures quick-load strip ──
+    // ── Saved Scriptures quick-load strip (preserved — needed for tap-to-load) ──
     const scriptures = data.filter(e => e.type === 'Scripture');
     if (scriptures.length && !filter) {
       let strip = `<h3 style="margin:0 0 10px;font-size:1rem;color:var(--accent2);">Saved Scriptures</h3>`;
@@ -1216,14 +1426,34 @@ Important:
           const attrs = m
             ? `data-journey-load-book="${safeText(m[1].trim())}" data-journey-load-chapter="${safeText(m[2])}"`
             : '';
-          strip += `<div class="item journey-entry" style="margin-bottom:6px;cursor:pointer;" ${attrs}>${label} <span class="muted small">→ load</span></div>`;
+          strip += `<div class="item journey-entry" style="margin-bottom:6px;cursor:pointer;" ${attrs}>📖 ${label}</div>`;
         } catch {}
       });
       strip += `<div style="margin:14px 0 10px;border-top:1px solid var(--border);"></div>`;
       parts.push(strip);
     }
 
-    // ── Full entry list ──
+    // ── Task 3: Story view — grouped by date ──
+    const grouped = groupByDate(data);
+    const today = new Date().toDateString();
+    const dates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
+
+    const storyHTML = dates.map(date => {
+      const items = grouped[date].map(humanizeEntry).filter(Boolean);
+      if (!items.length) return '';
+      const label = date === today ? 'Today' : date;
+      return `<div class="card" style="margin-bottom:12px;">
+        <strong style="color:var(--accent2);">${safeText(label)}</strong>
+        <ul style="margin:8px 0 0;padding-left:18px;line-height:1.8;">
+          ${items.map(i => `<li style="color:var(--text);">${safeText(i)}</li>`).join('')}
+        </ul>
+      </div>`;
+    }).join('');
+
+    if (storyHTML.trim()) parts.push(storyHTML);
+
+    // ── Full entry log (preserved — edit/delete handlers depend on data-journey-index) ──
+    const logParts = [];
     data.forEach((e, i) => {
       try {
         const type    = safeText(e.type || 'Entry');
@@ -1231,7 +1461,7 @@ Important:
         const preview = safeText((e.text || e.ref || '').substring(0, 90));
         const full    = safeText(e.text || e.ref || '');
         const ellipsis = (e.text || '').length > 90 ? '…' : '';
-        parts.push(`
+        logParts.push(`
           <div class="item journey-entry" data-journey-index="${i}" style="margin-bottom:8px;">
             <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px;">
               <strong style="font-size:.9rem;color:var(--accent2);">${type}</strong>
@@ -1251,10 +1481,16 @@ Important:
       }
     });
 
-    // Use requestAnimationFrame to ensure the DOM is painted before injecting
+    if (logParts.length) {
+      parts.push(`<div style="margin:16px 0 6px;border-top:1px solid var(--border);padding-top:14px;">
+        <span style="font-size:.8rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);">Full Log</span>
+      </div>`);
+      parts.push(logParts.join(''));
+    }
+
     requestAnimationFrame(() => {
       container.innerHTML = parts.join('');
-      console.log('[Journey] rendered', parts.length, 'parts into DOM');
+      console.log('[Journey] rendered story + log, entries:', data.length);
     });
   }
 
@@ -1311,13 +1547,235 @@ Important:
     }
     const mm = $('readMoreActionsMenu');
     if (mm) mm.classList.add('hidden');
+    // ── FLOW ENGINE — Task 5: Hide guide card on screen leave ──
+    $('flowGuideCard')?.classList.add('hidden');
+  }
+
+  // ══════════════════════════════════════════════
+  //  CALENDAR ENGINE (Journey — additive, read-only)
+  // ══════════════════════════════════════════════
+
+  let calYear  = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
+  let calActiveDayKey = null; // tracks selected day
+
+  // ── CALENDAR ENHANCEMENT: Streak calculator from actual journey entries ──
+  function calculateStreak(entries) {
+    if (!entries || !entries.length) return 0;
+    const days = new Set(
+      entries.map(e => new Date(e.timestamp || e.date).toDateString())
+    );
+    let streak = 0;
+    const current = new Date();
+    while (true) {
+      const key = current.toDateString();
+      if (days.has(key)) {
+        streak++;
+        current.setDate(current.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  function buildCalendar(year, month) {
+    const grid  = $('calendarGrid');
+    const label = $('calMonthLabel');
+    if (!grid || !label) return;
+
+    grid.innerHTML = '';
+
+    const firstDay    = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const monthDate   = new Date(year, month);
+
+    label.textContent = monthDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+    // TASK 6: Day-of-week header row
+    ['S','M','T','W','T','F','S'].forEach(d => {
+      const el = document.createElement('div');
+      el.textContent = d;
+      el.style.cssText = 'text-align:center;font-size:.7rem;color:var(--muted);padding:2px 0;font-weight:600;';
+      grid.appendChild(el);
+    });
+
+    // Empty slots before first day
+    for (let i = 0; i < firstDay; i++) {
+      grid.appendChild(document.createElement('div'));
+    }
+
+    const journey = JSON.parse(localStorage.getItem('journeyData') || '[]');
+    const today   = new Date().toDateString();
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayKey = new Date(year, month, d).toDateString();
+      const isToday   = dayKey === today;
+      const isActive  = dayKey === calActiveDayKey;
+
+      const hasData = journey.some(e => {
+        const t = new Date(e.timestamp || e.date);
+        return t.toDateString() === dayKey;
+      });
+
+      const count = journey.filter(e => {
+        const t = new Date(e.timestamp || e.date);
+        return t.toDateString() === dayKey;
+      }).length;
+
+      const dayEl = document.createElement('div');
+      dayEl.textContent = d;
+
+      let bg = 'rgba(255,255,255,.03)';
+      if (isActive) {
+        bg = 'rgba(124,156,255,.55)';
+      } else if (count > 0) {
+        // FIX 3: Heat intensity — depth reflects activity volume
+        const opacityMap = { 1: 0.15, 2: 0.25, 3: 0.35, 4: 0.45, 5: 0.55 };
+        const intensity = Math.min(count, 5);
+        bg = `rgba(124,156,255,${opacityMap[intensity]})`;
+      }
+      if (isToday && !isActive) bg = bg === 'rgba(255,255,255,.03)'
+        ? 'rgba(255,255,255,.09)'
+        : bg; // today gets a floor if no entries
+
+      dayEl.style.cssText = [
+        'padding:8px 2px',
+        'border-radius:8px',
+        'text-align:center',
+        'cursor:pointer',
+        'font-size:.88rem',
+        'position:relative',
+        `background:${bg}`,
+        isToday   ? 'font-weight:700;color:var(--accent2);' : '',
+        isActive  ? 'outline:1px solid rgba(124,156,255,.7);' : '',
+        hasData   ? 'font-weight:600;' : 'color:var(--muted);'
+      ].join(';');
+
+      // Dot indicator for entry count
+      if (hasData && count > 1) {
+        const dot = document.createElement('div');
+        dot.style.cssText = 'width:4px;height:4px;border-radius:50%;background:rgba(124,156,255,.9);margin:2px auto 0;';
+        dayEl.appendChild(dot);
+      }
+
+      dayEl.addEventListener('click', () => {
+        calActiveDayKey = (calActiveDayKey === dayKey) ? null : dayKey;
+        buildCalendar(calYear, calMonth); // re-render to update highlight
+        if (calActiveDayKey) {
+          showDayEntries(calActiveDayKey);
+        } else {
+          hideDayView();
+          renderJourney();
+        }
+      });
+
+      grid.appendChild(dayEl);
+    }
+  }
+
+  // TASK 3: Day drill-down — renders into inline calDayList (not journeyList)
+  function showDayEntries(dayKey) {
+    const dayView  = $('calDayView');
+    const dayLabel = $('calDayLabel');
+    const dayList  = $('calDayList');
+    if (!dayView || !dayLabel || !dayList) return;
+
+    const journey  = JSON.parse(localStorage.getItem('journeyData') || '[]');
+    const filtered = journey.filter(e => {
+      const t = new Date(e.timestamp || e.date);
+      return t.toDateString() === dayKey;
+    });
+
+    dayLabel.textContent = new Date(dayKey).toLocaleDateString('default', { weekday:'long', month:'long', day:'numeric' });
+    dayView.style.display = '';
+
+    // FIX 6: Empty day CTA
+    if (!filtered.length) {
+      dayList.innerHTML = `
+        <div class="muted" style="font-size:.88rem;padding:4px 0;">No activity recorded for this day.</div>
+        <button class="primary" data-nav="read" style="margin-top:10px;width:100%;padding:12px;border-radius:60px;">Start Reading</button>`;
+      return;
+    }
+
+    // FIX 4: Scripture entries get quick-load markup; all others get standard card
+    dayList.innerHTML = filtered.map(e => {
+      const time = e.timestamp ? new Date(e.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' }) : '';
+      const preview = (e.text || '').slice(0, 120) + ((e.text || '').length > 120 ? '…' : '');
+
+      if (e.type === 'Scripture' && e.book && e.chapter) {
+        return `
+          <div style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer;"
+               data-journey-load-book="${e.book}" data-journey-load-chapter="${e.chapter}">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+              <span style="font-size:.8rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.04em;">📖 ${e.book} ${e.chapter}</span>
+              <span style="font-size:.75rem;color:var(--muted);">${time}</span>
+            </div>
+            <div style="font-size:.88rem;color:var(--text);line-height:1.5;">${preview || '<span class="muted">Tap to reload passage</span>'}</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:3px;">Tap to open →</div>
+          </div>`;
+      }
+
+      return `
+        <div style="padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            <span style="font-size:.8rem;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:.04em;">${e.type || 'Entry'}</span>
+            <span style="font-size:.75rem;color:var(--muted);">${time}</span>
+          </div>
+          <div style="font-size:.88rem;color:var(--text);line-height:1.5;">${preview || '<span class="muted">No content</span>'}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function hideDayView() {
+    const dayView = $('calDayView');
+    if (dayView) dayView.style.display = 'none';
+    calActiveDayKey = null;
+  }
+
+  function initCalendarListeners() {
+    const prev = $('calPrevBtn');
+    const next = $('calNextBtn');
+    const close = $('calDayCloseBtn');
+
+    if (prev && !prev._calBound) {
+      prev._calBound = true;
+      prev.onclick = () => {
+        calMonth--;
+        if (calMonth < 0) { calMonth = 11; calYear--; }
+        calActiveDayKey = null;
+        hideDayView();
+        buildCalendar(calYear, calMonth);
+        renderJourney();
+      };
+    }
+    if (next && !next._calBound) {
+      next._calBound = true;
+      next.onclick = () => {
+        calMonth++;
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+        calActiveDayKey = null;
+        hideDayView();
+        buildCalendar(calYear, calMonth);
+        renderJourney();
+      };
+    }
+    if (close && !close._calBound) {
+      close._calBound = true;
+      close.onclick = () => {
+        hideDayView();
+        calActiveDayKey = null;
+        buildCalendar(calYear, calMonth);
+        renderJourney();
+      };
+    }
   }
 
   function onEnter(screen) {
     if (screen === 'home') { setHome(); updateStreak(); }
     else if (screen === 'sessionFlow') renderSessionFlow();
     else if (screen === 'read') { syncReadDefault(); }
-    else if (screen === 'journey') renderJourney();
+    else if (screen === 'journey') { buildCalendar(calYear, calMonth); initCalendarListeners(); renderJourney(); }
     else if (screen === 'meditate') initMeditation();
     else if (screen === 'study') refreshStudyPanel();
     else if (screen === 'prayer') renderAnsweredPrayers();
@@ -1333,7 +1791,15 @@ Important:
     const target = $(id);
     if (target) {
       target.classList.add('active');
-      target.scrollTop = 0;
+      // Restore saved scroll position for this screen, or default to top
+      try {
+        const positions = JSON.parse(localStorage.getItem('bb_scroll_positions') || '{}');
+        const mc = document.getElementById('mainContainer');
+        if (mc) mc.scrollTop = positions[id] || 0;
+      } catch {
+        const mc = document.getElementById('mainContainer');
+        if (mc) mc.scrollTop = 0;
+      }
     }
     document.querySelectorAll('[data-nav]').forEach(b => b.classList.remove('active'));
     document.querySelectorAll(`[data-nav="${id}"]`).forEach(b => b.classList.add('active'));
@@ -1421,6 +1887,30 @@ Important:
     }
     $('homeProgressionHint').textContent = hint;
 
+    // FIX 2 + FIX 5: Journey-based streak and today nudge
+    try {
+      const journeyAll = JSON.parse(localStorage.getItem('journeyData') || '[]');
+
+      // FIX 2 — Streak from actual journey entries
+      const journeyStreak = calculateStreak(journeyAll);
+      const streakMini = $('homeStreakMini');
+      if (streakMini && journeyStreak > 0) {
+        streakMini.textContent = `🔥 ${journeyStreak} day streak`;
+      }
+
+      // FIX 5 — Today nudge: only overrides hint if no activity today AND no saved session
+      const todayKey = new Date().toDateString();
+      const hasToday = journeyAll.some(e => {
+        const t = new Date(e.timestamp || e.date);
+        return t.toDateString() === todayKey;
+      });
+      if (!hasToday && !localStorage.getItem('bb_session')) {
+        $('homeProgressionHint').textContent = "You haven't spent time today";
+      }
+    } catch (e) {
+      console.warn('Home nudge failed', e);
+    }
+
     // FIX 1 — Resume reading button
     const lastRead = JSON.parse(localStorage.getItem('bb_last_read') || 'null');
     const resumeBtn = $('resumeReadingBtn');
@@ -1437,6 +1927,25 @@ Important:
       };
     } else {
       resumeBtn.style.display = 'none';
+    }
+
+    // ── INSIGHT ENGINE: Show insight card from journey entries ──
+    try {
+      const journeyData = JSON.parse(localStorage.getItem('journeyData') || '[]');
+      const lastInsight = localStorage.getItem('bb_last_insight');
+      const insight = generateInsightFromEntries(journeyData) || lastInsight;
+      const card = $('insightCard');
+      const text = $('insightText');
+      if (insight && card && text) {
+        text.textContent = insight;
+        card.classList.remove('hidden');
+      } else if (card) {
+        card.classList.add('hidden');
+      }
+    } catch (e) {
+      console.warn('Insight generation failed', e);
+      const card = $('insightCard');
+      if (card) card.classList.add('hidden');
     }
   }
 
@@ -1715,7 +2224,21 @@ Rules:
         });
         localStorage.setItem('bb_last_scripture', normRef);
       }
+
+      // ── CONTINUITY ENGINE — Task 3: Save session after successful load ──
+      const version = $('translation')?.value || 'kjv';
+      saveReadSession({ book, chapter, version, lastAction: 'read' });
+
+      // ── FLOW ENGINE — Task 2: Show guide card after load (rAF, render-safe) ──
+      requestAnimationFrame(() => {
+        const card = $('flowGuideCard');
+        if (card) card.classList.remove('hidden');
+      });
+
     } catch {
+      // ── CONTINUITY ENGINE — Task 8: Failsafe — do NOT overwrite session on failure ──
+      // ── FLOW ENGINE — Task 5: Hide guide card on failed load ──
+      $('flowGuideCard')?.classList.add('hidden');
       display.innerHTML = '<span class="muted">Unable to load scripture right now. You can still tap <strong>Inquire</strong>, or use <strong>Explain / Apply / Pray</strong> after pasting a verse manually.</span>';
       display.classList.remove('read-collapsed');
     } finally {
@@ -2132,16 +2655,20 @@ What does this actually look like in daily life? Be honest and specific — not 
       }
     } else if (action === 'pray') {
       if (ctx.meaning) {
-        prompt = `Write a prayer for someone sitting with this passage:
+        prompt = `Write a heartfelt personal prayer based on this passage:
 
 ${scripture}
 
 What it means:
 ${ctx.meaning}
 
-Write the kind of prayer a real person would actually pray — honest, personal, not formal. No church language. Just someone talking to God from this verse.`;
+Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, personal, and emotionally grounded. No church performance language. Just a real person talking to God from this verse.`;
       } else {
-        prompt = `I've been reading "${scripture}". Write a short, personal prayer that flows naturally from this verse — the kind of thing someone would actually pray, not a church-sounding one.`;
+        prompt = `Write a heartfelt personal prayer based on this passage:
+
+${scripture}
+
+Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, personal, and emotionally grounded. Not formal or robotic. Just someone talking to God from this verse.`;
       }
     }
 
@@ -2220,9 +2747,38 @@ Write the kind of prayer a real person would actually pray — honest, personal,
   function syncProfileStats() {
     try {
       const journey = JSON.parse(localStorage.getItem(JOURNEY_KEY) || '[]');
+
+      // Saved passages count
       const scriptures = journey.filter(e => e.type === 'Scripture').length;
       const el = $('savedVersesCount');
       if (el) el.textContent = scriptures || '—';
+
+      // Total entry count
+      const entryEl = $('journeyEntryCount');
+      if (entryEl) entryEl.textContent = journey.length || '—';
+
+      // Current season — insight theme from Insight Engine
+      const themeRow = $('insightThemeRow');
+      const themeVal = $('insightThemeValue');
+      if (themeRow && themeVal && journey.length >= 3) {
+        const counts = extractThemes(journey.slice(0, 10));
+        const theme = getPrimaryTheme(counts);
+        if (theme) {
+          const labelMap = {
+            fear:     'Season of Trust',
+            faith:    'Season of Faith',
+            patience: 'Season of Waiting',
+            purpose:  'Season of Direction',
+            strength: 'Season of Strength'
+          };
+          themeVal.textContent = labelMap[theme] || theme;
+          themeRow.style.display = '';
+        } else {
+          themeRow.style.display = 'none';
+        }
+      } else if (themeRow) {
+        themeRow.style.display = 'none';
+      }
     } catch {}
   }
 
@@ -2390,6 +2946,34 @@ Write the kind of prayer a real person would actually pray — honest, personal,
         openScreen('home');
       } else if (action === 'done') {
         openScreen('home');
+      // ── FLOW ENGINE — Tasks 3+4: Guide card actions ──
+      } else if (action === 'reflect') {
+        const card = document.getElementById('flowGuideCard');
+        if (card) card.classList.add('hidden');
+        saveReadSession({ lastAction: 'reflect' });
+
+        // Navigate to study screen first, THEN trigger reflection item
+        // after openScreen() finishes clearing panels/active states
+        openScreen('study');
+        setTimeout(() => {
+          const item = document.querySelector('.reflection-item');
+          if (item) {
+            item.click();
+          } else {
+            console.warn('[Flow] No reflection item found after screen switch');
+            if (typeof handleGuidance === 'function') {
+              handleGuidance('explain');
+            }
+          }
+        }, 50);
+      } else if (action === 'apply') {
+        $('flowGuideCard')?.classList.add('hidden');
+        saveReadSession({ lastAction: 'apply' });
+        document.querySelector('[data-action="apply"]')?.click();
+      } else if (action === 'pray') {
+        $('flowGuideCard')?.classList.add('hidden');
+        saveReadSession({ lastAction: 'pray' });
+        document.querySelector('[data-action="pray"]')?.click();
       }
       return;
     }
@@ -2497,6 +3081,9 @@ Write the kind of prayer a real person would actually pray — honest, personal,
       const action = t.dataset.action;
       if (!action) return;
       if (!state.currentScripture) { showToast('Load a passage first'); return; }
+      // ── CONTINUITY ENGINE — Task 7: Track last action ──
+      const actionMap = { explain: 'explain', apply: 'apply', pray: 'pray' };
+      if (actionMap[action]) saveReadSession({ lastAction: actionMap[action] });
       const panel = $('guidanceOutput');
       panel.classList.remove('hidden');
       panel.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
@@ -2545,6 +3132,48 @@ Write the kind of prayer a real person would actually pray — honest, personal,
       showToast('Journey cleared');
       syncProfileStats();
       return;
+    }
+  }
+
+  // ── CONTINUITY ENGINE — Task 4: Track scroll position per screen ──
+  // #mainContainer is the true scrolling element (overflow-y:auto, flex:1)
+  const _scrollContainer = document.getElementById('mainContainer');
+  if (_scrollContainer) {
+    _scrollContainer.addEventListener('scroll', () => {
+      const activeScreen = document.querySelector('.screen.active');
+      if (!activeScreen || !activeScreen.id) return;
+      const positions = JSON.parse(localStorage.getItem('bb_scroll_positions') || '{}');
+      positions[activeScreen.id] = _scrollContainer.scrollTop;
+      localStorage.setItem('bb_scroll_positions', JSON.stringify(positions));
+    }, { passive: true });
+  }
+
+  // ── CONTINUITY ENGINE — Task 5: Restore session on app start ──
+  function restoreReadSession() {
+    const raw = localStorage.getItem('bb_read_session');
+    if (!raw) return;
+    try {
+      const saved = JSON.parse(raw);
+      state.readSession = saved;
+      if (saved.book && saved.chapter) {
+        // Sync the dropdowns to the saved values
+        const bookSel = $('bibleBook');
+        if (bookSel && Array.from(bookSel.options).some(o => o.value === saved.book)) {
+          bookSel.value = saved.book;
+          populateChapters();
+          const chapSel = $('bibleChapter');
+          if (chapSel && Array.from(chapSel.options).some(o => o.value === String(saved.chapter))) {
+            chapSel.value = String(saved.chapter);
+          }
+        }
+        if (saved.version) {
+          const verSel = $('translation');
+          if (verSel) verSel.value = saved.version;
+        }
+        loadPassage(saved.book, String(saved.chapter), saved.version || 'kjv');
+      }
+    } catch(e) {
+      console.error('[ReadSession] restore failed', e);
     }
   }
 
@@ -2732,6 +3361,8 @@ Write the kind of prayer a real person would actually pray — honest, personal,
       setButtonLoading(btn, true, 'Explaining…');
       output.classList.remove('hidden');
       output.innerHTML = `<span class="muted loading-dots">${getLoadingText()}</span>`;
+      // ── CONTINUITY ENGINE — Task 7: Track Dig Deeper ──
+      saveReadSession({ lastAction: 'deep' });
       let prompt = `Explain this clearly:\n\n${input}\n\nRules:\n- Be simple\n- Be clear\n- No introductions`;
       if (state.currentScripture) {
         prompt += `\n\nHere is the passage for context:\n${state.currentScripture}`;
@@ -2982,6 +3613,9 @@ Write the kind of prayer a real person would actually pray — honest, personal,
       setTimeout(() => openScreen('guide'), 600);
       localStorage.setItem('bb_seen_guide', 'true');
     }
+
+    // ── CONTINUITY ENGINE — Task 6: Restore read session on load ──
+    restoreReadSession();
 
     // ── Launch ──
     setHome();
