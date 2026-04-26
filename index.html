@@ -11,7 +11,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <!-- BUILD v11.3 | 2026-04-25 | Scroll restore, Prayer style, Journey UI, Typography, Insight Engine, Journey Calendar, Calendar Enhancements, Behavior Layer, Calendar-only Journey, Day View UI, Layout stabilisation -->
+  <!-- BUILD v11.6 | 2026-04-25 | Scroll restore, Prayer style, Journey UI, Typography, Insight Engine, Journey Calendar, Calendar Enhancements, Behavior Layer, Calendar-only Journey, Day View UI, Layout stabilisation, Day View entry UI, Verse Highlight + Smart Save, Verse action refinements -->
   <link rel="manifest" href="manifest.json">
   <title>BibleBuddy · calm companion</title>
   <style>
@@ -302,6 +302,34 @@
       animation: dots 1.2s infinite;
     }
     @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} 100%{content:'.'} }
+
+    /* ── VERSE HIGHLIGHT ── */
+    .verse-line {
+      cursor: pointer;
+      padding: 5px 6px;
+      border-radius: 8px;
+      transition: background 0.15s;
+      line-height: 1.65;
+      display: block;
+    }
+    .verse-line:hover { background: rgba(124,156,255,0.08); }
+    .verse-line.active { background: rgba(124,156,255,0.2); }
+    .verse-num {
+      color: var(--accent2); font-size: .78em;
+      margin-right: 5px; font-weight: 600;
+      user-select: none;
+    }
+
+    /* ── ENTRY TEXT EXPAND ── */
+    .entry-text { font-size:.88rem; color:var(--text); line-height:1.55; }
+    .entry-text.collapsed {
+      max-height: 60px; overflow: hidden; position: relative;
+    }
+    .entry-text.collapsed::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+      height: 30px;
+      background: linear-gradient(transparent, var(--panel2));
+    }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 500px) {
@@ -761,7 +789,7 @@
               <span class="row-title">BibleBuddy</span>
               <span class="row-sub">Your calm Scripture companion</span>
             </div>
-            <span class="small muted" style="font-size:.8rem;font-weight:600;">v11.3</span>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v11.6</span>
           </div>
         </div>
 
@@ -813,6 +841,19 @@
     </section>
 
   </main>
+
+  <!-- VERSE HIGHLIGHT: Floating action bar -->
+  <div id="verseActions" class="card hidden"
+       style="position:fixed;bottom:80px;left:10px;right:10px;z-index:50;
+              padding:12px 14px;box-shadow:0 8px 24px rgba(0,0,0,.4);">
+    <div class="quick-actions" style="justify-content:space-around;">
+      <button data-verse-save style="flex:1;">⭐ Save</button>
+      <button data-verse-note style="flex:1;">✏️ Note</button>
+      <button data-verse-study style="flex:1;">📖 Study</button>
+      <button data-verse-dismiss style="flex:0 0 auto;background:none;border:none;
+              color:var(--muted);font-size:1.2rem;padding:4px 8px;">✕</button>
+    </div>
+  </div>
 
   <nav class="footer-nav">
     <div class="nav-inner">
@@ -943,10 +984,10 @@
   function extractThemes(entries) {
     const keywords = {
       fear:     ['fear', 'afraid', 'anxious', 'worry'],
-      faith:    ['faith', 'trust', 'believe'],
-      patience: ['wait', 'patience', 'delay'],
-      purpose:  ['purpose', 'calling', 'direction'],
-      strength: ['strength', 'weak', 'tired']
+      faith:    ['faith', 'trust', 'believe', 'hope', 'grace'],
+      patience: ['wait', 'patience', 'delay', 'still', 'rest'],
+      purpose:  ['purpose', 'calling', 'direction', 'plan', 'path'],
+      strength: ['strength', 'weak', 'tired', 'weary', 'carry']
     };
     const counts = {};
     entries.forEach(e => {
@@ -1510,6 +1551,17 @@ Important:
   // ═══════════════════════════════════════════
   //  SCREEN LIFECYCLE
   // ═══════════════════════════════════════════
+  // ── VERSE HIGHLIGHT: Show floating action bar ──
+  function showVerseActions(verseEl) {
+    const bar = $('verseActions');
+    if (!bar) return;
+    bar.dataset.text  = verseEl.dataset.text  || '';
+    bar.dataset.verse = verseEl.dataset.verse || '';
+    bar.dataset.book  = $('bibleBook')?.value  || '';
+    bar.dataset.chapter = $('bibleChapter')?.value || '';
+    bar.classList.remove('hidden');
+  }
+
   function cleanupOnLeave(screen) {
     if (TTS) { _ttsGen++; TTS.cancel(); }
     if (screen === 'meditate' && state.meditation.state === 'active') stopMeditation();
@@ -1546,6 +1598,8 @@ Important:
     if (mm) mm.classList.add('hidden');
     // ── FLOW ENGINE — Task 5: Hide guide card on screen leave ──
     $('flowGuideCard')?.classList.add('hidden');
+    $('verseActions')?.classList.add('hidden');
+    document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
   }
 
   // ══════════════════════════════════════════════
@@ -1716,7 +1770,7 @@ Important:
     });
     dayView.style.display = 'block';
 
-    // IMPROVEMENT 6: Intentional empty state
+    // Empty state
     if (!filtered.length) {
       dayList.innerHTML = `
         <div style="text-align:center;padding:16px;">
@@ -1726,7 +1780,6 @@ Important:
       return;
     }
 
-    // IMPROVEMENT 1: Type badge map
     const typeMap = {
       Scripture:  '📖 Scripture',
       Reflection: '🧠 Reflection',
@@ -1740,63 +1793,65 @@ Important:
       const idx         = e._index;
       const time        = e.timestamp ? new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
       const isScripture = e.type === 'Scripture' && e.book && e.chapter;
+      const isBookmark  = e.type === 'Bookmark'  && (e.ref || (e.book && e.chapter));
       const label       = typeMap[e.type] || (e.type || 'Entry');
+      const bodyText    = (e.text || '').trim();
+      const needsExpand = bodyText.length > 120;
 
-      // IMPROVEMENT 4: Collapse long text
-      const preview = (e.text || '').length > 140
-        ? e.text.slice(0, 140) + '…'
-        : (e.text || '');
-
-      // IMPROVEMENT 3: Scripture anchor — bigger, bolder title
+      // Title block: Scripture shows Book + Chapter; Bookmark shows full ref (Book Ch:Verse)
       const titleBlock = isScripture
-        ? `<div style="font-weight:600;font-size:1rem;color:var(--text);margin-bottom:4px;">
-             📖 ${e.book} ${e.chapter}
-           </div>`
-        : '';
+        ? `<div style="font-weight:600;font-size:1rem;color:var(--text);margin-bottom:4px;">📖 ${e.book} ${e.chapter}</div>`
+        : isBookmark && e.ref
+          ? `<div style="font-weight:600;font-size:.95rem;color:var(--text);margin-bottom:4px;">📌 ${e.ref}</div>`
+          : '';
 
-      const loadBtn = isScripture
-        ? `<button data-journey-load-book="${e.book}" data-journey-load-chapter="${e.chapter}"
-              style="margin-top:8px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;
-                     padding:5px 12px;color:var(--accent2);font-size:.8rem;cursor:pointer;">
-             Open passage →
+      // Open button: Scripture + Bookmark both get one if book/chapter present
+      const openBook    = e.book    || (isBookmark && e.ref ? e.ref.split(' ')[0] : '');
+      const openChapter = e.chapter || (isBookmark && e.ref ? (e.ref.match(/\s(\d+)[:.]/) || [])[1] || '' : '');
+      const loadBtn = (isScripture || (isBookmark && openBook && openChapter))
+        ? `<button data-journey-load-book="${openBook}" data-journey-load-chapter="${openChapter}"
+              style="margin-top:6px;font-size:.8rem;padding:5px 10px;border-radius:8px;
+                     background:var(--panel2);border:1px solid var(--border);color:var(--accent2);cursor:pointer;">
+             📖 Open
            </button>`
         : '';
 
-      // IMPROVEMENT 2 + 5 + 7: Card shell, clean action buttons, fade animation
+      // STEP 3: Full text with expand toggle
+      const expandBtn = needsExpand
+        ? `<button class="expand-entry" style="margin-top:4px;background:none;border:none;
+              color:var(--accent);font-size:.8rem;padding:0;cursor:pointer;font-weight:600;">More</button>`
+        : '';
+
       return `
         <div class="journey-entry" data-journey-index="${idx}" style="
-          margin-bottom:10px;
-          padding:12px;
+          margin-bottom:10px;padding:12px;
           background:rgba(255,255,255,.03);
           border:1px solid var(--border);
           border-radius:12px;
           animation:fadeUp 0.2s ease;">
 
-          <!-- IMPROVEMENT 1: Type badge -->
-          <div style="font-size:.75rem;color:var(--accent2);margin-bottom:2px;">${label}</div>
-
-          <!-- IMPROVEMENT 3: Scripture anchor title -->
-          ${titleBlock}
-
-          <!-- Action row -->
+          <!-- STEP 1: Type label + icon actions -->
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span style="font-size:.75rem;color:var(--muted);">${time}</span>
-            <div style="display:flex;gap:6px;">
-              <button data-edit="${idx}" class="secondary small">Edit</button>
-              <button data-delete="${idx}" class="secondary small">Delete</button>
+            <div style="font-size:.8rem;font-weight:600;color:var(--accent2);">${label}</div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <span style="font-size:.72rem;color:var(--muted);">${time}</span>
+              <span data-edit="${idx}" style="cursor:pointer;font-size:1rem;" title="Edit">✏️</span>
+              <span data-delete="${idx}" style="cursor:pointer;font-size:1rem;" title="Delete">🗑️</span>
             </div>
           </div>
 
-          <!-- IMPROVEMENT 4: Capped preview text -->
-          <div style="font-size:.88rem;color:var(--text);line-height:1.55;">
-            ${preview || '<span class="muted">No content</span>'}
-          </div>
+          ${titleBlock}
 
+          <!-- STEP 3: Collapsible text -->
+          <div class="entry-text${needsExpand ? ' collapsed' : ''}">
+            ${bodyText || '<span class="muted">No content</span>'}
+          </div>
+          ${expandBtn}
           ${loadBtn}
         </div>`;
     }).join('');
 
-    // Micro-feedback summary (preserved from ADD 3)
+    // Micro-feedback summary
     const count = filtered.length;
     let summary = '';
     if (count >= 5)      summary = '✨ Strong day';
@@ -1804,7 +1859,7 @@ Important:
     else if (count >= 1) summary = '🌱 You showed up';
     if (summary) {
       const el = document.createElement('div');
-      el.className = 'muted small';
+      el.className = 'muted';
       el.style.cssText = 'margin-top:8px;font-size:.8rem;text-align:right;letter-spacing:.02em;';
       el.textContent = summary;
       dayList.appendChild(el);
@@ -2295,7 +2350,7 @@ Rules:
       const data = await fetchPassage(book, chapter, translation);
       if (!data) throw new Error('No data');
       const ref = data.reference;
-      let textLines = data.verses.map(v => `<span style="color:var(--accent2);font-size:.8em;margin-right:4px;">${v.verse}</span>${v.text.trim()}`).join('<br>');
+      let textLines = data.verses.map(v => `<div class="verse-line" data-verse="${v.verse}" data-text="${v.text.trim().replace(/"/g, '&quot;')}"><span class="verse-num">${v.verse}</span>${v.text.trim()}</div>`).join('');
       const plainText = data.verses.map(v => v.text.trim()).join(' ');
       display.innerHTML = `<strong style="color:var(--accent2);display:block;margin-bottom:10px;">${ref}</strong>${textLines}`;
       display.classList.add('read-collapsed');
@@ -3160,6 +3215,110 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
     }
 
     // Journey expand / edit / delete
+    // VERSE HIGHLIGHT: Verse line click → show action bar
+    if (t.closest('.verse-line')) {
+      const v = t.closest('.verse-line');
+      document.querySelectorAll('.verse-line').forEach(x => x.classList.remove('active'));
+      v.classList.add('active');
+      showVerseActions(v);
+      return;
+    }
+
+    // VERSE HIGHLIGHT: Save verse to Journey
+    if (t.matches('[data-verse-save]')) {
+      const bar = $('verseActions');
+      if (!bar) return;
+      const rs      = state.readSession || {};
+      const book    = rs.book    || bar.dataset.book    || '';
+      const chapter = rs.chapter || bar.dataset.chapter || '';
+      const version = rs.version || bar.dataset.version || '';
+      const verseNum  = bar.dataset.verse || '';
+      const verseText = bar.dataset.text  || '';
+      saveJourneyEntry({
+        type:      'Bookmark',
+        text:      verseText,
+        ref:       `${book} ${chapter}:${verseNum}`,
+        book,
+        chapter,
+        verse:     verseNum,
+        version,
+        timestamp: Date.now(),
+        date:      new Date().toLocaleString()
+      });
+      showToast('Verse saved to Journey ⭐');
+      bar.classList.add('hidden');
+      document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
+      return;
+    }
+
+    // VERSE HIGHLIGHT: Note action — pre-fill study notes and open Study
+    if (t.matches('[data-verse-note]')) {
+      const bar = $('verseActions');
+      if (!bar) return;
+      const rs   = state.readSession || {};
+      const ref  = `${rs.book || bar.dataset.book || ''} ${rs.chapter || bar.dataset.chapter || ''}:${bar.dataset.verse}`;
+      const text = bar.dataset.text || '';
+      bar.classList.add('hidden');
+      document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
+      openScreen('study');
+      requestAnimationFrame(() => {
+        const ta = $('studyNotesArea');
+        if (ta) {
+          ta.value = ta.value ? ta.value + `\n\n[${ref}]\n${text}` : `[${ref}]\n${text}`;
+          ta.focus();
+        }
+      });
+      return;
+    }
+
+    // VERSE HIGHLIGHT: Study action — open Study and trigger Explain
+    if (t.matches('[data-verse-study]')) {
+      const bar = $('verseActions');
+      if (!bar) return;
+      bar.classList.add('hidden');
+      document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
+      openScreen('study');
+      requestAnimationFrame(async () => {
+        // Activate the Explain tab and trigger it
+        const explainBtn = document.querySelector('#studyTabs [data-tab="explain"]');
+        if (explainBtn) {
+          document.querySelectorAll('#studyTabs button').forEach(b => b.classList.remove('active'));
+          explainBtn.classList.add('active');
+          const panel = $('studyExplainPanel') || document.querySelector('[data-panel="explain"]');
+          if (panel) await handleStudyTab('explain', panel).catch(() => {});
+        }
+      });
+      return;
+    }
+
+    // VERSE HIGHLIGHT: Dismiss bar (explicit button)
+    if (t.matches('[data-verse-dismiss]')) {
+      $('verseActions')?.classList.add('hidden');
+      document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
+      return;
+    }
+
+    // VERSE HIGHLIGHT: Dismiss on outside click (Task 3)
+    if (!t.closest('.verse-line') && !t.closest('#verseActions')) {
+      const bar = $('verseActions');
+      if (bar && !bar.classList.contains('hidden')) {
+        bar.classList.add('hidden');
+        document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
+      }
+    }
+
+    // STEP 4: Expand/collapse entry text
+    if (t.classList.contains('expand-entry')) {
+      // Walk siblings upward to find .entry-text — robust regardless of intervening elements
+      let sib = t.previousElementSibling;
+      while (sib && !sib.classList.contains('entry-text')) sib = sib.previousElementSibling;
+      if (sib) {
+        sib.classList.toggle('collapsed');
+        t.textContent = sib.classList.contains('collapsed') ? 'More' : 'Less';
+      }
+      return;
+    }
+
     if (t.closest('[data-journey-index]')) {
       const wrapper = t.closest('[data-journey-index]');
       const preview = wrapper.querySelector('.journey-preview');
