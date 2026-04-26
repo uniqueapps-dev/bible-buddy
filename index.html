@@ -304,7 +304,7 @@
     @keyframes dots { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} 100%{content:'.'} }
 
     /* ── VERSE HIGHLIGHT ── */
-    .verse-line {
+    .verse-item {
       cursor: pointer;
       padding: 5px 6px;
       border-radius: 8px;
@@ -312,12 +312,48 @@
       line-height: 1.65;
       display: block;
     }
-    .verse-line:hover { background: rgba(124,156,255,0.08); }
-    .verse-line.active { background: rgba(124,156,255,0.2); }
-    .verse-num {
+    .verse-item:hover { background: rgba(124,156,255,0.08); }
+    .verse-item.active { background: rgba(124,156,255,0.2); }
+    .verse-item.saved { border-left: 3px solid var(--accent2); padding-left: 9px; }
+    .verse-index {
       color: var(--accent2); font-size: .78em;
       margin-right: 5px; font-weight: 600;
       user-select: none;
+    }
+
+    /* ── ONBOARDING OVERLAY ── */
+    #onboardingOverlay {
+      position: fixed; inset: 0; z-index: 200;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 32px 24px; text-align: center;
+      animation: fadeIn 0.4s ease;
+    }
+    #onboardingOverlay h1 {
+      font-size: 2rem; font-weight: 700; margin-bottom: 8px; color: var(--text);
+    }
+    #onboardingOverlay p {
+      color: var(--muted); font-size: 1rem; margin-bottom: 28px; line-height: 1.6;
+    }
+    #onboardingNameInput {
+      width: 100%; max-width: 320px;
+      padding: 14px 16px; border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--panel2); color: var(--text);
+      font-size: 1.1rem; text-align: center;
+      margin-bottom: 16px; outline: none;
+    }
+    #onboardingNameInput:focus { border-color: var(--accent); }
+    #onboardingSubmitBtn {
+      width: 100%; max-width: 320px;
+      padding: 14px; border-radius: 60px;
+      font-size: 1rem; font-weight: 600;
+    }
+    #onboardingSkip {
+      margin-top: 14px; font-size: .85rem;
+      color: var(--muted); cursor: pointer;
+      background: none; border: none;
     }
 
     /* ── ENTRY TEXT EXPAND ── */
@@ -362,6 +398,10 @@
         </div>
         <div id="homeProgressionHint" class="home-progression-hint"></div>
         <button id="resumeReadingBtn" class="secondary" style="margin-top:10px;display:none;">Continue Reading →</button>
+        <div id="homeContinueReading" class="card"
+             style="display:none;cursor:pointer;margin-top:10px;width:100%;text-align:left;
+                    padding:12px 14px;font-size:.9rem;color:var(--accent2);font-weight:600;">
+        </div>
         <div id="insightCard" class="card hidden" style="margin-top:12px;width:100%;text-align:left;">
           <div class="muted" style="font-size:.82rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;">🧠 Insight</div>
           <div id="insightText" style="font-size:.97rem;line-height:1.55;color:var(--text);"></div>
@@ -789,7 +829,7 @@
               <span class="row-title">BibleBuddy</span>
               <span class="row-sub">Your calm Scripture companion</span>
             </div>
-            <span class="small muted" style="font-size:.8rem;font-weight:600;">v11.6</span>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v11.9</span>
           </div>
         </div>
 
@@ -853,6 +893,17 @@
       <button data-verse-dismiss style="flex:0 0 auto;background:none;border:none;
               color:var(--muted);font-size:1.2rem;padding:4px 8px;">✕</button>
     </div>
+  </div>
+
+  <!-- ONBOARDING: First-run name capture -->
+  <div id="onboardingOverlay" style="display:none;">
+    <div style="font-size:3rem;margin-bottom:12px;">✝️</div>
+    <h1>Welcome to BibleBuddy</h1>
+    <p>Your calm companion for daily scripture.<br>What should we call you?</p>
+    <input id="onboardingNameInput" type="text" placeholder="Your name" maxlength="40"
+           autocomplete="given-name" autocapitalize="words" />
+    <button id="onboardingSubmitBtn" class="primary">Let's Begin →</button>
+    <button id="onboardingSkip">Skip for now</button>
   </div>
 
   <nav class="footer-nav">
@@ -1555,11 +1606,32 @@ Important:
   function showVerseActions(verseEl) {
     const bar = $('verseActions');
     if (!bar) return;
-    bar.dataset.text  = verseEl.dataset.text  || '';
-    bar.dataset.verse = verseEl.dataset.verse || '';
-    bar.dataset.book  = $('bibleBook')?.value  || '';
-    bar.dataset.chapter = $('bibleChapter')?.value || '';
+    const rs = state.readSession || {};
+    bar.dataset.text    = verseEl.dataset.text  || '';
+    bar.dataset.verse   = verseEl.dataset.verse || '';
+    bar.dataset.book    = rs.book    || $('bibleBook')?.value    || '';
+    bar.dataset.chapter = rs.chapter || $('bibleChapter')?.value || '';
     bar.classList.remove('hidden');
+  }
+
+  // ── CONTINUITY: Detect topmost visible verse on scroll ──
+  function detectVisibleVerse() {
+    const rs = state.readSession;
+    if (!rs || !rs.book) return;
+    const verses = document.querySelectorAll('.verse-item');
+    for (const v of verses) {
+      const rect = v.getBoundingClientRect();
+      if (rect.top >= 0 && rect.top < 200) {
+        localStorage.setItem('bb_last_position', JSON.stringify({
+          book:      rs.book,
+          chapter:   rs.chapter,
+          verse:     v.dataset.verse,
+          version:   rs.version || 'kjv',
+          timestamp: Date.now()
+        }));
+        break;
+      }
+    }
   }
 
   function cleanupOnLeave(screen) {
@@ -1599,7 +1671,7 @@ Important:
     // ── FLOW ENGINE — Task 5: Hide guide card on screen leave ──
     $('flowGuideCard')?.classList.add('hidden');
     $('verseActions')?.classList.add('hidden');
-    document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.verse-item.active').forEach(v => v.classList.remove('active'));
   }
 
   // ══════════════════════════════════════════════
@@ -2077,6 +2149,31 @@ Important:
       console.warn('Home behavior layer failed', e);
     }
 
+    // STEP 6+8: Continue Reading card — only when no active session
+    try {
+      const hasSesh = !!localStorage.getItem('bb_session');
+      const pos     = JSON.parse(localStorage.getItem('bb_last_position') || 'null');
+      const el      = $('homeContinueReading');
+      if (el) {
+        if (!hasSesh && pos && pos.book && pos.chapter && pos.verse) {
+          el.textContent = `▶ Continue reading — ${pos.book} ${pos.chapter}:${pos.verse}`;
+          el.style.display = 'block';
+          el.onclick = () => {
+            const bk = $('bibleBook');
+            const ch = $('bibleChapter');
+            if (bk) bk.value = pos.book;
+            if (ch) ch.value = pos.chapter;
+            openScreen('read');
+            loadPassage(pos.book, pos.chapter, pos.version || 'kjv');
+          };
+        } else {
+          el.style.display = 'none';
+        }
+      }
+    } catch (e) {
+      console.warn('Continue reading card failed', e);
+    }
+
     // FIX 1 — Resume reading button
     const lastRead = JSON.parse(localStorage.getItem('bb_last_read') || 'null');
     const resumeBtn = $('resumeReadingBtn');
@@ -2350,7 +2447,7 @@ Rules:
       const data = await fetchPassage(book, chapter, translation);
       if (!data) throw new Error('No data');
       const ref = data.reference;
-      let textLines = data.verses.map(v => `<div class="verse-line" data-verse="${v.verse}" data-text="${v.text.trim().replace(/"/g, '&quot;')}"><span class="verse-num">${v.verse}</span>${v.text.trim()}</div>`).join('');
+      let textLines = data.verses.map(v => `<div class="verse-item" data-verse="${v.verse}" data-text="${v.text.trim().replace(/"/g, '&quot;')}"><span class="verse-index">${v.verse}</span>${v.text.trim()}</div>`).join('');
       const plainText = data.verses.map(v => v.text.trim()).join(' ');
       display.innerHTML = `<strong style="color:var(--accent2);display:block;margin-bottom:10px;">${ref}</strong>${textLines}`;
       display.classList.add('read-collapsed');
@@ -2394,6 +2491,25 @@ Rules:
       // ── CONTINUITY ENGINE — Task 3: Save session after successful load ──
       const version = $('translation')?.value || 'kjv';
       saveReadSession({ book, chapter, version, lastAction: 'read' });
+
+      // ── CONTINUITY — STEPS 4+5: Restore verse position after load ──
+      requestAnimationFrame(() => {
+        const saved = JSON.parse(localStorage.getItem('bb_last_position') || 'null');
+        if (saved && saved.book === book && String(saved.chapter) === String(chapter)) {
+          setTimeout(() => {
+            const target = document.querySelector(`.verse-item[data-verse="${saved.verse}"]`);
+            if (target) {
+              target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              target.classList.add('active');
+              setTimeout(() => target.classList.remove('active'), 2000);
+            } else {
+              // STEP 5: Fallback to saved scroll position
+              const y = parseInt(localStorage.getItem('bb_scrollY') || '0', 10);
+              if (y > 0) window.scrollTo(0, y);
+            }
+          }, 300);
+        }
+      });
 
       // ── FLOW ENGINE — Task 2: Show guide card after load (rAF, render-safe) ──
       requestAnimationFrame(() => {
@@ -3216,11 +3332,22 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
 
     // Journey expand / edit / delete
     // VERSE HIGHLIGHT: Verse line click → show action bar
-    if (t.closest('.verse-line')) {
-      const v = t.closest('.verse-line');
-      document.querySelectorAll('.verse-line').forEach(x => x.classList.remove('active'));
+    if (t.closest('.verse-item')) {
+      const v   = t.closest('.verse-item');
+      const rs  = state.readSession || {};
+      document.querySelectorAll('.verse-item').forEach(x => x.classList.remove('active'));
       v.classList.add('active');
       showVerseActions(v);
+      // STEP 1: Persist exact verse position on tap
+      if (rs.book) {
+        localStorage.setItem('bb_last_position', JSON.stringify({
+          book:      rs.book,
+          chapter:   rs.chapter,
+          verse:     v.dataset.verse,
+          version:   rs.version || 'kjv',
+          timestamp: Date.now()
+        }));
+      }
       return;
     }
 
@@ -3247,7 +3374,7 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       });
       showToast('Verse saved to Journey ⭐');
       bar.classList.add('hidden');
-      document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.verse-item.active').forEach(v => v.classList.remove('active'));
       return;
     }
 
@@ -3259,7 +3386,7 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       const ref  = `${rs.book || bar.dataset.book || ''} ${rs.chapter || bar.dataset.chapter || ''}:${bar.dataset.verse}`;
       const text = bar.dataset.text || '';
       bar.classList.add('hidden');
-      document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.verse-item.active').forEach(v => v.classList.remove('active'));
       openScreen('study');
       requestAnimationFrame(() => {
         const ta = $('studyNotesArea');
@@ -3275,11 +3402,21 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
     if (t.matches('[data-verse-study]')) {
       const bar = $('verseActions');
       if (!bar) return;
+      const verseText = bar.dataset.text || '';
       bar.classList.add('hidden');
-      document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.verse-item.active').forEach(v => v.classList.remove('active'));
       openScreen('study');
       requestAnimationFrame(async () => {
-        // Activate the Explain tab and trigger it
+        // FIX 5: Pre-fill study notes with verse context, then trigger Explain
+        if (verseText) {
+          const rs    = state.readSession || {};
+          const book  = rs.book    || bar.dataset.book    || '';
+          const chap  = rs.chapter || bar.dataset.chapter || '';
+          const ref   = `${book} ${chap}:${bar.dataset.verse}`;
+          const ta    = $('studyNotesArea');
+          if (ta && !ta.value) ta.value = `[${ref}]
+${verseText}`;
+        }
         const explainBtn = document.querySelector('#studyTabs [data-tab="explain"]');
         if (explainBtn) {
           document.querySelectorAll('#studyTabs button').forEach(b => b.classList.remove('active'));
@@ -3294,16 +3431,16 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
     // VERSE HIGHLIGHT: Dismiss bar (explicit button)
     if (t.matches('[data-verse-dismiss]')) {
       $('verseActions')?.classList.add('hidden');
-      document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
+      document.querySelectorAll('.verse-item.active').forEach(v => v.classList.remove('active'));
       return;
     }
 
     // VERSE HIGHLIGHT: Dismiss on outside click (Task 3)
-    if (!t.closest('.verse-line') && !t.closest('#verseActions')) {
+    if (!t.closest('.verse-item') && !t.closest('#verseActions')) {
       const bar = $('verseActions');
       if (bar && !bar.classList.contains('hidden')) {
         bar.classList.add('hidden');
-        document.querySelectorAll('.verse-line.active').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.verse-item.active').forEach(v => v.classList.remove('active'));
       }
     }
 
@@ -3459,6 +3596,58 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
   // ═══════════════════════════════════════════
   //  INITIALIZATION
   // ═══════════════════════════════════════════
+  // ── ONBOARDING: First-run name capture ──
+  function initOnboarding() {
+    const hasName    = localStorage.getItem('bb_user_name');
+    const dismissed  = localStorage.getItem('bb_onboarded');
+    const overlay    = document.getElementById('onboardingOverlay');
+    if (!overlay) return;
+
+    if (!hasName && !dismissed) {
+      overlay.style.display = 'flex';
+      document.getElementById('onboardingNameInput')?.focus();
+    }
+
+    function finishOnboarding(name) {
+      if (name) {
+        state.settings.userName = name;
+        localStorage.setItem('bb_user_name', name);
+        const inp = document.getElementById('userNameInput');
+        if (inp) inp.value = name;
+      }
+      localStorage.setItem('bb_onboarded', '1');
+      overlay.style.display = 'none';
+      setHome(); // refresh greeting immediately
+    }
+
+    document.getElementById('onboardingSubmitBtn')?.addEventListener('click', () => {
+      const val = (document.getElementById('onboardingNameInput')?.value || '').trim();
+      finishOnboarding(val);
+    });
+
+    document.getElementById('onboardingSkip')?.addEventListener('click', () => {
+      finishOnboarding('');
+    });
+
+    // Submit on Enter key
+    document.getElementById('onboardingNameInput')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const val = (e.target.value || '').trim();
+        finishOnboarding(val);
+      }
+    });
+  }
+
+  // ── CONTINUITY: Scroll tracking (debounced, single listener) ──
+  let _scrollTimeout;
+  window.addEventListener('scroll', () => {
+    clearTimeout(_scrollTimeout);
+    _scrollTimeout = setTimeout(() => {
+      localStorage.setItem('bb_scrollY', window.scrollY);
+      detectVisibleVerse();
+    }, 300);
+  }, { passive: true });
+
   document.addEventListener('DOMContentLoaded', () => {
 
     // Restore session state
