@@ -455,6 +455,17 @@
           <div class="muted" style="font-size:.82rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;">🧠 Insight</div>
           <div id="insightText" style="font-size:.97rem;line-height:1.55;color:var(--text);"></div>
         </div>
+        <!-- VERSE FINDER -->
+        <div class="card" style="margin-top:12px;width:100%;text-align:left;">
+          <div style="font-weight:600;margin-bottom:6px;font-size:.9rem;">🔍 Find a Verse</div>
+          <input id="verseSearchInput"
+                 placeholder="Type words you remember…"
+                 style="width:100%;margin-bottom:6px;"
+                 autocomplete="off" autocorrect="off">
+          <button id="verseSearchBtn" class="primary" style="width:100%;padding:10px;">Search</button>
+        </div>
+        <div id="verseSearchResult" class="card hidden" style="margin-top:8px;width:100%;text-align:left;"></div>
+
         <button id="homeContinueBtn" class="primary home-continue-btn">Continue</button>
         <button class="home-open-bible-link" data-nav="read">Open Bible →</button>
       </div>
@@ -879,7 +890,7 @@
               <span class="row-title">BibleBuddy</span>
               <span class="row-sub">Your calm Scripture companion</span>
             </div>
-            <span class="small muted" style="font-size:.8rem;font-weight:600;">v13.6</span>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v14.0</span>
           </div>
         </div>
 
@@ -1501,7 +1512,7 @@ Important:
     wrapper.innerHTML = content;
     panelEl.appendChild(wrapper);
     panelEl.classList.remove('hidden');
-    panelEl.scrollTop = 0;
+    if (!_isRestoringScroll) panelEl.scrollTop = 0;
     const closeBtn = document.createElement('button');
     closeBtn.className = 'close-btn';
     closeBtn.textContent = '✕';
@@ -1740,41 +1751,55 @@ Important:
     }
   }
 
-  // ── EXPAND FIX: Restore verse position after layout change ──
+  // ── RESTORE: Scroll to saved verse position ──
   function restoreLastVersePosition() {
-    const saved = JSON.parse(localStorage.getItem('bb_last_position') || 'null');
-    if (!saved) return;
-    const target = document.querySelector(`.verse-item[data-verse="${saved.verse}"]`);
-    if (!target) return;
+    try {
+      const saved = JSON.parse(localStorage.getItem('bb_last_position') || 'null');
+      if (!saved || !saved.verse) return;
+      console.log('[Restore]', saved);
 
-    const container = document.querySelector('.screen.active');
-    if (!container) return;
-
-    // Must expand first — scrollTop math is wrong inside a max-height:180px clipped container
-    const display = $('readDisplay');
-    const wasCollapsed = display && display.classList.contains('read-collapsed');
-    if (wasCollapsed) display.classList.remove('read-collapsed');
-
-    // Wait one frame for layout to reflow after expand
-    requestAnimationFrame(() => {
-      let offsetTop = 0;
-      let el = target;
-      while (el && el !== container) {
-        offsetTop += el.offsetTop;
-        el = el.offsetParent;
-      }
-      const center = offsetTop - (container.clientHeight / 2) + (target.offsetHeight / 2);
+      _isRestoringScroll = true;
       _restoreLock = true;
-      container.scrollTop = Math.max(0, center);
-      setTimeout(() => { _restoreLock = false; }, 800);
 
-      target.classList.add('resume');
-      setTimeout(() => target.classList.remove('resume'), 1500);
+      // Expand if collapsed — scrollTop math is wrong in a clipped container
+      const display = $('readDisplay');
+      const wasCollapsed = display && display.classList.contains('read-collapsed');
+      if (wasCollapsed) display.classList.remove('read-collapsed');
 
-      // Update button label to match expanded state
-      const eb = $('readExpandBtn');
-      if (eb && wasCollapsed) eb.textContent = 'Collapse';
-    });
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const target = document.querySelector(`.verse-item[data-verse="${saved.verse}"]`);
+          const container = document.querySelector('.screen.active');
+
+          if (target && container) {
+            let offsetTop = 0;
+            let el = target;
+            while (el && el !== container) {
+              offsetTop += el.offsetTop;
+              el = el.offsetParent;
+            }
+            const center = offsetTop - (container.clientHeight / 2) + (target.offsetHeight / 2);
+            container.scrollTop = Math.max(0, center);
+
+            target.classList.add('resume');
+            setTimeout(() => target.classList.remove('resume'), 1500);
+
+            const eb = $('readExpandBtn');
+            if (eb && wasCollapsed) eb.textContent = 'Collapse';
+          }
+
+          // Release locks after layout fully settles
+          setTimeout(() => {
+            _restoreLock = false;
+            _isRestoringScroll = false;
+          }, 600);
+        }, 350);
+      });
+    } catch (e) {
+      console.error('[Restore] failed:', e);
+      _restoreLock = false;
+      _isRestoringScroll = false;
+    }
   }
 
   // Capture current verse BEFORE expand changes layout
@@ -1910,6 +1935,109 @@ Important:
     state.selectedVerses = [];
     document.querySelectorAll('.verse-item.selected').forEach(v => v.classList.remove('selected'));
     updateMultiVerseBar();
+  }
+
+  // ══════════════════════════════════════════════
+  //  AI VERSE FINDER
+  // ══════════════════════════════════════════════
+
+  // STEP 3: Render result + Open + Save buttons
+  function renderVerseSearchResult(text, resultEl) {
+    const refMatch  = text.match(/Reference:\s*(.*)/i);
+    const textMatch = text.match(/Text:\s*([\s\S]*?)(?:Note:|$)/i);
+    const noteMatch = text.match(/Note:\s*(.*)/i);
+
+    const ref       = refMatch?.[1]?.trim()  || '';
+    const verseText = textMatch?.[1]?.trim() || text.trim();
+    const note      = noteMatch?.[1]?.trim() || '';
+
+    // Parse book + chapter from ref (e.g. "John 3:16" or "1 Corinthians 13:4")
+    const refParts  = ref.split(' ');
+    const chapterVerse = refParts[refParts.length - 1] || '';
+    const chapter   = chapterVerse.split(':')[0] || '1';
+    const book      = refParts.slice(0, -1).join(' ');
+
+    resultEl.innerHTML = `
+      <div style="font-weight:600;margin-bottom:4px;color:var(--accent2);">📖 ${ref || 'Verse found'}</div>
+      <div class="ai-response" style="margin-bottom:6px;">${verseText}</div>
+      ${note ? `<div class="muted small" style="margin-top:4px;">${note}</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button id="loadFoundVerse" class="secondary" style="flex:1;">Open in Reader</button>
+        <button id="saveFoundVerse" class="secondary" style="flex:1;">⭐ Save</button>
+      </div>`;
+
+    // Open in Reader — reference mode (does not overwrite readSession book/chapter until user reads)
+    const loadBtn = document.getElementById('loadFoundVerse');
+    if (loadBtn && book && chapter) {
+      loadBtn.onclick = () => {
+        // Set the selects so the reader shows the correct book/chapter
+        const bk = $('bibleBook');
+        const ch = $('bibleChapter');
+        if (bk) bk.value = book;
+        if (ch) ch.value = chapter;
+        openScreen('read');
+        loadPassage(book, chapter);
+      };
+    }
+
+    // Save to Journey
+    const saveBtn = document.getElementById('saveFoundVerse');
+    if (saveBtn) {
+      saveBtn.onclick = () => {
+        saveJourneyEntry({
+          type:      'Bookmark',
+          text:      verseText,
+          ref:       ref,
+          book:      book,
+          chapter:   chapter,
+          timestamp: Date.now(),
+          date:      new Date().toLocaleString()
+        });
+        showToast('Verse saved ⭐');
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saved ✓';
+      };
+    }
+  }
+
+  // VERSE FINDER: Search runner
+  async function runVerseSearch() {
+    console.log('[VerseFinder] Search clicked');
+    const input     = $('verseSearchInput');
+    const resultEl  = $('verseSearchResult');
+    const query     = (input?.value || '').trim();
+    if (!query) return;
+
+    resultEl.classList.remove('hidden');
+    resultEl.innerHTML = '<div class="loader">Searching scripture…</div>';
+
+    try {
+      const prompt = `A user is trying to find a Bible verse from memory or by topic.
+
+Input: "${query}"
+
+Return EXACTLY in this format with no extra text:
+Reference: [Book Chapter:Verse]
+Text: [Full KJV verse text]
+Note: [One sentence explaining why this verse matches]`;
+
+      const response = await requestAI(prompt, 'guidance', 15000);
+      renderVerseSearchResult(response, resultEl);
+    } catch (err) {
+      console.error('[VerseFinder]', err);
+      resultEl.innerHTML = '<div class="muted">Unable to find verse — check your API key and try again.</div>';
+    }
+  }
+
+  // VERSE FINDER: Initializer — called once from DOMContentLoaded
+  function initVerseFinder() {
+    const btn   = $('verseSearchBtn');
+    const input = $('verseSearchInput');
+    if (!btn || !input) return;
+    btn.addEventListener('click', runVerseSearch);
+    input.addEventListener('keypress', e => {
+      if (e.key === 'Enter') runVerseSearch();
+    });
   }
 
   function cleanupOnLeave(screen) {
@@ -2855,6 +2983,8 @@ Rules:
   }
 
   async function loadPassage(bookOverride, chapterOverride) {
+    if (window._loadingPassage) return;
+    window._loadingPassage = true;
     const book    = (typeof bookOverride    === 'string' && bookOverride.trim())    ? bookOverride.trim()    : $('bibleBook').value;
     const chapter = (typeof chapterOverride === 'string' && chapterOverride.trim()) ? chapterOverride.trim() : (typeof chapterOverride === 'number' ? String(chapterOverride) : $('bibleChapter').value);
     const translation = $('translation').value;
@@ -2921,14 +3051,13 @@ Rules:
       const version = $('translation')?.value || 'kjv';
       saveReadSession({ book, chapter, version, lastAction: 'read' });
 
-      // ── CONTINUITY — Restore verse position after load ──
+      // ── CONTINUITY — Restore verse position after load (only in continue mode) ──
       requestAnimationFrame(() => {
         const saved = JSON.parse(localStorage.getItem('bb_last_position') || 'null');
         if (saved && saved.book === book && String(saved.chapter) === String(chapter) && saved.verse) {
-          setTimeout(() => {
-            // Delegate entirely to restoreLastVersePosition which handles expand + scrollTop correctly
-            restoreLastVersePosition();
-          }, 350);
+          // Don't restore if this was a reference-mode load (verse finder, journey link)
+          if (bookOverride && window._referenceMode) { window._referenceMode = false; return; }
+          restoreLastVersePosition();
         }
       });
 
@@ -2944,6 +3073,9 @@ Rules:
           }, 10);
         }
       });
+
+      // Release double-load guard
+      setTimeout(() => { window._loadingPassage = false; }, 250);
 
     } catch {
       // ── CONTINUITY ENGINE — Task 8: Failsafe — do NOT overwrite session on failure ──
@@ -3642,9 +3774,17 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
           container.innerHTML = toHTML(res || 'No additional context found.');
         });
       } else if (action === 'guidance') {
-        const fi = $('freeInputText');
-        if (fi) fi.value = `Help me apply this to my life: ${state.session.verse}`;
-        openScreen('study');
+        // Render apply guidance directly without navigating to Study
+        if (state.currentScripture) {
+          const panel = $('guidanceOutput');
+          if (panel) {
+            panel.classList.remove('hidden');
+            panel.innerHTML = `<div class="loader">${getLoadingText()}</div>`;
+            handleGuidance('apply').then(res => {
+              if (res) showAIInPanel(panel, toHTML(res));
+            }).catch(() => { panel.innerHTML = '<div class="muted">Unable to load response.</div>'; });
+          }
+        }
       } else if (action === 'saveFinish') {
         const prayer = $('flowPrayerEdit')?.value.trim();
         if (prayer) saveJourneyEntry({
@@ -3668,32 +3808,45 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
         openScreen('home');
       // ── FLOW ENGINE — Tasks 3+4: Guide card actions ──
       } else if (action === 'reflect') {
-        const card = document.getElementById('flowGuideCard');
-        if (card) card.classList.add('hidden');
+        $('flowGuideCard')?.classList.add('hidden');
         saveReadSession({ lastAction: 'reflect' });
-
-        // Navigate to study screen first, THEN trigger reflection item
-        // after openScreen() finishes clearing panels/active states
-        openScreen('study');
-        setTimeout(() => {
-          const item = document.querySelector('.reflection-item');
-          if (item) {
-            item.click();
-          } else {
-            console.warn('[Flow] No reflection item found after screen switch');
-            if (typeof handleGuidance === 'function') {
-              handleGuidance('explain');
-            }
+        // Render directly in guidanceOutput — no navigation
+        if (state.currentScripture) {
+          const panel = $('guidanceOutput');
+          if (panel) {
+            panel.classList.remove('hidden');
+            panel.innerHTML = `<div class="loader">${getLoadingText()}</div>`;
+            handleGuidance('explain').then(res => {
+              if (res) showAIInPanel(panel, toHTML(res));
+            }).catch(() => { panel.innerHTML = '<div class="muted">Unable to load response.</div>'; });
           }
-        }, 50);
+        }
       } else if (action === 'apply') {
         $('flowGuideCard')?.classList.add('hidden');
         saveReadSession({ lastAction: 'apply' });
-        document.querySelector('[data-action="apply"]')?.click();
+        if (state.currentScripture) {
+          const panel = $('guidanceOutput');
+          if (panel) {
+            panel.classList.remove('hidden');
+            panel.innerHTML = `<div class="loader">${getLoadingText()}</div>`;
+            handleGuidance('apply').then(res => {
+              if (res) showAIInPanel(panel, toHTML(res));
+            }).catch(() => { panel.innerHTML = '<div class="muted">Unable to load response.</div>'; });
+          }
+        }
       } else if (action === 'pray') {
         $('flowGuideCard')?.classList.add('hidden');
         saveReadSession({ lastAction: 'pray' });
-        document.querySelector('[data-action="pray"]')?.click();
+        if (state.currentScripture) {
+          const panel = $('guidanceOutput');
+          if (panel) {
+            panel.classList.remove('hidden');
+            panel.innerHTML = `<div class="loader">${getLoadingText()}</div>`;
+            handleGuidance('pray').then(res => {
+              if (res) showAIInPanel(panel, toHTML(res));
+            }).catch(() => { panel.innerHTML = '<div class="muted">Unable to load response.</div>'; });
+          }
+        }
       }
       return;
     }
@@ -4243,7 +4396,8 @@ ${verseText}`;
 
   // ── CONTINUITY: Scroll tracking on the active screen (not window) ──
   let _scrollTimeout;
-  let _restoreLock = false; // suppresses detectVisibleVerse during programmatic scrolls
+  let _restoreLock = false;        // suppresses detectVisibleVerse during programmatic scrolls
+  let _isRestoringScroll = false;   // suppresses any layout-triggered scroll resets during restore
   document.addEventListener('scroll', (ev) => {
     // Only fire when the scrolling element is a .screen
     const el = ev.target;
@@ -4729,6 +4883,15 @@ ${verseText}`;
     restoreReadSession();
 
     // ── Launch ──
+    initOnboarding();
+    initVerseFinder();
+
+    // Backup reminder — nudge if no backup in 3 days
+    const lastBackup = localStorage.getItem('bb_last_backup');
+    if (!lastBackup || Date.now() - Number(lastBackup) > 3 * 24 * 60 * 60 * 1000) {
+      setTimeout(() => showToast('💾 Consider backing up your data'), 1500);
+    }
+
     setHome();
     openScreen('home');
   });
