@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#0b1020">
+  <meta name="theme-color" content="#0f1115">
   <meta name="display" content="standalone">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
@@ -32,8 +32,8 @@
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html { font-size: 16px; }
-    html, body { height: 100%; overflow: hidden; }
+    html { font-size: 16px; background: #0f1115; }
+    html, body { height: 100%; overflow: hidden; background: #0f1115; }
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -59,7 +59,7 @@
     /* ── LAYOUT ── */
     .container { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0; flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; }
     .screen { display: none; }
-    .screen.active { display: flex; flex-direction: column; flex: 1; padding: 16px 16px 100px; overflow-y: auto; }
+    .screen.active { display: flex; flex-direction: column; flex: 1; padding: 16px 16px calc(100px + env(safe-area-inset-bottom, 0px)); overflow-y: auto; }
 
     /* ── CARDS & COMMON ── */
     .card {
@@ -107,12 +107,13 @@
 
     /* ── FOOTER NAV ── */
     .footer-nav {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
       position: fixed; bottom: 0; left: 0; right: 0; width: 100%; overflow-x: auto;
       white-space: nowrap; z-index: 100; background: rgba(7,16,33,.92);
       border-top: 1px solid var(--border); backdrop-filter: blur(14px);
     }
     .nav-inner { display: flex; gap: 10px; padding: 10px; min-width: max-content; }
-    .nav-inner button { flex: 0 0 auto; padding: 11px 16px; font-size: .9rem; }
+    .nav-inner button { flex: 0 0 auto; padding: 12px 16px; font-size: .9rem; min-height: 44px; }
     .nav-inner button.active { background: linear-gradient(135deg, var(--accent), #5b8cff); border-color: transparent; }
 
     /* ── SETTINGS ROWS ── */
@@ -454,6 +455,10 @@
         <div id="insightCard" class="card hidden" style="margin-top:12px;width:100%;text-align:left;">
           <div class="muted" style="font-size:.82rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;">🧠 Insight</div>
           <div id="insightText" style="font-size:.97rem;line-height:1.55;color:var(--text);"></div>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button data-insight="reflect" class="secondary small">🧠 Reflect</button>
+            <button data-insight="pray"    class="secondary small">🙏 Pray</button>
+          </div>
         </div>
         <!-- VERSE FINDER -->
         <div class="card" style="margin-top:12px;width:100%;text-align:left;">
@@ -670,6 +675,26 @@
 
     <!-- ════ PRAYER ════ -->
     <section id="prayer" class="screen">
+      <!-- PRAYER INBOX -->
+      <div id="prayerInbox" class="card" style="margin-bottom:10px;">
+        <div style="font-weight:600;margin-bottom:6px;font-size:.95rem;">🙏 Today's Prayers</div>
+        <div id="prayerList"><div class="muted small" style="padding:8px 0;">Start your first prayer 🙏<br><span style="font-size:.8rem;opacity:.7;">Write below and tap Receive encouragement</span></div></div>
+      </div>
+
+      <!-- PRAYER CALENDAR -->
+      <div class="card" style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div style="font-weight:600;font-size:.95rem;">📅 Prayer Calendar</div>
+          <div style="display:flex;gap:6px;">
+            <button id="prayCalPrevBtn" style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text);cursor:pointer;">←</button>
+            <span id="prayCalLabel" style="font-size:.85rem;font-weight:600;align-self:center;"></span>
+            <button id="prayCalNextBtn" style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;color:var(--text);cursor:pointer;">→</button>
+          </div>
+        </div>
+        <div id="prayerCalGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;"></div>
+        <div id="prayerDayView" style="display:none;margin-top:10px;"></div>
+      </div>
+
       <div class="split">
         <div class="card">
           <h2 style="margin:0 0 14px;">Prayer & Struggles</h2>
@@ -890,7 +915,7 @@
               <span class="row-title">BibleBuddy</span>
               <span class="row-sub">Your calm Scripture companion</span>
             </div>
-            <span class="small muted" style="font-size:.8rem;font-weight:600;">v14.0</span>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v16.0</span>
           </div>
         </div>
 
@@ -1044,7 +1069,10 @@
       vibration: JSON.parse(localStorage.getItem('bb_vibration') || 'true'),
       model: localStorage.getItem('bb_model') || 'openai/gpt-4o-mini'
     },
-    selectedVerses: [] // Multi-verse selection
+    selectedVerses:    [],   // Multi-verse selection
+    focusPrayerIdx:    null,  // Prayer to highlight on entering prayer screen
+    _activePrayerIdx:  null,  // Active prayer array index
+    _activePrayerId:   null   // Stable prayer ID for threading
   };
 
   // ── CONTINUITY ENGINE — Session State (Task 1) ──
@@ -1527,6 +1555,21 @@ Important:
   const JOURNEY_KEY = 'journeyData';
 
   function saveJourneyEntry(entry) {
+    // Dedup: if Prayer type and same text as last prayer saved within last 60s, skip
+    if (entry.type === 'Prayer' || entry.type === 'prayer') {
+      try {
+        const existing = JSON.parse(localStorage.getItem('journeyData') || '[]');
+        const last = existing.filter(e => e.type === 'Prayer' || e.type === 'prayer').slice(-1)[0];
+        if (last && last.text === entry.text && (Date.now() - (last.timestamp || 0)) < 60000) {
+          // Same prayer text within 60 seconds — update timestamp only
+          last.timestamp = Date.now();
+          last.date = new Date().toLocaleString();
+          localStorage.setItem('journeyData', JSON.stringify(existing));
+          if (typeof renderPrayerList === 'function') renderPrayerList();
+          return;
+        }
+      } catch (_) {}
+    }
     try {
       const data = JSON.parse(localStorage.getItem(JOURNEY_KEY) || '[]');
       data.unshift(entry);
@@ -1961,9 +2004,10 @@ Important:
       <div style="font-weight:600;margin-bottom:4px;color:var(--accent2);">📖 ${ref || 'Verse found'}</div>
       <div class="ai-response" style="margin-bottom:6px;">${verseText}</div>
       ${note ? `<div class="muted small" style="margin-top:4px;">${note}</div>` : ''}
-      <div style="display:flex;gap:8px;margin-top:10px;">
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
         <button id="loadFoundVerse" class="secondary" style="flex:1;">Open in Reader</button>
         <button id="saveFoundVerse" class="secondary" style="flex:1;">⭐ Save</button>
+        <button id="clearVerseSearch" class="secondary" style="flex:0 0 auto;padding:8px 12px;">✕</button>
       </div>`;
 
     // Open in Reader — reference mode (does not overwrite readSession book/chapter until user reads)
@@ -2031,13 +2075,175 @@ Note: [One sentence explaining why this verse matches]`;
 
   // VERSE FINDER: Initializer — called once from DOMContentLoaded
   function initVerseFinder() {
-    const btn   = $('verseSearchBtn');
-    const input = $('verseSearchInput');
+    const btn    = $('verseSearchBtn');
+    const input  = $('verseSearchInput');
+    const result = $('verseSearchResult');
     if (!btn || !input) return;
     btn.addEventListener('click', runVerseSearch);
     input.addEventListener('keypress', e => {
       if (e.key === 'Enter') runVerseSearch();
     });
+    // Hide result when user starts typing a new query
+    input.addEventListener('input', () => {
+      result?.classList.add('hidden');
+    });
+    // Clear button — delegated since button is rendered dynamically
+    result?.addEventListener('click', e => {
+      if (e.target.id === 'clearVerseSearch') {
+        input.value = '';
+        result.classList.add('hidden');
+        input.focus();
+      }
+    });
+  }
+
+  // ── PRAYER CALENDAR ──
+  let prayCalYear  = new Date().getFullYear();
+  let prayCalMonth = new Date().getMonth();
+  let prayCalActiveKey = null;
+
+  function buildPrayerCalendar() {
+    const grid  = $('prayerCalGrid');
+    const label = $('prayCalLabel');
+    if (!grid || !label) return;
+
+    grid.innerHTML = '';
+    const firstDay    = new Date(prayCalYear, prayCalMonth, 1).getDay();
+    const daysInMonth = new Date(prayCalYear, prayCalMonth + 1, 0).getDate();
+    const today       = new Date().toDateString();
+
+    label.textContent = new Date(prayCalYear, prayCalMonth).toLocaleString('default', { month: 'short', year: 'numeric' });
+
+    const data    = JSON.parse(localStorage.getItem('journeyData') || '[]');
+    const prayers = data.filter(e => e.type === 'Prayer' || e.type === 'prayer');
+
+    // Day-of-week headers
+    ['S','M','T','W','T','F','S'].forEach(d => {
+      const h = document.createElement('div');
+      h.textContent = d;
+      h.style.cssText = 'text-align:center;font-size:.65rem;color:var(--muted);font-weight:600;padding:2px 0;';
+      grid.appendChild(h);
+    });
+
+    // Empty leading slots
+    for (let i = 0; i < firstDay; i++) grid.appendChild(document.createElement('div'));
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dayKey  = new Date(prayCalYear, prayCalMonth, d).toDateString();
+      const isToday  = dayKey === today;
+      const isActive = dayKey === prayCalActiveKey;
+
+      const count = prayers.filter(e => {
+        return new Date(e.timestamp || e.date).toDateString() === dayKey;
+      }).length;
+
+      const hasAnswered = prayers.some(e =>
+        new Date(e.timestamp || e.date).toDateString() === dayKey && e.status === 'answered'
+      );
+
+      const el = document.createElement('div');
+      el.textContent = d;
+
+      let bg = 'rgba(255,255,255,.03)';
+      if (isActive)       bg = 'rgba(124,156,255,.5)';
+      else if (count > 0) {
+        const op = Math.min(count, 4) * 0.12 + 0.1;
+        bg = hasAnswered
+          ? `rgba(76,175,80,${op})`       // green tint for answered days
+          : `rgba(124,156,255,${op})`;    // blue tint for active/ongoing
+      }
+
+      el.style.cssText = [
+        'padding:5px 2px;border-radius:6px;text-align:center;cursor:pointer;font-size:.8rem;',
+        `background:${bg};`,
+        isToday   ? 'font-weight:700;color:var(--accent2);' : '',
+        count > 0 ? 'font-weight:600;' : 'color:var(--muted);',
+        isActive  ? 'outline:1px solid rgba(124,156,255,.7);' : ''
+      ].join('');
+
+      el.addEventListener('click', () => {
+        prayCalActiveKey = prayCalActiveKey === dayKey ? null : dayKey;
+        buildPrayerCalendar();
+        if (prayCalActiveKey) showPrayerDay(prayCalActiveKey);
+        else { const dv = $('prayerDayView'); if (dv) dv.style.display = 'none'; }
+      });
+
+      grid.appendChild(el);
+    }
+  }
+
+  function showPrayerDay(dayKey) {
+    const dv = $('prayerDayView');
+    if (!dv) return;
+
+    const data = JSON.parse(localStorage.getItem('journeyData') || '[]');
+    const entries = data
+      .map((e, i) => ({ ...e, _idx: i }))
+      .filter(e => {
+        return (e.type === 'Prayer' || e.type === 'prayer') &&
+               new Date(e.timestamp || e.date).toDateString() === dayKey;
+      });
+
+    dv.style.display = 'block';
+
+    if (!entries.length) {
+      dv.innerHTML = `<div class="muted small">No prayers on ${new Date(dayKey).toLocaleDateString('default', { weekday:'short', month:'short', day:'numeric' })}.</div>`;
+      return;
+    }
+
+    const dateLabel = new Date(dayKey).toLocaleDateString('default', { weekday:'long', month:'long', day:'numeric' });
+    const statusColor = e =>
+      e.status === 'answered' ? '#4caf50' :
+      e.status === 'ongoing'  ? '#ff9800' : 'var(--accent2)';
+
+    dv.innerHTML = `
+      <div style="font-size:.8rem;font-weight:600;color:var(--accent2);margin-bottom:6px;">${dateLabel}</div>
+      ${entries.map(e => {
+        const preview = (e.text || '').slice(0, 100) + ((e.text || '').length > 100 ? '…' : '');
+        const statusLabel = e.status === 'answered' ? '✅ Answered' : e.status === 'ongoing' ? '⏳ Ongoing' : '🙏 Active';
+        const actions = e.status !== 'answered' ? `
+          <div style="display:flex;gap:6px;margin-top:6px;">
+            <button data-prayer-open="${e._idx}" class="secondary small">🙏 Pray Again</button>
+            <button data-prayer-done="${e._idx}" class="secondary small">✅ Mark Answered</button>
+          </div>` : '';
+        const answerNote = (e.status === 'answered' && e.answer)
+          ? `<div style="font-size:.8rem;color:var(--muted);margin-top:3px;">💬 ${e.answer}</div>` : '';
+        return `
+          <div style="border-left:3px solid ${statusColor(e)};padding:8px 10px;margin-bottom:8px;
+                      border-radius:0 8px 8px 0;background:rgba(255,255,255,.02);animation:fadeUp .2s ease;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+              <span style="font-size:.75rem;color:${statusColor(e)};font-weight:600;">${statusLabel}</span>
+            </div>
+            <div style="font-size:.88rem;line-height:1.4;">${preview}</div>
+            ${answerNote}
+            ${actions}
+          </div>`;
+      }).join('')}`;
+  }
+
+  function initPrayerCalendarListeners() {
+    const prev = $('prayCalPrevBtn');
+    const next = $('prayCalNextBtn');
+    if (prev && !prev._prayBound) {
+      prev._prayBound = true;
+      prev.onclick = () => {
+        prayCalMonth--;
+        if (prayCalMonth < 0) { prayCalMonth = 11; prayCalYear--; }
+        prayCalActiveKey = null;
+        const dv = $('prayerDayView'); if (dv) dv.style.display = 'none';
+        buildPrayerCalendar();
+      };
+    }
+    if (next && !next._prayBound) {
+      next._prayBound = true;
+      next.onclick = () => {
+        prayCalMonth++;
+        if (prayCalMonth > 11) { prayCalMonth = 0; prayCalYear++; }
+        prayCalActiveKey = null;
+        const dv = $('prayerDayView'); if (dv) dv.style.display = 'none';
+        buildPrayerCalendar();
+      };
+    }
   }
 
   function cleanupOnLeave(screen) {
@@ -2079,7 +2285,7 @@ Note: [One sentence explaining why this verse matches]`;
     $('verseActions')?.classList.add('hidden');
     document.querySelectorAll('.verse-item.active').forEach(v => v.classList.remove('active'));
     clearMultiSelection();
-    if (screen === 'prayer') { const ctx = $('prayerContextHeader'); if (ctx) ctx.style.display = 'none'; }
+    if (screen === 'prayer') { const ctx = $('prayerContextHeader'); if (ctx) ctx.style.display = 'none'; /* thread pointer kept alive — only reset on explicit new prayer */ }
   }
 
   // ══════════════════════════════════════════════
@@ -2260,136 +2466,117 @@ Note: [One sentence explaining why this verse matches]`;
       return;
     }
 
-    const typeMap = {
-      Scripture:  '📖 Scripture',
-      Reflection: '🧠 Reflection',
-      Prayer:     '🙏 Prayer',
-      Note:       '📝 Note',
-      Bookmark:   '⭐ Bookmark'
-    };
-
-    // Render entries — wrapped in data-journey-index so existing edit/delete handlers fire
+    // STEP 1: Normalize types, unified renderer
     dayList.innerHTML = filtered.map(e => {
-      const idx         = e._index;
-      const time        = e.timestamp ? new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-      const isScripture = e.type === 'Scripture' && e.book && e.chapter;
-      const isBookmark  = e.type === 'Bookmark'  && (e.ref || (e.book && e.chapter));
-      const label       = typeMap[e.type] || (e.type || 'Entry');
-      const bodyText    = (e.text || '').trim();
-      const needsExpand = bodyText.length > 120;
-
-      // Title block: Scripture shows Book + Chapter; Bookmark shows full ref (Book Ch:Verse)
-      const titleBlock = isScripture
-        ? `<div style="font-weight:600;font-size:1rem;color:var(--text);margin-bottom:4px;">📖 ${e.book} ${e.chapter}</div>`
-        : isBookmark && e.ref
-          ? `<div style="font-weight:600;font-size:.95rem;color:var(--text);margin-bottom:4px;">📌 ${e.ref}</div>`
-          : '';
-
-      // Open button: Scripture + Bookmark both get one if book/chapter present
-      const openBook    = e.book    || (isBookmark && e.ref ? e.ref.split(' ')[0] : '');
-      const openChapter = e.chapter || (isBookmark && e.ref ? (e.ref.match(/\s(\d+)[:.]/) || [])[1] || '' : '');
-      const loadBtn = (isScripture || (isBookmark && openBook && openChapter))
-        ? `<button data-journey-load-book="${openBook}" data-journey-load-chapter="${openChapter}"
-              style="margin-top:6px;font-size:.8rem;padding:5px 10px;border-radius:8px;
-                     background:var(--panel2);border:1px solid var(--border);color:var(--accent2);cursor:pointer;">
-             📖 Open
-           </button>`
+      const idx  = e._index;
+      const type = (e.type || '').toLowerCase();
+      const time = e.timestamp
+        ? new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         : '';
 
-      // STEP 5: Prayer entry — special rendering with status + answer
-      const isPrayer = e.type === 'Prayer' || e.type === 'prayer';
-      if (isPrayer) {
+      // STEP 2: Type flags (case-insensitive)
+      const isScripture = type === 'scripture';
+      const isBookmark  = type === 'bookmark';
+      const isPrayer    = type === 'prayer';
+      const isNote      = type === 'note' || type === 'reflection' || type === 'meditation';
+
+      // STEP 4+5+7: Body text — include thread updates for prayer entries
+      const rawBody = (() => {
+        if (type === 'prayer') {
+          const ups = (e.updates || e.notes || []).map(u => u.text || '').filter(Boolean);
+          let base  = ups.length ? (e.text || '') + '\n\n' + ups.join('\n') : (e.text || '');
+          if (e.status === 'answered' && e.answer) base += '\n\n✔ ' + e.answer;
+          return base;
+        }
+        return e.text || e.content || '';
+      })();
+      const bodyText    = safeText(rawBody.trim());
+      const needsExpand = bodyText.length > 120;
+
+      // STEP 7: Action row (edit + delete always available)
+      const actionRow = `
+        <div style="display:flex;gap:10px;align-items:center;">
+          <span style="font-size:.72rem;color:var(--muted);">${time}</span>
+          <span data-edit="${idx}" style="cursor:pointer;font-size:1rem;" title="Edit">✏️</span>
+          <span data-delete="${idx}" style="cursor:pointer;font-size:1rem;" title="Delete">🗑️</span>
+        </div>`;
+
+      // STEP 3: Title block per type
+      let typeLabel = '';
+      let titleBlock = '';
+      let extraBlock = '';
+      let loadBtn    = '';
+
+      if (isScripture) {
+        typeLabel  = '📖 Scripture';
+        titleBlock = `<div style="font-weight:600;font-size:1rem;color:var(--text);margin-bottom:4px;">📖 ${e.book || ''} ${e.chapter || ''}</div>`;
+        const ob   = e.book || '';
+        const oc   = e.chapter || '';
+        if (ob && oc) loadBtn = `<button data-journey-load-book="${ob}" data-journey-load-chapter="${oc}"
+          style="margin-top:6px;font-size:.8rem;padding:5px 10px;border-radius:8px;
+                 background:var(--panel2);border:1px solid var(--border);color:var(--accent2);cursor:pointer;">📖 Open</button>`;
+
+      } else if (isBookmark) {
+        typeLabel  = '⭐ Bookmark';
+        const ref  = e.ref || (((e.book || '') + ' ' + (e.chapter || '')).trim());
+        if (ref) titleBlock = '<div style="font-weight:600;font-size:.95rem;color:var(--text);margin-bottom:4px;">📌 ' + ref + '</div>';
+        const ob   = e.book || (e.ref ? e.ref.split(' ')[0] : '');
+        const oc   = e.chapter || (e.ref ? ((e.ref.match(/\s(\d+)[:.]/) || [])[1] || '') : '');
+        if (ob && oc) loadBtn = '<button data-journey-load-book="' + ob + '" data-journey-load-chapter="' + oc + '" style="margin-top:6px;font-size:.8rem;padding:5px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--accent2);cursor:pointer;">📖 Open</button>';
+
+      } else if (isPrayer) {
+        typeLabel = '🙏 Prayer';
         const statusLabel =
           e.status === 'answered' ? '✅ Answered' :
-          e.status === 'ongoing'  ? '⏳ Ongoing'  :
-          '🙏 Active';
+          e.status === 'ongoing'  ? '⏳ Ongoing'  : '🙏 Active';
         const statusColor =
-          e.status === 'answered' ? 'var(--accent2)' :
-          e.status === 'ongoing'  ? '#f5a623' :
-          'var(--muted)';
-        const answerBlock = (e.status === 'answered' && e.answer)
-          ? `<div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(124,156,255,.1);font-size:.85rem;color:var(--text);">
-               💬 ${safeText(e.answer)}
-             </div>`
-          : '';
-        const markBtn = (e.status !== 'answered')
-          ? `<button data-prayer-answer="${idx}"
-               style="margin-top:8px;font-size:.8rem;padding:5px 10px;border-radius:8px;
-                      background:var(--panel2);border:1px solid var(--border);color:var(--accent2);cursor:pointer;">
-               ✅ Mark Answered
-             </button>`
-          : '';
-        const pBodyText = (e.text || '').trim();
-        const pNeedsExpand = pBodyText.length > 120;
-        const pExpandBtn = pNeedsExpand
-          ? `<button class="expand-entry" style="margin-top:4px;background:none;border:none;
-                color:var(--accent);font-size:.8rem;padding:0;cursor:pointer;font-weight:600;">More</button>`
-          : '';
-        return `
-          <div class="journey-entry" data-journey-index="${idx}" style="
-            margin-bottom:10px;padding:12px;
-            background:rgba(255,255,255,.03);
-            border:1px solid var(--border);
-            border-left:3px solid ${statusColor};
-            border-radius:12px;
-            animation:fadeUp 0.2s ease;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-              <div style="font-size:.8rem;font-weight:600;color:var(--accent2);">🙏 Prayer</div>
-              <div style="display:flex;gap:10px;align-items:center;">
-                <span style="font-size:.72rem;color:${statusColor};font-weight:600;">${statusLabel}</span>
-                <span style="font-size:.72rem;color:var(--muted);">${time}</span>
-                <span data-edit="${idx}" style="cursor:pointer;font-size:1rem;" title="Edit">✏️</span>
-                <span data-delete="${idx}" style="cursor:pointer;font-size:1rem;" title="Delete">🗑️</span>
-              </div>
-            </div>
-            <div class="entry-text${pNeedsExpand ? ' collapsed' : ''}">
-              ${pBodyText || '<span class="muted">No content</span>'}
-            </div>
-            ${pExpandBtn}
-            ${(() => {
-              const ageDays = e.timestamp
-                ? Math.floor((Date.now() - e.timestamp) / (24 * 60 * 60 * 1000))
-                : 0;
-              return ageDays > 0
-                ? `<div class="muted" style="font-size:.75rem;margin-top:4px;">${ageDays} day${ageDays > 1 ? 's' : ''} ago</div>`
-                : '';
-            })()}
-            ${answerBlock}
-            ${markBtn}
-          </div>`;
+          e.status === 'answered' ? '#4caf50' :
+          e.status === 'ongoing'  ? '#f5a623' : 'var(--muted)';
+        const ageDays = e.timestamp ? Math.floor((Date.now() - e.timestamp) / 86400000) : 0;
+        const agePart  = ageDays > 0 ? '<div class="muted" style="font-size:.72rem;margin-top:2px;">' + ageDays + 'd ago</div>' : '';
+        const answerPart = e.status === 'answered' && e.answer
+          ? '<div style="margin-top:6px;padding:6px 8px;border-radius:8px;background:rgba(76,175,80,.1);font-size:.83rem;">💬 ' + safeText(e.answer) + '</div>'
+          : e.status !== 'answered'
+            ? '<button data-prayer-answer="' + idx + '" style="margin-top:6px;font-size:.8rem;padding:4px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--border);color:var(--accent2);cursor:pointer;">✅ Mark Answered</button>'
+            : '';
+        extraBlock = '<span style="font-size:.72rem;color:' + statusColor + ';font-weight:600;margin-right:6px;">' + statusLabel + '</span>' + agePart + answerPart;
+
+      } else if (isNote) {
+        const noteMap = { note: '📝 Note', reflection: '🧠 Reflection', meditation: '🧘 Meditation' };
+        typeLabel = noteMap[type] || '📝 Note';
+
+      } else {
+        // STEP 6: Fallback for any unrecognised type
+        typeLabel = e.type || 'Entry';
       }
 
-      // STEP 3: Full text with expand toggle
+      // STEP 3: Expand button
       const expandBtn = needsExpand
         ? `<button class="expand-entry" style="margin-top:4px;background:none;border:none;
               color:var(--accent);font-size:.8rem;padding:0;cursor:pointer;font-weight:600;">More</button>`
         : '';
 
+      const borderLeft = isPrayer
+        ? (e.status === 'answered' ? '3px solid #4caf50' : e.status === 'ongoing' ? '3px solid #f5a623' : '1px solid var(--border)')
+        : '1px solid var(--border)';
+
       return `
         <div class="journey-entry" data-journey-index="${idx}" style="
           margin-bottom:10px;padding:12px;
           background:rgba(255,255,255,.03);
-          border:1px solid var(--border);
+          border:${borderLeft};
           border-radius:12px;
           animation:fadeUp 0.2s ease;">
-
-          <!-- STEP 1: Type label + icon actions -->
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <div style="font-size:.8rem;font-weight:600;color:var(--accent2);">${label}</div>
-            <div style="display:flex;gap:10px;align-items:center;">
-              <span style="font-size:.72rem;color:var(--muted);">${time}</span>
-              <span data-edit="${idx}" style="cursor:pointer;font-size:1rem;" title="Edit">✏️</span>
-              <span data-delete="${idx}" style="cursor:pointer;font-size:1rem;" title="Delete">🗑️</span>
-            </div>
+            <div style="font-size:.8rem;font-weight:600;color:var(--accent2);">${typeLabel}</div>
+            ${actionRow}
           </div>
-
           ${titleBlock}
-
-          <!-- STEP 3: Collapsible text -->
           <div class="entry-text${needsExpand ? ' collapsed' : ''}">
             ${bodyText || '<span class="muted">No content</span>'}
           </div>
           ${expandBtn}
+          ${extraBlock}
           ${loadBtn}
         </div>`;
     }).join('');
@@ -2454,11 +2641,46 @@ Note: [One sentence explaining why this verse matches]`;
   function onEnter(screen) {
     if (screen === 'home') { setHome(); updateStreak(); }
     else if (screen === 'sessionFlow') renderSessionFlow();
-    else if (screen === 'read') { syncReadDefault(); }
+    else if (screen === 'read') {
+      syncReadDefault();
+      // Restore last verse position when navigating to Scripture tab directly
+      // (no loadPassage triggered — verses already in DOM from previous load)
+      requestAnimationFrame(() => {
+        const hasVerses = document.querySelectorAll('.verse-item').length > 0;
+        const saved     = JSON.parse(localStorage.getItem('bb_last_position') || 'null');
+        if (hasVerses && saved && saved.verse) {
+          restoreLastVersePosition();
+        }
+      });
+    }
     else if (screen === 'journey') { buildCalendar(calYear, calMonth); initCalendarListeners(); }
     else if (screen === 'meditate') initMeditation();
     else if (screen === 'study') refreshStudyPanel();
-    else if (screen === 'prayer') renderAnsweredPrayers();
+    else if (screen === 'prayer') {
+      renderAnsweredPrayers();
+      renderPrayerList();
+      buildPrayerCalendar();
+      initPrayerCalendarListeners();
+      // STEP 1: Scroll to and highlight focused prayer if set
+      if (state.focusPrayerIdx !== null) {
+        const targetIdx = state.focusPrayerIdx;
+        requestAnimationFrame(() => {
+          const card = document.querySelector('[data-prayer-idx="' + targetIdx + '"]');
+          if (card) {
+            const sc = document.querySelector('.screen.active');
+            if (sc) {
+              let top = 0; let el = card;
+              while (el && el !== sc) { top += el.offsetTop; el = el.offsetParent; }
+              sc.scrollTop = Math.max(0, top - 60);
+            }
+            card.style.outline = '2px solid var(--accent2)';
+            card.style.transition = 'outline .2s ease';
+            setTimeout(() => { card.style.outline = ''; card.style.transition = ''; }, 1600);
+          }
+          state.focusPrayerIdx = null; // FIX 6: clear after scroll
+        });
+      }
+    }
     else if (screen === 'profile') syncProfileStats();
   }
 
@@ -2705,7 +2927,7 @@ Note: [One sentence explaining why this verse matches]`;
         if (ongoingPrayer) {
           const preview = (ongoingPrayer.text || '').slice(0, 50);
           revisitEl.innerHTML = `
-            <div style="font-size:.75rem;color:var(--muted);margin-bottom:4px;">⏳ Still waiting</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-bottom:4px;">⏳ Return to Prayer</div>
             <div style="font-weight:600;color:var(--accent2);">
               Revisit → ${preview}${(ongoingPrayer.text || '').length > 50 ? '…' : ''}
             </div>`;
@@ -2759,6 +2981,7 @@ Note: [One sentence explaining why this verse matches]`;
       if (insight && card && text) {
         text.textContent = insight;
         card.classList.remove('hidden');
+        // Insight actions handled by data-insight delegated handler in handleGlobalClick
       } else if (card) {
         card.classList.add('hidden');
       }
@@ -3536,14 +3759,31 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
   }
 
   function saveStudyNote() {
-    const ref = extractRef(state.currentScripture);
+    const ref  = extractRef(state.currentScripture);
     if (!ref) return showToast('Load a passage first');
+    const text = ($('studyNotesArea').value || '').trim();
+    // Keep existing study_notes object (used by Study screen reload)
     const notes = JSON.parse(localStorage.getItem('study_notes') || '{}');
-    const text = $('studyNotesArea').value.trim();
     if (text) { notes[ref] = text; } else { delete notes[ref]; }
     localStorage.setItem('study_notes', JSON.stringify(notes));
+    // STEP 3: Also persist to journeyData so note appears in Journey calendar
+    if (text) {
+      saveJourneyEntry({
+        type:      'Note',
+        text:      text,
+        ref:       ref,
+        book:      state.readSession?.book    || '',
+        chapter:   state.readSession?.chapter || '',
+        timestamp: Date.now(),
+        date:      new Date().toLocaleString()
+      });
+    }
     showToast(text ? 'Note saved' : 'Note cleared');
     loadSavedNotes();
+    // FIX 3: Refresh calendar so note appears on today
+    if (text && typeof buildCalendar === 'function') {
+      buildCalendar(calYear, calMonth);
+    }
   }
 
   function extractRef(scripture) {
@@ -3556,28 +3796,207 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
   // ═══════════════════════════════════════════
   //  PRAYER
   // ═══════════════════════════════════════════
+  // ── PRAYER INBOX: render all prayers from journeyData ──
+  function renderPrayerList() {
+    const container = $('prayerList');
+    if (!container) return;
+
+    const data     = JSON.parse(localStorage.getItem('journeyData') || '[]');
+    const todayKey = new Date().toDateString();
+
+    // STEP 2: Today only
+    const prayers = data
+      .map((e, i) => ({ ...e, _idx: i }))
+      .filter(e =>
+        (e.type === 'Prayer' || e.type === 'prayer') &&
+        new Date(e.timestamp || e.date).toDateString() === todayKey
+      )
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+    // STEP 6: Empty state
+    if (!prayers.length) {
+      container.innerHTML = '<div class="muted small" style="padding:8px 0;">No prayers recorded today.<br><span style="font-size:.8rem;opacity:.7;">Write below and tap Receive encouragement</span></div>';
+      return;
+    }
+
+    container.innerHTML = prayers.map(e => {
+      const idx = e._idx;
+      const borderColor =
+        e.status === 'answered' ? '#4caf50' :
+        e.status === 'ongoing'  ? '#ff9800' :
+        'var(--accent2)';
+      const statusBadge =
+        e.status === 'answered' ? '<span style="color:#4caf50;font-size:.75rem;">✅ Answered</span>' :
+        e.status === 'ongoing'  ? '<span style="color:#ff9800;font-size:.75rem;">⏳ Ongoing</span>'  :
+        '<span style="color:var(--accent2);font-size:.75rem;">🙏 Active</span>';
+
+      // FIX 4+5: Full thread text (base + updates + answered note)
+      const allUpdates  = e.updates || e.notes || [];
+      const threadParts = allUpdates.map(u => u.text || '').filter(Boolean);
+      let fullText = threadParts.length
+        ? (e.text || '') + '\n\n' + threadParts.join('\n')
+        : (e.text || '');
+      if (e.status === 'answered' && e.answer) {
+        fullText += '\n\n✔ ' + e.answer;
+      }
+      const needsExpand = fullText.length > 120;
+      const shortText   = needsExpand ? fullText.slice(0, 120) + '…' : fullText;
+      const expandBtn  = needsExpand
+        ? `<button data-prayer-expand="${idx}" class="secondary small" style="margin-top:3px;">More</button>`
+        : '';
+
+      const answerBlock = (e.status === 'answered' && e.answer)
+        ? `<div style="font-size:.8rem;color:var(--muted);margin-top:3px;">💬 ${e.answer}</div>` : '';
+
+      const notesCount = e.notes && e.notes.length
+        ? `<div class="muted small" style="font-size:.75rem;margin-top:2px;">${e.notes.length} update${e.notes.length > 1 ? 's' : ''}</div>`
+        : '';
+
+      // STEP 4: Action buttons — all states + delete
+      const actions = `
+        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+          ${e.status !== 'answered' ? `
+            <button data-prayer-open="${idx}" class="secondary small">🙏 Pray Again</button>
+            <button data-prayer-done="${idx}" class="secondary small">✅ Mark Answered</button>
+          ` : '<span style="font-size:.8rem;color:#4caf50;">✔ Answered</span>'}
+          <button data-delete="${idx}" class="secondary small">🗑</button>
+        </div>`;
+
+      return `
+        <div class="prayer-today-card" data-prayer-idx="${idx}"
+             style="border-left:4px solid ${borderColor};padding:8px 10px;margin-bottom:8px;
+                    border-radius:0 8px 8px 0;background:rgba(255,255,255,.02);animation:fadeUp .18s ease;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">
+            ${statusBadge}
+          </div>
+          <div class="entry-text prayer-text-${idx}" data-expanded="false"
+               style="font-size:.88rem;line-height:1.5;">${shortText}</div>
+          ${expandBtn}
+          ${notesCount}
+          ${answerBlock}
+          ${actions}
+        </div>`;
+    }).join('');
+  }
+
+  // ── PRAYER THREAD HELPERS ──
+  function prayerThreadAppend(idxOrId, newText) {
+    // Append update to existing prayer thread — resolves by ID or index
+    const jd = JSON.parse(localStorage.getItem('journeyData') || '[]');
+    // Try ID lookup first (stable), fall back to index
+    let ep = typeof idxOrId === 'string'
+      ? jd.find(e => e.id === idxOrId)
+      : jd[idxOrId];
+    if (!ep) return false;
+    ep.updates = ep.updates || [];
+    ep.notes   = ep.notes   || [];
+    if (newText && newText !== ep.text) {
+      ep.updates.push({ text: newText, time: Date.now() });
+    }
+    ep.updatedAt = Date.now();
+    ep.timestamp = Date.now(); // resurface today in Today's Prayers
+    ep.date      = new Date().toLocaleString();
+    localStorage.setItem('journeyData', JSON.stringify(jd));
+    // Keep pointer alive for this session so multiple updates attach to same thread
+    // Only reset if user explicitly starts a new prayer
+    renderPrayerList();
+    return true;
+  }
+
+  // Store active prayer by stable ID, not volatile index
+  function setActivePrayer(idx) {
+    const jd = JSON.parse(localStorage.getItem('journeyData') || '[]');
+    const ep = jd[idx];
+    state._activePrayerIdx = idx;
+    state._activePrayerId  = ep?.id || null;
+    state.focusPrayerIdx   = idx;
+  }
+
+  function resolveActivePrayer() {
+    // Prefer ID-based lookup for stability
+    if (state._activePrayerId) {
+      const jd = JSON.parse(localStorage.getItem('journeyData') || '[]');
+      const idx = jd.findIndex(e => e.id === state._activePrayerId);
+      if (idx > -1) return idx;
+    }
+    return state._activePrayerIdx;
+  }
+
+  function saveAndResetPrayer(fullPrayerText) {
+    if (!fullPrayerText) return;
+    const existing = JSON.parse(localStorage.getItem('journeyData') || '[]');
+
+    // Dedup: same text as most recent prayer → append timestamp only
+    const lastPrayer = existing.filter(e => e.type === 'Prayer' || e.type === 'prayer').slice(-1)[0];
+    if (lastPrayer && lastPrayer.text === fullPrayerText) {
+      lastPrayer.timestamp = Date.now();
+      lastPrayer.updatedAt = Date.now();
+      lastPrayer.date      = new Date().toLocaleString();
+      localStorage.setItem('journeyData', JSON.stringify(existing));
+      showToast('Prayer updated');
+      renderPrayerList();
+      return;
+    }
+
+    // CP 4: New prayer with stable ID
+    const newId = 'p_' + Date.now();
+    saveJourneyEntry({
+      id:        newId,
+      type:      'Prayer',
+      text:      fullPrayerText,
+      updates:   [],
+      notes:     [],
+      book:      state.readSession?.book    || '',
+      chapter:   state.readSession?.chapter || '',
+      verses:    (state.selectedVerses || []).map(v => v.verse).join(','),
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      timestamp: Date.now(),
+      date:      new Date().toLocaleString(),
+      status:    'active',
+      answer:    ''
+    });
+    renderPrayerList();
+  }
+
   function renderAnsweredPrayers() {
     const list = $('answeredPrayerList');
     if (!list) return;
-    const prayers = JSON.parse(localStorage.getItem('answered_prayers') || '[]');
+    // FIX 3A: Source from journeyData only — no separate answered_prayers key
+    const data    = JSON.parse(localStorage.getItem('journeyData') || '[]');
+    const prayers = data
+      .filter(e => (e.type === 'Prayer' || e.type === 'prayer') && e.status === 'answered')
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     if (!prayers.length) {
-      list.innerHTML = '<div class="muted small">Record prayers God has answered.</div>';
+      list.innerHTML = '<div class="muted small">Answered prayers will appear here.</div>';
       return;
     }
-    list.innerHTML = prayers.map((p, i) => `
-      <div class="item" style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-        <span>${p.text}</span>
-        <button data-del-prayer="${i}" class="ghost small" style="padding:4px 8px;color:var(--muted);">✕</button>
+    list.innerHTML = prayers.map(p => `
+      <div class="item" style="border-left:3px solid #4caf50;padding:6px 10px;margin-bottom:6px;border-radius:0 8px 8px 0;">
+        <div style="font-size:.88rem;">${(p.text || '').slice(0, 80)}${(p.text || '').length > 80 ? '…' : ''}</div>
+        ${p.answer ? `<div class="muted small" style="margin-top:3px;">💬 ${p.answer}</div>` : ''}
       </div>`).join('');
   }
 
   function addAnsweredPrayer() {
-    const text = prompt('What prayer did God answer?');
+    const text   = prompt('What prayer did God answer?');
     if (!text || !text.trim()) return;
-    const prayers = JSON.parse(localStorage.getItem('answered_prayers') || '[]');
-    prayers.unshift({ text: text.trim(), date: new Date().toLocaleString() });
-    localStorage.setItem('answered_prayers', JSON.stringify(prayers));
+    const answer = prompt('What did God do? (optional)') || '';
+    saveJourneyEntry({
+      id:        'p_' + Date.now(),
+      type:      'Prayer',
+      text:      text.trim(),
+      updates:   [],
+      notes:     [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      timestamp: Date.now(),
+      date:      new Date().toLocaleString(),
+      status:    'answered',
+      answer:    answer.trim()
+    });
     renderAnsweredPrayers();
+    renderPrayerList();
   }
 
   // ═══════════════════════════════════════════
@@ -4042,6 +4461,94 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       return;
     }
 
+    // PRAYER TODAY: Expand/collapse prayer text
+    // STEP 5: Tap answered prayer entry to expand full text
+    if (t.closest('.prayer-today-card') && !t.matches('button') && !t.closest('button')) {
+      const card = t.closest('.prayer-today-card');
+      const textEl = card?.querySelector('.entry-text');
+      if (textEl) {
+        const idx = card.dataset.prayerIdx;
+        const expanded = textEl.dataset.expanded === 'true';
+        if (!expanded) {
+          const jd = JSON.parse(localStorage.getItem('journeyData') || '[]');
+          const entry = jd[parseInt(idx)];
+          if (entry) { textEl.textContent = entry.text || ''; textEl.dataset.expanded = 'true'; }
+        } else {
+          const jd = JSON.parse(localStorage.getItem('journeyData') || '[]');
+          const entry = jd[parseInt(idx)];
+          const full  = entry?.text || '';
+          textEl.textContent = full.length > 120 ? full.slice(0,120) + '…' : full;
+          textEl.dataset.expanded = 'false';
+        }
+      }
+      return;
+    }
+
+    if (t.matches('[data-prayer-expand]')) {
+      const idx     = t.dataset.prayerExpand;
+      const card    = t.closest('.prayer-today-card');
+      const textEl  = card?.querySelector('.entry-text');
+      if (!textEl) return;
+      const expanded = textEl.dataset.expanded === 'true';
+      if (!expanded) {
+        // Fetch full text from journeyData
+        const jd = JSON.parse(localStorage.getItem('journeyData') || '[]');
+        const entry = jd[parseInt(idx)];
+        if (entry) textEl.textContent = entry.text || '';
+        textEl.dataset.expanded = 'true';
+        t.textContent = 'Less';
+      } else {
+        const jd = JSON.parse(localStorage.getItem('journeyData') || '[]');
+        const entry = jd[parseInt(idx)];
+        const full  = entry?.text || '';
+        textEl.textContent = full.length > 120 ? full.slice(0, 120) + '…' : full;
+        textEl.dataset.expanded = 'false';
+        t.textContent = 'More';
+      }
+      return;
+    }
+
+    // PRAYER INBOX: Continue prayer (pre-fill textarea)
+    if (t.matches('[data-prayer-open]')) {
+      const idx  = Number(t.dataset.prayerOpen);
+      const data = JSON.parse(localStorage.getItem('journeyData') || '[]');
+      const p    = data[idx];
+      if (!p) return;
+      // FIX 1: Auto-upgrade active → ongoing on first continuation
+      if (p.status === 'active') {
+        p.status = 'ongoing';
+        localStorage.setItem('journeyData', JSON.stringify(data));
+      }
+      // Store prayer ID for stable threading across navigations
+      setActivePrayer(idx);
+      const ta = $('prayerStruggles');
+      const tp = $('prayerPoints');
+      if (ta) ta.value = p.text || '';
+      if (tp) tp.value = '';
+      const ctx = $('prayerContextHeader');
+      if (ctx) { ctx.style.display = 'block'; ctx.textContent = '🙏 Continuing your prayer'; }
+      renderPrayerList(); // refresh status badge immediately
+      ta?.focus();
+      return;
+    }
+
+    // PRAYER INBOX: Mark as answered from inbox
+    if (t.matches('[data-prayer-done]')) {
+      const idx  = Number(t.dataset.prayerDone);
+      const data = JSON.parse(localStorage.getItem('journeyData') || '[]');
+      if (!data[idx]) return;
+      const note = prompt('What did God do? (optional — press OK to skip)');
+      if (note === null) return; // cancelled
+      data[idx].status = 'answered';
+      data[idx].answer = note.trim();
+      localStorage.setItem('journeyData', JSON.stringify(data));
+      showToast('Prayer marked as answered ✅');
+      renderPrayerList();
+      buildPrayerCalendar();
+      if (prayCalActiveKey) showPrayerDay(prayCalActiveKey);
+      return;
+    }
+
     // PRAYER LIFECYCLE: Mark as answered
     if (t.matches('[data-prayer-answer]')) {
       const idx  = Number(t.dataset.prayerAnswer);
@@ -4175,6 +4682,37 @@ ${verseText}`;
       }
     }
 
+    // FIX 2: Insight card actions (delegated)
+    if (t.matches('[data-insight]')) {
+      const action  = t.dataset.insight;
+      const textEl  = $('insightText');
+      const insight = textEl ? textEl.textContent.trim() : '';
+      if (!insight) return;
+      if (action === 'reflect') {
+        // Pre-fill freeInputText (guidance textarea) and trigger Study screen
+        document.querySelector('[data-nav="study"]')?.click();
+        requestAnimationFrame(() => {
+          const ta = $('freeInputText');
+          if (ta) {
+            ta.value = insight;
+            ta.focus();
+            // Scroll guidance section into view
+            ta.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          }
+        });
+      } else if (action === 'pray') {
+        const ta = $('prayerStruggles');
+        const tp = $('prayerPoints');
+        if (ta) ta.value = insight;
+        if (tp) tp.value = '';
+        // Start fresh prayer thread for this insight
+        state._activePrayerIdx = null;
+        state._activePrayerId  = null;
+        document.querySelector('[data-nav="prayer"]')?.click();
+      }
+      return;
+    }
+
     // STEP 4: Expand/collapse entry text
     if (t.classList.contains('expand-entry')) {
       // Walk siblings upward to find .entry-text — robust regardless of intervening elements
@@ -4287,14 +4825,9 @@ ${verseText}`;
       return;
     }
 
-    // Answered prayer delete
+    // Answered prayer delete (legacy key removed — answered prayers live in journeyData)
     if (t.matches('[data-del-prayer]')) {
-      const idx = parseInt(t.dataset.delPrayer);
-      const prayers = JSON.parse(localStorage.getItem('answered_prayers') || '[]');
-      prayers.splice(idx, 1);
-      localStorage.setItem('answered_prayers', JSON.stringify(prayers));
-      renderAnsweredPrayers();
-      return;
+      return; // no-op — answered prayers managed via journeyData lifecycle
     }
 
     // Clear journey
@@ -4623,18 +5156,38 @@ ${verseText}`;
       // STEP 1+2: Unified source of truth for prayer text
       const fullPrayerText = [struggles, points].filter(Boolean).join('\n\n');
 
-      // Save prayer entry with lifecycle fields
-      saveJourneyEntry({
-        type:      'Prayer',
-        text:      fullPrayerText,
-        book:      state.readSession?.book    || '',
-        chapter:   state.readSession?.chapter || '',
-        verses:    (state.selectedVerses || []).map(v => v.verse).join(','),
-        timestamp: Date.now(),
-        date:      new Date().toLocaleString(),
-        status:    'active',
-        answer:    ''
-      });
+      // CONTROL: UPDATE existing thread OR CREATE new prayer — zero ambiguity
+      const resolvedIdx = resolveActivePrayer();
+      if (resolvedIdx !== null && resolvedIdx !== undefined && resolvedIdx > -1) {
+        // CP 2: UPDATE — write directly to storage, never call saveJourneyEntry
+        const jd  = JSON.parse(localStorage.getItem('journeyData') || '[]');
+        const ep  = jd[resolvedIdx];
+        if (ep && (ep.type === 'Prayer' || ep.type === 'prayer')) {
+          ep.updates   = ep.updates || []; // CP 8: backward safety
+          if (fullPrayerText && fullPrayerText !== ep.text) {
+            ep.updates.push({ text: fullPrayerText, time: Date.now() });
+          }
+          ep.updatedAt = Date.now();
+          ep.timestamp = Date.now(); // resurface today
+          ep.date      = new Date().toLocaleString();
+          localStorage.setItem('journeyData', JSON.stringify(jd));
+          renderPrayerList();
+          // CP 5: keep pointer — do NOT clear until user navigates away
+        } else {
+          // Entry not found or wrong type — fall through to create
+          saveAndResetPrayer(fullPrayerText);
+          const jd2    = JSON.parse(localStorage.getItem('journeyData') || '[]');
+          const newIdx = jd2.findIndex(e => e.id && (Date.now() - (e.timestamp || 0)) < 3000);
+          if (newIdx > -1) setActivePrayer(newIdx);
+        }
+      } else {
+        // CP 3: CREATE — no active thread
+        saveAndResetPrayer(fullPrayerText);
+        // Point to newly created prayer for remainder of session
+        const jd  = JSON.parse(localStorage.getItem('journeyData') || '[]');
+        const newIdx = jd.findIndex(e => e.id && (Date.now() - (e.timestamp || 0)) < 3000);
+        if (newIdx > -1) setActivePrayer(newIdx);
+      }
 
       const panel = $('prayerAIResponse');
       const btn   = $('prayerAskAIBtn');
@@ -4651,9 +5204,7 @@ ${verseText}`;
       setButtonLoading(btn, false);
       showAIInPanel(panel, toHTML(resp));
     });
-    $('prayerAskAIBtn')?.addEventListener('click', () => {
-      try { if (navigator.vibrate) navigator.vibrate(10); } catch(_) {}
-    }, { passive: true, capture: true }); // haptic only — main handler above does the work
+    // haptic on prayer submit handled inside prayerAskAIBtn listener above
     $('addAnsweredPrayerBtn')?.addEventListener('click', addAnsweredPrayer);
 
     // ── Scripture Listen ──
