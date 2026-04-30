@@ -7,11 +7,10 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#0f1115">
-  <meta name="display" content="standalone">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <!-- BUILD v11.6 | 2026-04-25 | Scroll restore, Prayer style, Journey UI, Typography, Insight Engine, Journey Calendar, Calendar Enhancements, Behavior Layer, Calendar-only Journey, Day View UI, Layout stabilisation, Day View entry UI, Verse Highlight + Smart Save, Verse action refinements -->
+  <!-- BUILD v16.1 | 2026-04-30 | Pre-release fixes: version sync, meta cleanup, background unification, action simplification, dynamic Continue label -->
   <link rel="manifest" href="manifest.json">
   <title>BibleBuddy · calm companion</title>
   <style>
@@ -37,7 +36,7 @@
     body {
       margin: 0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: linear-gradient(180deg, #071021 0%, #0b1020 100%);
+      background: #0f1115;
       color: var(--text);
     }
 
@@ -532,15 +531,10 @@
 
         <div id="readDisplay" class="verse read-collapsed"><span class="muted">Select a book and chapter, then tap Load.</span></div>
 
-        <!-- Row 1: More (left) ··· Expand (right) -->
+        <!-- Row 1: Save (left) ··· Expand (right) -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;margin-bottom:14px;">
-          <button id="readMoreActionsBtn" class="secondary small">More</button>
+          <button id="bookmarkBtn" class="secondary small">⭐ Save</button>
           <button id="readExpandBtn" class="secondary small">Expand</button>
-        </div>
-
-        <!-- More actions menu (drops below the row when open) -->
-        <div id="readMoreActionsMenu" class="hidden" style="margin-bottom:12px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-          <button id="bookmarkBtn">Bookmark</button>
         </div>
 
         <!-- Flow Guide Card (shown after passage loads) -->
@@ -915,7 +909,7 @@
               <span class="row-title">BibleBuddy</span>
               <span class="row-sub">Your calm Scripture companion</span>
             </div>
-            <span class="small muted" style="font-size:.8rem;font-weight:600;">v16.0</span>
+            <span class="small muted" style="font-size:.8rem;font-weight:600;">v16.1</span>
           </div>
         </div>
 
@@ -2278,8 +2272,6 @@ Note: [One sentence explaining why this verse matches]`;
       rd.classList.add('read-collapsed');
       if (eb) eb.textContent = 'Expand';
     }
-    const mm = $('readMoreActionsMenu');
-    if (mm) mm.classList.add('hidden');
     // ── FLOW ENGINE — Task 5: Hide guide card on screen leave ──
     $('flowGuideCard')?.classList.add('hidden');
     $('verseActions')?.classList.add('hidden');
@@ -2788,6 +2780,21 @@ Note: [One sentence explaining why this verse matches]`;
       }
     }
     $('homeProgressionHint').textContent = hint;
+
+    // Dynamic Continue button label
+    try {
+      const continueBtn = $('homeContinueBtn');
+      if (continueBtn) {
+        const hasReading  = !!(localStorage.getItem('bb_last_position') &&
+                              JSON.parse(localStorage.getItem('bb_last_position') || 'null')?.verse);
+        const hasPrayer   = state._activePrayerIdx !== null && state._activePrayerIdx !== undefined;
+        const hasSavedSess = !!(localStorage.getItem('bb_session'));
+        if (hasSavedSess)       continueBtn.textContent = 'Resume session';
+        else if (hasReading)    continueBtn.textContent = 'Continue reading';
+        else if (hasPrayer)     continueBtn.textContent = 'Continue prayer';
+        else                    continueBtn.textContent = 'Start session';
+      }
+    } catch (_) {}
 
     // BEHAVIOR LAYER: Streak, nudges, identity, come-back hook
     try {
@@ -4812,10 +4819,6 @@ ${verseText}`;
     }
 
     // More actions menu
-    if (t.id === 'readMoreActionsBtn') {
-      $('readMoreActionsMenu').classList.toggle('hidden');
-      return;
-    }
 
     // Bookmark
     if (t.id === 'bookmarkBtn') {
