@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -2009,11 +2010,11 @@ Important:
     const loadBtn = document.getElementById('loadFoundVerse');
     if (loadBtn && book && chapter) {
       loadBtn.onclick = () => {
-        // Set the selects so the reader shows the correct book/chapter
         const bk = $('bibleBook');
         const ch = $('bibleChapter');
         if (bk) bk.value = book;
         if (ch) ch.value = chapter;
+        state.readingMode = 'reference';
         openScreen('read');
         loadPassage(book, chapter);
       };
@@ -2782,18 +2783,17 @@ Note: [One sentence explaining why this verse matches]`;
     }
     $('homeProgressionHint').textContent = hint;
 
-    // Dynamic Continue button label
+    // ── HYBRID READING: Dynamic Continue button label ──
     try {
+      const progress = getProgress();
+      const next = getNextUnread(progress.book, progress.chapter) || progress;
       const continueBtn = $('homeContinueBtn');
       if (continueBtn) {
-        const hasReading  = !!(localStorage.getItem('bb_last_position') &&
-                              JSON.parse(localStorage.getItem('bb_last_position') || 'null')?.verse);
-        const hasPrayer   = state._activePrayerIdx !== null && state._activePrayerIdx !== undefined;
-        const hasSavedSess = !!(localStorage.getItem('bb_session'));
-        if (hasSavedSess)       continueBtn.textContent = 'Resume session';
-        else if (hasReading)    continueBtn.textContent = 'Continue reading';
-        else if (hasPrayer)     continueBtn.textContent = 'Continue prayer';
-        else                    continueBtn.textContent = 'Start session';
+        if (!next) {
+          continueBtn.textContent = "You're all caught up 🎉";
+        } else {
+          continueBtn.textContent = `Continue reading — ${next.book} ${next.chapter}`;
+        }
       }
     } catch (_) {}
 
@@ -2857,16 +2857,20 @@ Note: [One sentence explaining why this verse matches]`;
       const el      = $('homeContinueReading');
       if (el) {
         if (!hasSesh && pos && pos.book && pos.chapter && pos.verse) {
-          el.textContent = `▶ Continue reading — ${pos.book} ${pos.chapter}:${pos.verse}`;
-          el.style.display = 'block';
+          // Use next unread logic for continue reading card too
           el.onclick = () => {
+            state.readingMode = 'progress';
+            const progress = getProgress();
+            const next = getNextUnread(progress.book, progress.chapter) || progress;
             const bk = $('bibleBook');
             const ch = $('bibleChapter');
-            if (bk) bk.value = pos.book;
-            if (ch) ch.value = pos.chapter;
+            if (bk) bk.value = next.book;
+            if (ch) ch.value = next.chapter;
             openScreen('read');
-            loadPassage(pos.book, pos.chapter, pos.version || 'kjv');
+            loadPassage(next.book, next.chapter);
           };
+          el.textContent = `▶ Continue reading — ${next.book} ${next.chapter}`;
+          el.style.display = 'block';
         } else {
           el.style.display = 'none';
         }
@@ -2970,6 +2974,7 @@ Note: [One sentence explaining why this verse matches]`;
         $('bibleBook').value = lastRead.book;
         populateChapters(lastRead.book);
         $('bibleChapter').value = lastRead.chapter;
+        state.readingMode = 'progress';
         openScreen('read');
         setTimeout(() => {
           loadPassage(lastRead.book, lastRead.chapter);
@@ -3282,12 +3287,15 @@ Rules:
       const version = $('translation')?.value || 'kjv';
       saveReadSession({ book, chapter, version, lastAction: 'read' });
 
-      // ── CONTINUITY — Restore verse position after load (only in continue mode) ──
+      // ── COVERAGE TRACKING ──
+      if (state.readingMode === 'progress') {
+        markCovered(book, chapter);
+      }
+
+      // ── CONTINUITY — Restore verse position after load (fixed) ──
       requestAnimationFrame(() => {
         const saved = JSON.parse(localStorage.getItem('bb_last_position') || 'null');
-        if (saved && saved.book === book && String(saved.chapter) === String(chapter) && saved.verse) {
-          // Don't restore if this was a reference-mode load (verse finder, journey link)
-          if (bookOverride && window._referenceMode) { window._referenceMode = false; return; }
+        if (saved && saved.book === book && Number(saved.chapter) === Number(chapter) && saved.verse) {
           restoreLastVersePosition();
         }
       });
@@ -3325,6 +3333,62 @@ Rules:
       const today = getTodaysVerse();
       display.innerHTML = `<strong style="color:var(--accent2);display:block;margin-bottom:8px;">${today.ref}</strong>${today.text}`;
       updateCurrentScripture(today.ref, today.text);
+    }
+  }
+
+  // ── HYBRID READING HELPERS ──
+  function markCovered(book, chapter) {
+    bb_covered[book] = bb_covered[book] || [];
+    if (!bb_covered[book].includes(chapter)) {
+      bb_covered[book].push(chapter);
+      localStorage.setItem('bb_covered', JSON.stringify(bb_covered));
+    }
+  }
+
+  function isCovered(book, chapter) {
+    return bb_covered[book]?.includes(chapter);
+  }
+
+  function getNextChapter(book, chapter) {
+    const max = BIBLE_CHAPTERS[book] || 1;
+
+    if (chapter < max) {
+      return { book, chapter: chapter + 1 };
+    }
+
+    const books = Object.keys(BIBLE_CHAPTERS);
+    const idx = books.indexOf(book);
+
+    if (idx !== -1 && idx < books.length - 1) {
+      return { book: books[idx + 1], chapter: 1 };
+    }
+
+    return null;
+  }
+
+  function getNextUnread(book, chapter) {
+    let next = getNextChapter(book, chapter);
+    let count = 0;
+    const maxSafe = Object.keys(BIBLE_CHAPTERS).length * 150;
+
+    while (next && isCovered(next.book, next.chapter) && count < maxSafe) {
+      next = getNextChapter(next.book, next.chapter);
+      count++;
+    }
+
+    return next || null;
+  }
+
+  function getProgress() {
+    try {
+      const p = JSON.parse(localStorage.getItem('bb_progress') || '{}');
+
+      return {
+        book: p.book || 'Genesis',
+        chapter: p.chapter || 1
+      };
+    } catch {
+      return { book: 'Genesis', chapter: 1 };
     }
   }
 
@@ -4159,6 +4223,7 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
         $('bibleBook').value = book;
         populateChapters(book);
         $('bibleChapter').value = chapter;
+        state.readingMode = 'progress';
         openScreen('read');
         setTimeout(() => loadPassage(book, chapter), 300);
       }
@@ -4191,6 +4256,7 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
           if (chapSel && Array.from(chapSel.options).some(o => o.value === match[2])) {
             chapSel.value = match[2];
           }
+          state.readingMode = 'progress';
           loadPassage();
           openScreen('read');
         } else openScreen('read');
@@ -4459,6 +4525,7 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       // FIX 3: Context header
       const ctx = $('prayerContextHeader');
       if (ctx) { ctx.style.display = 'block'; ctx.textContent = '🙏 Continue your conversation with God'; }
+      state.readingMode = 'reference';
       document.querySelector('[data-nav="prayer"]')?.click();
       return;
     }
@@ -4535,6 +4602,7 @@ Start EXACTLY with "Almighty God," — then continue naturally. Keep it honest, 
       if (tp) tp.value = '';
       const ctx = $('prayerContextHeader');
       if (ctx) { ctx.style.display = 'block'; ctx.textContent = '🙏 Continuing your prayer'; }
+      state.readingMode = 'reference';
       renderPrayerList(); // refresh status badge immediately
       ta?.focus();
       return;
@@ -4670,6 +4738,7 @@ ${verseText}`;
       // FIX 3: Enhanced context header with verse reference
       const ctx = $('prayerContextHeader');
       if (ctx) { ctx.style.display = 'block'; ctx.textContent = `🙏 Praying from ${ref}`; }
+      state.readingMode = 'reference';
       document.querySelector('[data-nav="prayer"]')?.click();
       return;
     }
@@ -4954,6 +5023,11 @@ ${verseText}`;
     setTimeout(() => { btn.style.transform = ''; }, 120);
   }, { passive: true });
 
+  // ═══════════════════════════════════════════
+  //  STORAGE FOR HYBRID READING
+  // ═══════════════════════════════════════════
+  let bb_covered = JSON.parse(localStorage.getItem('bb_covered') || '{}');
+
   document.addEventListener('DOMContentLoaded', () => {
 
     // Restore session state
@@ -5027,6 +5101,7 @@ ${verseText}`;
       const chapter = $('bibleChapter').value;
       const version = $('translation').value;
       console.log('[BibleFetch] Load button clicked:', book, chapter, version);
+      state.readingMode = 'progress'; // manual load from selectors should be progress
       loadPassage(book, chapter, version);
     });
 
@@ -5048,58 +5123,14 @@ ${verseText}`;
 
     // ── Home: Continue ──
     $('homeContinueBtn')?.addEventListener('click', async () => {
-      if (state.session.loading) return;
-
-      // Resume saved in-progress session
-      const saved = localStorage.getItem('bb_session');
-      if (saved) {
-        try {
-          const s = JSON.parse(saved);
-          if (s.step > 0 && s.step < 4 && s.verse && s.data) {
-            state.session = { step: s.step, verse: s.verse, data: s.data, loading: false };
-            openScreen('sessionFlow');
-            return;
-          }
-        } catch {}
-      }
-
-      state.session.loading = true;
-      const btn = $('homeContinueBtn');
-      setButtonLoading(btn, true, 'Preparing…');
-
-      const today = getTodaysVerse();
-      state.session.verse = `${today.ref} — ${today.text}`;
-      state.session.step = 0;
-
-      openScreen('sessionFlow');
-      $('flowContentArea').innerHTML = '<div class="muted" style="padding:40px;text-align:center;">Preparing your session…</div>';
-      $('flowActionsArea').innerHTML = '';
-
-      let failed = false;
-      try {
-        state.session.data = await fetchSessionData(state.session.verse);
-        if (!state.session.data) {
-          state.session.data = defaultSessionData();
-          failed = true;
-        }
-      } catch {
-        state.session.data = defaultSessionData();
-        failed = true;
-      } finally {
-        state.session.loading = false;
-        const homeBtn = $('homeContinueBtn');
-        if (homeBtn && homeBtn.dataset.origText) {
-          homeBtn.textContent = homeBtn.dataset.origText;
-          homeBtn.disabled = false;
-        }
-      }
-
-      if (failed) showToast('Session ready — using default content');
-
-      renderSessionFlow();
-      localStorage.setItem('bb_session', JSON.stringify({
-        step: 0, verse: state.session.verse, data: state.session.data
-      }));
+      state.readingMode = 'progress';
+      const progress = getProgress();
+      const next = getNextUnread(progress.book, progress.chapter) || progress;
+      $('bibleBook').value = next.book;
+      populateChapters();
+      $('bibleChapter').value = next.chapter;
+      openScreen('read');
+      await loadPassage(next.book, next.chapter);
     });
 
     // ── Study: Guidance ──
@@ -5455,3 +5486,4 @@ ${verseText}`;
 </script>
 </body>
 </html>
+```
